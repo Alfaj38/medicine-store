@@ -24,6 +24,16 @@ class Company extends Model
         return $this->hasMany(Branch::class);
     }
 
+    public function bankAccounts()
+    {
+        return $this->hasMany(CompanyBankAccount::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(CompanyDocument::class);
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);

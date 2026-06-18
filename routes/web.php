@@ -106,6 +106,9 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
             
             Route::get('settings', [\App\Http\Controllers\Company\SettingController::class, 'index'])->name('settings.index');
             Route::post('settings', [\App\Http\Controllers\Company\SettingController::class, 'update'])->name('settings.update');
+
+            Route::resource('bank-accounts', \App\Http\Controllers\Company\BankAccountController::class)->only(['store', 'update', 'destroy']);
+            Route::resource('documents', \App\Http\Controllers\Company\DocumentController::class)->only(['store', 'destroy']);
             
             Route::get('subscription', [\App\Http\Controllers\Company\SubscriptionController::class, 'index'])->name('subscription.index');
         });

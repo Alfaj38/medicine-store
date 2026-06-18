@@ -22,4 +22,67 @@ class BranchController extends Controller
             'branches' => $branches
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'is_default' => 'boolean',
+            'is_active' => 'boolean'
+        ]);
+
+        $validated['company_id'] = auth()->user()->company_id;
+        $validated['approval_status'] = 'approved'; // Self-managed
+
+        if ($request->is_default) {
+            Branch::where('company_id', auth()->user()->company_id)
+                ->update(['is_default' => false]);
+        }
+
+        Branch::create($validated);
+
+        return back()->with('success', 'Branch created successfully.');
+    }
+
+    public function update(Request $request, Branch $branch)
+    {
+        if ($branch->company_id !== auth()->user()->company_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'is_default' => 'boolean',
+            'is_active' => 'boolean'
+        ]);
+
+        if ($request->is_default) {
+            Branch::where('company_id', auth()->user()->company_id)
+                ->where('id', '!=', $branch->id)
+                ->update(['is_default' => false]);
+        }
+
+        $branch->update($validated);
+
+        return back()->with('success', 'Branch updated successfully.');
+    }
+
+    public function destroy(Branch $branch)
+    {
+        if ($branch->company_id !== auth()->user()->company_id) {
+            abort(403);
+        }
+
+        if ($branch->users()->count() > 0) {
+            return back()->with('error', 'Cannot delete a branch that has users assigned.');
+        }
+
+        $branch->delete();
+
+        return back()->with('success', 'Branch deleted successfully.');
+    }
 }
