@@ -17,8 +17,13 @@ class Inventory extends Model
         'expiry_date' => 'date',
     ];
 
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'medicine_id');
+    }
+
     public function medicine(): BelongsTo
     {
-        return $this->belongsTo(Medicine::class);
+        return $this->belongsTo(Item::class, 'medicine_id');
     }
 }

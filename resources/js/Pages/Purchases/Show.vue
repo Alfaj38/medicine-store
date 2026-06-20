@@ -1,4 +1,5 @@
 <script setup>
+import TopNavbar from '@/Components/TopNavbar.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -76,26 +77,7 @@ const submitPayment = () => {
     <Head :title="'Purchase ' + purchase.reference_no" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-        <nav class="bg-white border-b border-slate-200 mb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <Link :href="route('purchases.index')" class="flex items-center gap-3 group">
-                        <div class="text-slate-400 group-hover:text-emerald-600 transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        </div>
-                        <h1 class="font-bold text-xl tracking-tight text-slate-800 group-hover:text-emerald-600 transition-colors">Purchase Order Details</h1>
-                    </Link>
-                    <div>
-                        <button 
-                            v-if="purchase.payment_status !== 'paid'"
-                            @click="openPaymentModal" 
-                            class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                            Record Payment
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        <TopNavbar />
 
         <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Credit Note Alert -->

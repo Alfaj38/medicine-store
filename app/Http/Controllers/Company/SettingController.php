@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Company;
+use App\Models\Bank;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
@@ -13,9 +14,13 @@ class SettingController extends Controller
     public function index()
     {
         $company = Company::with(['bankAccounts', 'documents'])->find(auth()->user()->company_id);
+        $banks = Bank::with(['branches' => function ($query) {
+            $query->select('id', 'bank_id', 'name', 'routing_number')->where('is_active', true);
+        }])->where('is_active', true)->orderBy('name')->get(['id', 'name']);
         
         return Inertia::render('Company/Settings/Index', [
-            'company' => $company
+            'company' => $company,
+            'banks' => $banks
         ]);
     }
 
@@ -55,5 +60,13 @@ class SettingController extends Controller
         $company->update($validated);
 
         return back()->with('success', 'Company profile updated successfully.');
+    }
+
+    public function export()
+    {
+        $company = Company::with(['branches'])->find(auth()->user()->company_id);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.company_profile', compact('company'));
+        return $pdf->download($company->slug . '-profile.pdf');
     }
 }

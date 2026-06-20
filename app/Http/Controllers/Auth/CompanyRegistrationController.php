@@ -30,18 +30,25 @@ class CompanyRegistrationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Company info
+            // Step 1: Business Profile
             'company_name' => 'required|string|max:255',
-            'company_phone' => 'required|string|max:20',
+            'company_type' => 'required|string',
+            'branch_count' => 'required|string',
+            // Step 2: Company Setup
+            'company_country' => 'required|string',
+            'company_currency' => 'required|string',
+            'company_timezone' => 'required|string',
             'company_address' => 'required|string',
-            // Owner info
+            'company_phone' => 'required|string|max:20',
+            // Step 3: Admin Account
             'owner_name' => 'required|string|max:255',
             'owner_email' => 'required|email|unique:users,email',
             'owner_phone' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
-            // Subscription
+            // Step 4: Subscription
             'plan_id' => 'required|exists:subscription_plans,id',
             'billing_cycle' => 'required|in:monthly,yearly',
+            'referral_source' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -50,29 +57,26 @@ class CompanyRegistrationController extends Controller
                 ->where('billing_cycle', $validated['billing_cycle'])
                 ->firstOrFail();
 
-            $isFree = $price->total_price == 0;
-
-            // 1. Create Company
+            // We are creating a trial account.
             $company = Company::create([
                 'name' => $validated['company_name'],
                 'slug' => \Illuminate\Support\Str::slug($validated['company_name']),
                 'phone' => $validated['company_phone'],
                 'address' => $validated['company_address'],
-                'registration_status' => $isFree ? 'pending' : 'active',
+                // Store additional setup context temporarily in address or add columns later if needed
+                'registration_status' => 'active',
                 'is_active' => true,
             ]);
 
-            // 2. Create Default Branch
             $branch = Branch::create([
                 'company_id' => $company->id,
                 'name' => 'Main Branch',
                 'address' => $validated['company_address'],
                 'phone' => $validated['company_phone'],
                 'is_default' => true,
-                'approval_status' => $isFree ? 'pending' : 'approved',
+                'approval_status' => 'approved',
             ]);
 
-            // 3. Create Owner User
             $user = User::create([
                 'company_id' => $company->id,
                 'branch_id' => $branch->id,
@@ -86,23 +90,20 @@ class CompanyRegistrationController extends Controller
                 'is_active' => true,
             ]);
 
-            // Assign Owner Role
-            // Need to setup roles per company later, but we can bypass for now or rely on is_company_owner
-
-            // 4. Create Subscription
             Subscription::create([
                 'company_id' => $company->id,
                 'plan_id' => $plan->id,
                 'plan_price_id' => $price->id,
                 'billing_cycle' => $validated['billing_cycle'],
                 'cycle_years' => $price->cycle_years,
-                'amount_paid' => $price->total_price,
+                'amount_paid' => 0, // Free Trial
                 'starts_at' => now(),
-                'expires_at' => $validated['billing_cycle'] === 'yearly' ? now()->addYear() : now()->addMonth(),
-                'status' => 'active',
+                'expires_at' => now()->addDays(14), // 14-Day Free Trial
+                'status' => 'trial',
             ]);
         });
 
-        return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
+        // Redirect to success page for trial
+        return redirect()->route('success', ['type' => 'trial', 'name' => $validated['owner_name']]);
     }
 }

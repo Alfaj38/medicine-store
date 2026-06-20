@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $companyId = auth()->user()->company_id;
         
-        $users = User::with(['branch'])
+        $users = User::with(['branch', 'roles'])
             ->where('company_id', $companyId)
             ->when($request->search, fn ($q, $search) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
             ->latest()
@@ -39,15 +39,28 @@ class UserController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:8',
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('company_id', auth()->user()->company_id)],
-            'user_type' => 'required|string|in:Manager,Pharmacist,Cashier',
+            'role' => 'required|string|in:Manager,Pharmacist,Cashier',
             'is_active' => 'boolean'
         ]);
+
+        $roleName = $validated['role'];
+        unset($validated['role']);
 
         $validated['company_id'] = auth()->user()->company_id;
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_company_owner'] = false;
+        $validated['user_type'] = 'company';
 
-        User::create($validated);
+        setPermissionsTeamId(auth()->user()->company_id);
+
+        $user = User::create($validated);
+        
+        $role = \Spatie\Permission\Models\Role::firstOrCreate([
+            'name' => $roleName,
+            'company_id' => auth()->user()->company_id
+        ], ['guard_name' => 'web']);
+        
+        $user->assignRole($role);
 
         return back()->with('success', 'Employee created successfully.');
     }
@@ -64,9 +77,12 @@ class UserController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string|min:8',
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('company_id', auth()->user()->company_id)],
-            'user_type' => 'required|string|in:Manager,Pharmacist,Cashier',
+            'role' => 'required|string|in:Manager,Pharmacist,Cashier',
             'is_active' => 'boolean'
         ]);
+
+        $roleName = $validated['role'];
+        unset($validated['role']);
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -75,6 +91,15 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+
+        setPermissionsTeamId(auth()->user()->company_id);
+        
+        $role = \Spatie\Permission\Models\Role::firstOrCreate([
+            'name' => $roleName,
+            'company_id' => auth()->user()->company_id
+        ], ['guard_name' => 'web']);
+        
+        $user->syncRoles([$role]);
 
         return back()->with('success', 'Employee updated successfully.');
     }

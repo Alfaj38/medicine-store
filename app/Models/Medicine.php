@@ -36,4 +36,9 @@ class Medicine extends Model
     {
         return $this->belongsTo(MedicineCategory::class, 'category_id');
     }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

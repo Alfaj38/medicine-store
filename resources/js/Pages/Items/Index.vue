@@ -1,0 +1,159 @@
+<script setup>
+import TopNavbar from '@/Components/TopNavbar.vue';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import debounce from 'lodash/debounce';
+
+const props = defineProps({
+    items: Object,
+    filters: Object,
+});
+
+const search = ref(props.filters.search);
+
+watch(search, debounce((value) => {
+    router.get(route('items.index'), { search: value }, {
+        preserveState: true,
+        replace: true,
+    });
+}, 300));
+</script>
+
+<template>
+    <Head title="Catalog - MediSaaS" />
+
+    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
+        <TopNavbar />
+
+        <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <div class="sm:flex sm:items-center sm:justify-between mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Unified Catalog</h1>
+                    <p class="mt-2 text-sm text-slate-500">Manage all items, medicines, products, and services across your business.</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex gap-4">
+                    <Link :href="route('items.create')" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Add Item
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-grow max-w-md group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input 
+                        v-model="search"
+                        type="text" 
+                        placeholder="Search by name, SKU, barcode, or manufacturer..." 
+                        class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                    >
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider sm:pl-6">Item Info</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Type / Class</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Identifiers</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 bg-white">
+                            <tr v-for="item in items.data" :key="item.id" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-6">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shadow-inner border border-emerald-100">
+                                            {{ item.name.charAt(0) }}
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="font-semibold text-slate-900">{{ item.name }}</div>
+                                            <div class="text-sm text-slate-500">{{ item.manufacturer?.name || 'No Manufacturer' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4">
+                                    <div class="text-sm text-slate-900 font-medium">{{ item.item_type?.name || 'Unknown' }}</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">{{ item.inventory_type }}</div>
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                                    <div><span class="text-xs text-slate-400">SKU:</span> {{ item.sku || '-' }}</div>
+                                    <div class="mt-0.5"><span class="text-xs text-slate-400">Barcode:</span> {{ item.barcode || '-' }}</div>
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                                    <span v-if="item.is_active" class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
+                                    <span v-else class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/10">Inactive</span>
+                                </td>
+                                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                    <Link :href="route('items.edit', item.id)" class="text-emerald-600 hover:text-emerald-900 transition-colors">
+                                        Edit<span class="sr-only">, {{ item.name }}</span>
+                                    </Link>
+                                </td>
+                            </tr>
+                            <tr v-if="items.data.length === 0">
+                                <td colspan="5" class="py-12 text-center text-slate-500">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+                                        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-lg font-medium text-slate-900">No items found</p>
+                                    <p class="mt-1">We couldn't find anything matching your search criteria.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div v-if="items.links && items.links.length > 3" class="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6">
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-slate-700">
+                                Showing <span class="font-medium">{{ items.from }}</span> to <span class="font-medium">{{ items.to }}</span> of <span class="font-medium">{{ items.total }}</span> results
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <template v-for="(link, index) in items.links" :key="index">
+                                    <Link 
+                                        v-if="link.url"
+                                        :href="link.url"
+                                        v-html="link.label"
+                                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-slate-300 focus:z-20 focus:outline-offset-0 transition-colors"
+                                        :class="[
+                                            link.active ? 'z-10 bg-emerald-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600' : 'text-slate-900 hover:bg-slate-50',
+                                            index === 0 ? 'rounded-l-md' : '',
+                                            index === items.links.length - 1 ? 'rounded-r-md' : ''
+                                        ]"
+                                    />
+                                    <span 
+                                        v-else
+                                        v-html="link.label"
+                                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-slate-300 transition-colors opacity-50 cursor-not-allowed pointer-events-none text-slate-900 bg-slate-50"
+                                        :class="[
+                                            index === 0 ? 'rounded-l-md' : '',
+                                            index === items.links.length - 1 ? 'rounded-r-md' : ''
+                                        ]"
+                                    />
+                                </template>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</template>

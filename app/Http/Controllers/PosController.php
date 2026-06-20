@@ -40,11 +40,28 @@ class PosController extends Controller
     public function browseMedicines(Request $request)
     {
         $categoryId = $request->get('category_id');
-        $filter = $request->get('filter', 'all'); // all, low_stock, expiring_soon
+        $filter = $request->get('filter', 'all');
+        $companyId = auth()->user()->company_id;
 
-        $query = Medicine::where('is_active', true)
-            ->with(['inventory' => function($q) {
-                $q->where('company_id', auth()->user()->company_id);
+        // Get item IDs that have stock for this company (direct DB query, no scope issues)
+        $itemIdsWithStock = \Illuminate\Support\Facades\DB::table('inventories')
+            ->when($companyId, function($q) use ($companyId) {
+                return $q->where('company_id', $companyId);
+            })
+            ->where('quantity', '>', 0)
+            ->pluck('medicine_id');
+
+        // Build the item query (bypass TenantScope since central catalog has company_id = null)
+        $query = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
+            ->where('is_active', true)
+            ->when($companyId, function($q) use ($companyId) {
+                $q->where(function($sub) use ($companyId) {
+                    $sub->whereNull('company_id')
+                        ->orWhere('company_id', $companyId);
+                });
+            })
+            ->with(['medicineDetails', 'prices' => function($q) {
+                $q->where('price_type', 'Retail');
             }, 'category']);
 
         if ($categoryId) {
@@ -52,27 +69,72 @@ class PosController extends Controller
         }
 
         if ($filter === 'low_stock') {
-            $query->whereHas('inventory', function($q) {
-                $q->where('company_id', auth()->user()->company_id)
-                  ->where('quantity', '>', 0)
-                  ->whereRaw('quantity <= reorder_level');
-            });
+            // Items with stock > 0 but below reorder point (show all with stock for now)
+            $query->whereIn('id', $itemIdsWithStock);
         } elseif ($filter === 'expiring_soon') {
-            $query->whereHas('inventory', function($q) {
-                $q->where('company_id', auth()->user()->company_id)
-                  ->where('quantity', '>', 0)
-                  ->where('expiry_date', '<=', now()->addDays(90));
-            });
+            $expiringItemIds = \Illuminate\Support\Facades\DB::table('inventories')
+                ->when($companyId, function($q) use ($companyId) {
+                    return $q->where('company_id', $companyId);
+                })
+                ->where('quantity', '>', 0)
+                ->where('expiry_date', '<=', now()->addDays(90))
+                ->pluck('medicine_id');
+            $query->whereIn('id', $expiringItemIds);
         } else {
-            $query->whereHas('inventory', function($q) {
-                $q->where('company_id', auth()->user()->company_id)
-                  ->where('quantity', '>', 0);
+            // All: show non-stock items (services) OR items that have stock
+            $query->where(function($q) use ($itemIdsWithStock) {
+                $q->where('inventory_type', '!=', 'Stock Item')
+                  ->orWhereIn('id', $itemIdsWithStock);
             });
         }
 
-        $medicines = $query->take(32)->get();
+        $itemIds = $query->pluck('id')->toArray();
+        $fallbackPrices = [];
+        if (!empty($itemIds)) {
+            $fallbackPrices = \Illuminate\Support\Facades\DB::table('purchase_items')
+                ->whereIn('medicine_id', $itemIds)
+                ->groupBy('medicine_id')
+                ->select('medicine_id', \Illuminate\Support\Facades\DB::raw('MAX(unit_price) as max_price'))
+                ->pluck('max_price', 'medicine_id')
+                ->toArray();
+        }
 
-        return response()->json($medicines);
+        $items = $query->take(32)->get()->map(function($item) use ($companyId, $fallbackPrices) {
+            // Get stock details for frontend format
+            $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
+            if ($companyId) {
+                $inventoryQuery->where('company_id', $companyId);
+            }
+            $inventory = $inventoryQuery->get();
+                
+            $stockQty = $inventory->sum('quantity');
+
+            $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
+            if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
+                $sellPrice = $fallbackPrices[$item->id];
+            }
+
+            // Fallback inventory mrp to sell_price if it's 0 so frontend shows correct price
+            $inventory->transform(function ($inv) use ($sellPrice) {
+                if ($inv->mrp <= 0) {
+                    $inv->mrp = $sellPrice;
+                }
+                return $inv;
+            });
+
+            return [
+                'id'           => $item->id,
+                'name'         => $item->name,
+                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                'barcode'      => $item->barcode,
+                'sell_price'   => $sellPrice,
+                'category'     => $item->category,
+                'stock_qty'    => (int) $stockQty,
+                'inventory'    => $inventory,
+            ];
+        });
+
+        return response()->json($items);
     }
 
     public function quickCustomer(Request $request)
@@ -99,30 +161,89 @@ class PosController extends Controller
 
     public function searchMedicines(Request $request)
     {
-        $query = $request->get('q');
+        $queryText = $request->get('q');
         
-        if (!$query) {
+        if (!$queryText) {
             return response()->json([]);
         }
 
-        $medicines = Medicine::where('is_active', true)
-            ->where(function($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('barcode', 'like', "%{$query}%")
-                  ->orWhere('generic_name', 'like', "%{$query}%");
+        $companyId = auth()->user()->company_id;
+
+        // Get item IDs that have stock for this company
+        $itemIdsWithStock = \Illuminate\Support\Facades\DB::table('inventories')
+            ->when($companyId, function($q) use ($companyId) {
+                return $q->where('company_id', $companyId);
             })
-            ->whereHas('inventory', function($q) {
-                $q->where('company_id', auth()->user()->company_id)
-                  ->where('quantity', '>', 0);
+            ->where('quantity', '>', 0)
+            ->pluck('medicine_id');
+
+        $query = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
+            ->where('is_active', true)
+            ->when($companyId, function($q) use ($companyId) {
+                $q->where(function($sub) use ($companyId) {
+                    $sub->whereNull('company_id')
+                        ->orWhere('company_id', $companyId);
+                });
             })
-            ->with(['inventory' => function($q) {
-                $q->where('company_id', auth()->user()->company_id)
-                  ->where('quantity', '>', 0);
+            ->where(function($q) use ($queryText) {
+                $q->where('name', 'like', "%{$queryText}%")
+                  ->orWhere('barcode', 'like', "%{$queryText}%")
+                  ->orWhere('sku', 'like', "%{$queryText}%")
+                  ->orWhereHas('medicineDetails', function($m) use ($queryText) {
+                      $m->where('generic_name', 'like', "%{$queryText}%");
+                  });
+            })
+            ->where(function($q) use ($itemIdsWithStock) {
+                $q->where('inventory_type', '!=', 'Stock Item')
+                  ->orWhereIn('id', $itemIdsWithStock);
+            });
+
+        $itemIds = $query->pluck('id')->toArray();
+        $fallbackPrices = [];
+        if (!empty($itemIds)) {
+            $fallbackPrices = \Illuminate\Support\Facades\DB::table('purchase_items')
+                ->whereIn('medicine_id', $itemIds)
+                ->groupBy('medicine_id')
+                ->select('medicine_id', \Illuminate\Support\Facades\DB::raw('MAX(unit_price) as max_price'))
+                ->pluck('max_price', 'medicine_id')
+                ->toArray();
+        }
+
+        $items = $query->with(['medicineDetails', 'prices' => function($q) {
+                $q->where('price_type', 'Retail');
             }])
             ->take(15)
-            ->get();
+            ->get()->map(function($item) use ($companyId, $fallbackPrices) {
+                // Get stock details for frontend format
+                $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
+                if ($companyId) {
+                    $inventoryQuery->where('company_id', $companyId);
+                }
+                $inventory = $inventoryQuery->get();
 
-        return response()->json($medicines);
+                $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
+                if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
+                    $sellPrice = $fallbackPrices[$item->id];
+                }
+
+                $inventory->transform(function ($inv) use ($sellPrice) {
+                    if ($inv->mrp <= 0) {
+                        $inv->mrp = $sellPrice;
+                    }
+                    return $inv;
+                });
+                    
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                    'barcode' => $item->barcode,
+                    'sell_price' => $sellPrice,
+                    'inventory' => $inventory,
+                ];
+            });
+
+        return response()->json($items);
     }
 
     public function store(Request $request)
@@ -136,7 +257,7 @@ class PosController extends Controller
             'paid_amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string',
             'items' => 'required|array|min:1',
-            'items.*.medicine_id' => 'required|exists:medicines,id',
+            'items.*.medicine_id' => 'required|exists:items,id',
             'items.*.batch_no' => 'nullable|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',

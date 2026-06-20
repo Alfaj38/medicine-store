@@ -1,4 +1,5 @@
 <script setup>
+import TopNavbar from '@/Components/TopNavbar.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -93,18 +94,7 @@ const submit = () => {
     <Head title="New Purchase Return - MediSaaS" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-        <nav class="bg-white border-b border-slate-200 mb-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <Link :href="route('purchase-returns.index')" class="flex items-center gap-3 group">
-                        <div class="text-slate-400 group-hover:text-emerald-600 transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        </div>
-                        <h1 class="font-bold text-xl tracking-tight text-slate-800 group-hover:text-emerald-600 transition-colors">New Purchase Return</h1>
-                    </Link>
-                </div>
-            </div>
-        </nav>
+        <TopNavbar />
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <form @submit.prevent="submit" class="space-y-6">

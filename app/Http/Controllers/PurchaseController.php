@@ -92,24 +92,48 @@ class PurchaseController extends Controller
             return response()->json([]);
         }
 
-        // Supplier's companies column is cast to array or stored as JSON. We need to decode it.
+        // Supplier's companies column is cast to array or stored as JSON.
         $companies = is_string($supplier->companies) ? json_decode($supplier->companies, true) : $supplier->companies;
 
         if (empty($companies)) {
             return response()->json([]);
         }
 
-        $medicines = Medicine::where('is_active', true)
-            ->whereIn('company_name', $companies)
+        // Get Manufacturer IDs that match the supplier's company names
+        $manufacturerIds = \App\Models\Manufacturer::whereIn('name', $companies)->pluck('id');
+
+        $items = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
+            ->with(['medicineDetails', 'prices' => function($q) {
+                $q->where('price_type', 'Purchase');
+            }])
+            ->where('is_active', true)
+            ->whereIn('manufacturer_id', $manufacturerIds)
+            ->where(function($q) {
+                $q->whereNull('company_id')
+                  ->orWhere('company_id', auth()->user()->company_id);
+            })
             ->where(function($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('barcode', 'like', "%{$query}%")
-                  ->orWhere('generic_name', 'like', "%{$query}%");
+                  ->orWhere('sku', 'like', "%{$query}%")
+                  ->orWhereHas('medicineDetails', function($m) use ($query) {
+                      $m->where('generic_name', 'like', "%{$query}%");
+                  });
             })
             ->take(15)
-            ->get(['id', 'name', 'generic_name', 'buy_price']);
+            ->get();
 
-        return response()->json($medicines);
+        // Map to expected format for the frontend
+        $mapped = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'name' => $item->name,
+                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                'buy_price' => $item->prices->first() ? $item->prices->first()->price : 0,
+            ];
+        });
+
+        return response()->json($mapped);
     }
 
     public function store(Request $request)
@@ -123,7 +147,7 @@ class PurchaseController extends Controller
             'paid_amount' => 'numeric|min:0',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.medicine_id' => 'required|exists:medicines,id',
+            'items.*.medicine_id' => 'required|exists:items,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.mrp' => 'required|numeric|min:0',

@@ -451,129 +451,122 @@ const categoryIcon = (name) => {
             <aside class="w-80 xl:w-96 bg-white border-l border-slate-200 flex flex-col flex-shrink-0">
 
                 <!-- Customer -->
-                <div class="px-4 pt-3 pb-2 border-b border-slate-200 flex-shrink-0">
-                    <div class="flex items-center gap-2">
-                        <div class="flex-1">
+                <div class="px-3 pt-2 pb-1.5 border-b border-slate-200 flex-shrink-0">
+                    <div class="flex items-center gap-1.5">
+                        <div class="flex-1 relative">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">👤</div>
                             <select v-model="selectedCustomerId"
-                                class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-emerald-500">
-                                <option value="">👤 Walk-in Customer</option>
+                                class="w-full bg-slate-50 border border-slate-300 rounded-md pl-7 pr-2 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 appearance-none">
+                                <option value="">Walk-in Customer</option>
                                 <option v-for="c in customerList" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
+                            <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
                         </div>
-                        <button @click="openCustomerModal"
-                            class="flex-shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            New
+                        <button @click="openCustomerModal" title="New Customer"
+                            class="flex-shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white p-1.5 rounded-md transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         </button>
                     </div>
                 </div>
 
                 <!-- Cart Header -->
-                <div class="flex items-center justify-between px-4 py-2 flex-shrink-0">
-                    <span class="text-sm font-semibold text-slate-900">{{ cart.length }} Item{{ cart.length !== 1 ? 's' : '' }} in Cart</span>
-                    <button v-if="cart.length" @click="clearCart" class="text-xs text-rose-600 hover:text-rose-300 font-semibold transition-colors">Clear Cart</button>
+                <div class="flex items-center justify-between px-3 py-1.5 flex-shrink-0 bg-slate-50 border-b border-slate-200">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Cart ({{ cart.length }})</span>
+                    <button v-if="cart.length" @click="clearCart" class="text-xs text-rose-500 hover:text-rose-700 font-semibold transition-colors">Clear All</button>
                 </div>
 
                 <!-- Cart Items -->
-                <div class="flex-1 overflow-y-auto px-3 space-y-2">
-                    <div v-if="!cart.length" class="flex flex-col items-center justify-center h-full text-slate-600">
-                        <span class="text-4xl mb-2">🛒</span>
-                        <p class="text-sm">Cart is empty</p>
-                        <p class="text-xs mt-1">Click a medicine to add it</p>
+                <div class="flex-1 overflow-y-auto px-2 py-1.5 space-y-1.5 bg-slate-50/50">
+                    <div v-if="!cart.length" class="flex flex-col items-center justify-center h-full text-slate-400">
+                        <span class="text-3xl mb-1 opacity-50">🛒</span>
+                        <p class="text-xs font-medium">Cart is empty</p>
                     </div>
 
                     <div v-for="(item, idx) in cart" :key="idx"
-                        class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-2.5">
-                        <!-- Icon -->
-                        <div class="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 p-0.5">
-                            <MedicineIcon :icon-id="item.icon" />
-                        </div>
+                        class="flex items-start gap-2 bg-white border border-slate-200 rounded-lg p-1.5 shadow-sm hover:border-emerald-300 transition-colors">
                         <!-- Info -->
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium text-slate-900 truncate">{{ item.name }}</div>
-                            <div class="text-xs text-slate-500">{{ item.type }} · B-{{ item.batch_no }} {{ item.expiry_date }}</div>
+                        <div class="flex-1 min-w-0 pt-0.5">
+                            <div class="flex justify-between items-start">
+                                <div class="text-[13px] font-bold text-slate-900 leading-tight truncate pr-2">{{ item.name }}</div>
+                                <div class="text-[13px] font-bold text-emerald-600 flex-shrink-0">${{ (item.unit_price * item.quantity).toFixed(2) }}</div>
+                            </div>
+                            <div class="flex justify-between items-center mt-1">
+                                <div class="text-[10px] text-slate-500 truncate">{{ item.type }} · B:{{ item.batch_no || '-' }}</div>
+                                <div class="flex items-center gap-1.5 flex-shrink-0 bg-slate-100 rounded-md p-0.5">
+                                    <button @click="updateQty(idx, -1)" class="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 flex items-center justify-center leading-none hover:bg-slate-200">−</button>
+                                    <span class="w-5 text-center text-xs font-bold text-slate-900">{{ item.quantity }}</span>
+                                    <button @click="updateQty(idx, +1)" class="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 flex items-center justify-center leading-none hover:bg-slate-200">+</button>
+                                </div>
+                            </div>
                         </div>
-                        <!-- Qty -->
-                        <div class="flex items-center gap-1 flex-shrink-0">
-                            <button @click="updateQty(idx, -1)" class="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-600 text-slate-900 flex items-center justify-center text-sm transition-colors">−</button>
-                            <span class="w-7 text-center text-sm font-bold text-slate-900">{{ item.quantity }}</span>
-                            <button @click="updateQty(idx, +1)" class="w-6 h-6 rounded-md bg-slate-200 hover:bg-slate-600 text-slate-900 flex items-center justify-center text-sm transition-colors">+</button>
-                        </div>
-                        <!-- Price + Delete -->
-                        <div class="text-right flex-shrink-0 flex flex-col justify-between items-end">
-                            <div class="text-sm font-bold text-emerald-600">${{ (item.unit_price * item.quantity).toFixed(2) }}</div>
-                            <button @click="removeFromCart(idx)" class="text-rose-400 hover:text-rose-600 transition-colors mt-1" title="Remove Item">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Discount + Note -->
-                <div class="px-4 pt-3 border-t border-slate-200 flex-shrink-0 space-y-2">
-                    <button @click="discountOpen = !discountOpen"
-                        class="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-300 font-semibold transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Add Discount
-                        <svg :class="['w-3.5 h-3.5 transition-transform', discountOpen ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div v-if="discountOpen" class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-xs text-slate-500">Discount ($)</label>
-                            <input v-model.number="discountAmount" type="number" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-slate-900 focus:outline-none focus:border-emerald-500">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-500">Tax (%)</label>
-                            <input v-model.number="taxPercent" type="number" min="0" max="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 text-sm text-slate-900 focus:outline-none focus:border-emerald-500">
-                        </div>
-                    </div>
-                    <textarea v-model="saleNote" rows="1" placeholder="Note (Optional)"
-                        class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-600 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
-                </div>
-
-                <!-- Totals -->
-                <div class="px-4 pb-2 pt-2 border-t border-slate-200 flex-shrink-0 space-y-1.5">
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span>Subtotal</span>
-                        <span class="text-slate-900">${{ subtotal.toFixed(2) }}</span>
-                    </div>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span>Discount</span>
-                        <span class="text-rose-600">-${{ discountAmount.toFixed(2) }}</span>
-                    </div>
-                    <div class="flex justify-between text-sm text-slate-500">
-                        <span>Tax ({{ taxPercent }}%)</span>
-                        <span class="text-slate-900">${{ taxAmount.toFixed(2) }}</span>
-                    </div>
-                    <div class="flex justify-between items-baseline border-t border-slate-200 pt-2 mt-1">
-                        <span class="text-base font-bold text-slate-900">Total Payable</span>
-                        <span class="text-2xl font-bold text-emerald-600">${{ total.toFixed(2) }}</span>
-                    </div>
-                </div>
-
-                <!-- Pay Button -->
-                <div class="px-4 pb-3 flex-shrink-0">
-                    <button @click="completeSale" :disabled="!cart.length || isSubmitting"
-                        class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 disabled:text-slate-500 text-slate-900 font-bold py-3.5 rounded-xl transition-all text-lg flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/30">
-                        <span>{{ isSubmitting ? 'Processing...' : `Pay ($${total.toFixed(2)})` }}</span>
-                        <kbd v-if="!isSubmitting" class="text-xs bg-emerald-700 px-1.5 py-0.5 rounded font-semibold">F9</kbd>
-                    </button>
-
-                    <!-- Payment Methods -->
-                    <div class="grid grid-cols-4 gap-1.5 mt-2">
-                        <button v-for="pm in [
-                            { key: 'cash', label: 'Cash', icon: '💵', fkey: 'F5' },
-                            { key: 'card', label: 'Card', icon: '💳', fkey: 'F6' },
-                            { key: 'other', label: 'Other', icon: '🏦', fkey: 'F7' },
-                            { key: 'credit', label: 'Credit', icon: '📋', fkey: 'F8' },
-                        ]" :key="pm.key"
-                            @click="paymentMethod = pm.key"
-                            :class="['flex flex-col items-center py-2 px-1 rounded-xl text-center transition-all border', paymentMethod === pm.key ? 'bg-emerald-600/20 border-emerald-500 text-emerald-600' : 'bg-slate-50 border-slate-300 text-slate-500 hover:bg-slate-200 hover:text-slate-900']">
-                            <span class="text-lg">{{ pm.icon }}</span>
-                            <span class="text-xs font-semibold mt-0.5">{{ pm.label }}</span>
-                            <span class="text-xs text-slate-600">{{ pm.fkey }}</span>
+                        <button @click="removeFromCart(idx)" class="mt-1 text-slate-300 hover:text-rose-500 transition-colors flex-shrink-0" title="Remove Item">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
+                </div>
+
+                <!-- Discount + Note Toggles -->
+                <div class="px-3 py-1.5 border-t border-slate-200 flex-shrink-0 flex items-center justify-between bg-slate-50">
+                    <button @click="discountOpen = !discountOpen"
+                        :class="['flex items-center gap-1 text-[11px] font-semibold transition-colors px-2 py-1 rounded', discountOpen || discountAmount > 0 || taxPercent > 0 ? 'bg-emerald-100 text-emerald-700' : 'text-slate-500 hover:bg-slate-200']">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Discount / Tax
+                    </button>
+                    <div class="flex-1 max-w-[140px]">
+                        <input v-model="saleNote" type="text" placeholder="Add note..." class="w-full bg-white border border-slate-200 rounded px-2 py-1 text-[11px] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                    </div>
+                </div>
+
+                <!-- Discount Popup Panel -->
+                <div v-if="discountOpen" class="px-3 py-2 bg-white border-b border-slate-200 flex-shrink-0">
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 uppercase">Discount ($)</label>
+                            <input v-model.number="discountAmount" type="number" min="0" class="w-full bg-slate-50 border border-slate-200 rounded p-1 text-xs text-slate-900 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-0.5 uppercase">Tax (%)</label>
+                            <input v-model.number="taxPercent" type="number" min="0" max="100" class="w-full bg-slate-50 border border-slate-200 rounded p-1 text-xs text-slate-900 focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compact Totals & Pay Section -->
+                <div class="px-3 py-2 border-t border-slate-200 flex-shrink-0 bg-white">
+                    <div class="flex items-end justify-between mb-2">
+                        <div class="space-y-0.5">
+                            <div class="text-[11px] text-slate-500 flex justify-between gap-3"><span>Sub:</span> <span>${{ subtotal.toFixed(2) }}</span></div>
+                            <div v-if="discountAmount > 0" class="text-[11px] text-rose-500 flex justify-between gap-3"><span>Disc:</span> <span>-${{ discountAmount.toFixed(2) }}</span></div>
+                            <div v-if="taxPercent > 0" class="text-[11px] text-slate-500 flex justify-between gap-3"><span>Tax:</span> <span>${{ taxAmount.toFixed(2) }}</span></div>
+                            <div class="text-[13px] font-bold text-slate-900 mt-0.5">Total</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-black text-emerald-600 leading-none">${{ total.toFixed(2) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods (Segment Control) -->
+                    <div class="flex p-0.5 bg-slate-100 rounded-lg mb-2">
+                        <button v-for="pm in [
+                            { key: 'cash', label: 'Cash' },
+                            { key: 'card', label: 'Card' },
+                            { key: 'other', label: 'Other' },
+                            { key: 'credit', label: 'Credit' },
+                        ]" :key="pm.key"
+                            @click="paymentMethod = pm.key"
+                            :class="['flex-1 py-1.5 text-xs font-bold rounded-md transition-all', paymentMethod === pm.key ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+                            {{ pm.label }}
+                        </button>
+                    </div>
+
+                    <!-- Pay Button -->
+                    <button @click="completeSale" :disabled="!cart.length || isSubmitting"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 disabled:text-slate-500 text-white font-bold py-2.5 rounded-lg transition-all text-sm flex items-center justify-center gap-2 shadow-sm">
+                        <span>{{ isSubmitting ? 'Processing...' : 'Pay Now' }}</span>
+                        <kbd v-if="!isSubmitting" class="text-[10px] bg-emerald-700/50 px-1.5 py-0.5 rounded ml-1">F9</kbd>
+                    </button>
                 </div>
             </aside>
         </div>

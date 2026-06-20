@@ -17,7 +17,7 @@ const form = useForm({
     email: '',
     phone: '',
     password: '',
-    user_type: 'Pharmacist',
+    role: 'Pharmacist',
     branch_id: '',
     is_active: true
 });
@@ -36,7 +36,7 @@ const openEditModal = (user) => {
     form.email = user.email;
     form.phone = user.phone;
     form.password = '';
-    form.user_type = user.user_type || 'Pharmacist';
+    form.role = user.roles && user.roles.length ? user.roles[0].name : 'Pharmacist';
     form.branch_id = user.branch_id || '';
     form.is_active = user.is_active;
     isModalOpen.value = true;
@@ -116,7 +116,7 @@ const performSearch = () => {
                                 <div>{{ user.phone }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-slate-900">{{ user.user_type || 'User' }}</div>
+                                <div class="text-sm text-slate-900">{{ user.roles && user.roles.length ? user.roles[0].name : 'User' }}</div>
                                 <div class="text-sm text-slate-500">{{ user.branch ? user.branch.name : 'Unassigned' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -161,7 +161,7 @@ const performSearch = () => {
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                <div class="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
                     <form @submit.prevent="submitForm">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <h3 class="text-lg leading-6 font-medium text-slate-900 mb-4" id="modal-title">
@@ -195,12 +195,12 @@ const performSearch = () => {
 
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Role</label>
-                                    <select v-model="form.user_type" required class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                                    <select v-model="form.role" required class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
                                         <option value="Manager">Manager</option>
                                         <option value="Pharmacist">Pharmacist</option>
                                         <option value="Cashier">Cashier</option>
                                     </select>
-                                    <p v-if="form.errors.user_type" class="mt-1 text-sm text-red-500">{{ form.errors.user_type }}</p>
+                                    <p v-if="form.errors.role" class="mt-1 text-sm text-red-500">{{ form.errors.role }}</p>
                                 </div>
 
                                 <div>

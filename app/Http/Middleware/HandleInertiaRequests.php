@@ -56,9 +56,19 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
+        // Alert counts shared only for management users (used in admin sidebar/header)
+        $pendingBranches = 0;
+        $newLeads        = 0;
+        if ($request->user() && $request->user()->isManagement()) {
+            $pendingBranches = \App\Models\Branch::where('approval_status', 'pending')->count();
+            $newLeads        = \App\Models\DemoRequest::where('status', 'pending')->count();
+        }
+
         return [
             ...parent::share($request),
-            'auth' => $authData,
+            'auth'            => $authData,
+            'pendingBranches' => $pendingBranches,
+            'newLeads'        => $newLeads,
             'flash' => [
                 'success'     => fn () => $request->session()->get('success'),
                 'error'       => fn () => $request->session()->get('error'),

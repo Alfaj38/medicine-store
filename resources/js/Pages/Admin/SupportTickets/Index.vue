@@ -1,13 +1,13 @@
 <template>
     <AdminLayout>
-        <template #header>Support Tickets</template>
+        <template #header>Support Center</template>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6 border-b flex justify-between items-center">
-                <h3 class="text-lg font-medium text-gray-900">Tickets Queue</h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><span class="text-xl">🎫</span> Ticket Queue</h2>
                 
                 <div class="flex space-x-2">
-                    <select v-model="filters.status" @change="applyFilters" class="rounded-md border-gray-300 text-sm">
+                    <select v-model="filters.status" @change="applyFilters" class="rounded-xl border-slate-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-medium text-slate-700 bg-white">
                         <option value="">All Statuses</option>
                         <option value="open">Open</option>
                         <option value="answered">Answered</option>
@@ -17,79 +17,103 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse whitespace-nowrap text-sm">
                     <thead>
-                        <tr class="bg-gray-50 border-b">
-                            <th class="p-4 font-medium text-sm text-gray-600">Company & User</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Subject</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Priority</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Status</th>
-                            <th class="p-4 font-medium text-sm text-gray-600 text-right">Actions</th>
+                        <tr class="bg-slate-50 border-b border-slate-100 font-semibold text-slate-500 uppercase tracking-wider text-xs">
+                            <th class="p-4">Tenant / User</th>
+                            <th class="p-4">Subject & Category</th>
+                            <th class="p-4">SLA / Priority</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr v-for="ticket in tickets.data" :key="ticket.id" class="border-b hover:bg-gray-50">
+                    <tbody class="divide-y divide-slate-100">
+                        <tr v-for="ticket in tickets.data" :key="ticket.id" class="hover:bg-slate-50/80 transition-colors">
                             <td class="p-4">
-                                <div class="font-medium text-gray-900">{{ ticket.company?.name }}</div>
-                                <div class="text-sm text-gray-500">{{ ticket.user?.name }}</div>
+                                <div class="font-bold text-slate-800">{{ ticket.company?.name || 'N/A' }}</div>
+                                <div class="text-xs font-medium text-slate-500 mt-0.5">{{ ticket.user?.name || 'Unknown User' }}</div>
                             </td>
                             <td class="p-4">
-                                <span class="font-medium text-gray-900">{{ ticket.subject }}</span>
-                                <p class="text-xs text-gray-500 mt-1 truncate max-w-xs">{{ ticket.body }}</p>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase tracking-wider">{{ ticket.category }}</span>
+                                    <span class="font-bold text-slate-800 truncate max-w-[250px]">{{ ticket.subject }}</span>
+                                </div>
+                                <p class="text-xs text-slate-500 truncate max-w-xs">{{ ticket.body }}</p>
                             </td>
                             <td class="p-4">
-                                <span class="capitalize text-sm">{{ ticket.priority }}</span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold capitalize flex inline-flex items-center gap-1.5 w-fit"
+                                    :class="{
+                                        'bg-red-100 text-red-700 border border-red-200': ticket.priority === 'critical',
+                                        'bg-orange-100 text-orange-700 border border-orange-200': ticket.priority === 'high',
+                                        'bg-blue-100 text-blue-700 border border-blue-200': ticket.priority === 'medium',
+                                        'bg-slate-100 text-slate-600 border border-slate-200': ticket.priority === 'low',
+                                    }">
+                                    <span class="w-1.5 h-1.5 rounded-full" 
+                                        :class="{
+                                            'bg-red-500': ticket.priority === 'critical',
+                                            'bg-orange-500': ticket.priority === 'high',
+                                            'bg-blue-500': ticket.priority === 'medium',
+                                            'bg-slate-400': ticket.priority === 'low',
+                                        }"></span>
+                                    {{ ticket.priority }}
+                                </span>
                             </td>
                             <td class="p-4">
-                                <span v-if="ticket.status === 'open'" class="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium uppercase tracking-wide">Open</span>
-                                <span v-else-if="ticket.status === 'answered'" class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs font-medium uppercase tracking-wide">Answered</span>
-                                <span v-else class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-medium uppercase tracking-wide">Closed</span>
+                                <span v-if="ticket.status === 'open'" class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded uppercase tracking-wide border border-amber-200">Open</span>
+                                <span v-else-if="ticket.status === 'answered'" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded uppercase tracking-wide border border-emerald-200">Answered</span>
+                                <span v-else class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded uppercase tracking-wide border border-slate-200">Closed</span>
                             </td>
-                            <td class="p-4 text-right space-x-2">
-                                <button @click="openReplyModal(ticket)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Reply</button>
+                            <td class="p-4 text-right">
+                                <button @click="openReplyModal(ticket)" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                                    Reply
+                                </button>
                             </td>
                         </tr>
                         <tr v-if="tickets.data.length === 0">
-                            <td colspan="5" class="p-6 text-center text-gray-500">No support tickets found.</td>
+                            <td colspan="5" class="p-8 text-center text-slate-500 font-medium">No support tickets found in the queue.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="p-6 border-t bg-gray-50 flex justify-between items-center" v-if="tickets.data.length > 0">
-                <div class="text-sm text-gray-600">
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center" v-if="tickets.data.length > 0">
+                <div class="text-xs font-medium text-slate-500">
                     Showing {{ tickets.from }} to {{ tickets.to }} of {{ tickets.total }} entries
                 </div>
                 <Pagination :links="tickets.links" />
             </div>
         </div>
 
-        <!-- Reply Modal (Simplified) -->
-        <div v-if="replyingTicket" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-                <div class="p-6 border-b">
-                    <h3 class="text-lg font-medium text-gray-900">Reply to Ticket: {{ replyingTicket.subject }}</h3>
+        <!-- Reply Modal -->
+        <div v-if="replyingTicket" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-800">Reply to Ticket</h3>
+                    <button @click="replyingTicket = null" class="text-slate-400 hover:text-slate-600">✕</button>
                 </div>
                 <div class="p-6">
-                    <div class="mb-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-700">
-                        {{ replyingTicket.body }}
+                    <div class="mb-5">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Original Message</p>
+                        <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 whitespace-pre-wrap font-medium">
+                            {{ replyingTicket.body }}
+                        </div>
                     </div>
                     
                     <form @submit.prevent="submitReply">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Your Reply</label>
-                            <textarea v-model="replyForm.reply" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></textarea>
+                        <div class="mb-5">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Your Reply</label>
+                            <textarea v-model="replyForm.reply" rows="5" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm" required placeholder="Type your response here..."></textarea>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select v-model="replyForm.status" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="answered">Answered</option>
-                                <option value="closed">Closed</option>
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Update Status</label>
+                            <select v-model="replyForm.status" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 text-sm font-medium">
+                                <option value="answered">Mark as Answered</option>
+                                <option value="closed">Close Ticket</option>
                             </select>
                         </div>
-                        <div class="flex justify-end space-x-3">
-                            <button type="button" @click="replyingTicket = null" class="px-4 py-2 bg-gray-200 text-gray-800 rounded shadow hover:bg-gray-300">Cancel</button>
-                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700">Send Reply</button>
+                        <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                            <button type="button" @click="replyingTicket = null" class="px-5 py-2.5 bg-white text-slate-700 border border-slate-300 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors">Cancel</button>
+                            <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm">Send Reply & Update</button>
                         </div>
                     </form>
                 </div>

@@ -21,6 +21,11 @@ class Branch extends Model
         return $this->belongsTo(Area::class);
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
     public function approvedBy()
     {
         return $this->belongsTo(User::class, 'approved_by');
