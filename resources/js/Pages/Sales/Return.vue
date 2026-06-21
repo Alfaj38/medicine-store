@@ -53,7 +53,11 @@ const submitReturn = () => {
     }));
 
     if (returnItems.length === 0) {
-        alert('Please select at least one item to return.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'No items selected',
+            text: 'Please select at least one item to return.'
+        });
         return;
     }
 

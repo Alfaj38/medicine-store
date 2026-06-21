@@ -59,7 +59,11 @@ watch(selectedMedicineId, async (medicineId) => {
 const addBatchToReturn = (batch) => {
     // Check if already added
     if (form.items.some(item => item.medicine_id === selectedMedicineId.value && item.batch_no === batch.batch_no)) {
-        alert('This batch is already added to the return list.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Already added',
+            text: 'This batch is already added to the return list.'
+        });
         return;
     }
 

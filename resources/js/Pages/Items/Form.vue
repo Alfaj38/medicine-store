@@ -49,6 +49,12 @@ const isMedicineType = computed(() => {
     return selectedType && selectedType.name === 'Medicine';
 });
 
+// Computed property to filter categories by the selected item type
+// We also include categories that have no item_type_id (null) so we don't hide existing data
+const filteredCategories = computed(() => {
+    return props.categories.filter(c => !c.item_type_id || c.item_type_id === form.item_type_id);
+});
+
 const submit = () => {
     if (isEdit) {
         form.put(route('items.update', props.item.id));
@@ -147,7 +153,7 @@ const submit = () => {
                             <label class="block text-sm font-medium text-slate-700">Category</label>
                             <select v-model="form.category_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
                                 <option value="">No Category</option>
-                                <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                                <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
                         <div>

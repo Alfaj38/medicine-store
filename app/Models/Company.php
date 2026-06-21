@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ItemType;
+use App\Models\ItemCategory;
 
 class Company extends Model
 {
@@ -63,4 +65,20 @@ class Company extends Model
     {
         return $this->registration_status === 'suspended';
     }
+    /**
+     * The item types this company supplies (many‑to‑many).
+     */
+    public function itemTypes()
+    {
+        return $this->belongsToMany(ItemType::class, 'company_item_type', 'pharmaceutical_industry_id', 'item_type_id');
+    }
+
+    /**
+     * The item categories this company supplies (many‑to‑many).
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(ItemCategory::class, 'company_category', 'pharmaceutical_industry_id', 'category_id');
+    }
 }
+

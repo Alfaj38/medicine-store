@@ -6,11 +6,13 @@ import MedicineIcon from '@/Components/MedicineIcon.vue';
 const props = defineProps({
     customers: Array,
     categories: Array,
+    itemTypes: Array,
     recentSales: Array,
 });
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const searchQuery       = ref('');
+const categorySearchQuery = ref('');
 const cart              = ref([]);
 const selectedCustomerId = ref('');
 const selectedCategory  = ref(null);
@@ -132,24 +134,50 @@ watch(searchQuery, (val) => {
 
 // ─── Cart Logic ───────────────────────────────────────────────────────────────
 const addToCart = (medicine) => {
-    if (!medicine.inventory || medicine.inventory.length === 0) return;
-    const batch = medicine.inventory[0];
-    const existing = cart.value.find(i => i.medicine_id === medicine.id && i.batch_no === batch.batch_no);
-    if (existing) {
-        if (existing.quantity < batch.quantity) existing.quantity++;
+    const isStockItem = medicine.inventory && medicine.inventory.length > 0;
+    const isService = !isStockItem; // Services, Assets, Non-Stock items have no batches
+
+    // Stock items must have inventory; services can always be added
+    if (!isService && !isStockItem) return;
+
+    if (isStockItem) {
+        const batch = medicine.inventory[0];
+        const existing = cart.value.find(i => i.medicine_id === medicine.id && i.batch_no === batch.batch_no);
+        if (existing) {
+            if (existing.quantity < batch.quantity) existing.quantity++;
+        } else {
+            cart.value.push({
+                medicine_id: medicine.id,
+                name: medicine.name,
+                icon: medicine.icon,
+                strength: medicine.strength,
+                type: medicine.type,
+                batch_no: batch.batch_no,
+                expiry_date: batch.expiry_date ? batch.expiry_date.substring(0, 7) : '',
+                available_qty: batch.quantity,
+                quantity: 1,
+                unit_price: parseFloat(batch.mrp || medicine.sell_price || 0),
+            });
+        }
     } else {
-        cart.value.push({
-            medicine_id: medicine.id,
-            name: medicine.name,
-            icon: medicine.icon,
-            strength: medicine.strength,
-            type: medicine.type,
-            batch_no: batch.batch_no,
-            expiry_date: batch.expiry_date ? batch.expiry_date.substring(0, 7) : '',
-            available_qty: batch.quantity,
-            quantity: 1,
-            unit_price: parseFloat(batch.mrp || medicine.sell_price || 0),
-        });
+        // Service / Non-Stock — no batch, no stock limit
+        const existing = cart.value.find(i => i.medicine_id === medicine.id && !i.batch_no);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            cart.value.push({
+                medicine_id: medicine.id,
+                name: medicine.name,
+                icon: medicine.icon,
+                strength: '',
+                type: 'Service',
+                batch_no: null,
+                expiry_date: '',
+                available_qty: 9999,
+                quantity: 1,
+                unit_price: parseFloat(medicine.sell_price || 0),
+            });
+        }
     }
     // Track recent scans
     if (!recentScans.value.find(r => r.id === medicine.id)) {
@@ -210,7 +238,11 @@ const completeSale = () => {
 };
 
 const handleHoldInvoice = () => {
-    window.alert('Hold invoice feature coming soon!');
+    Swal.fire({
+        icon: 'info',
+        title: 'Coming Soon',
+        text: 'Hold invoice feature coming soon!'
+    });
 };
 
 // ─── Keyboard Shortcuts ───────────────────────────────────────────────────────
@@ -259,18 +291,85 @@ const totalStock = (medicine) => {
 // ─── Category icon by name ────────────────────────────────────────────────────
 const categoryIcon = (name) => {
     const nameLower = (name || '').toLowerCase();
+    // Medicine
     if (nameLower.includes('pain')) return '🩹';
     if (nameLower.includes('antibiotic')) return '💊';
-    if (nameLower.includes('vitamin') || nameLower.includes('supp')) return '🪫'; // close enough to pill box
-    if (nameLower.includes('cough') || nameLower.includes('cold')) return '🧴';
-    if (nameLower.includes('digest')) return '🫄'; // stomach-ish
+    if (nameLower.includes('vitamin') || nameLower.includes('supp') || nameLower.includes('nutrition')) return '🫙';
+    if (nameLower.includes('cough') || nameLower.includes('cold')) return '🤧';
+    if (nameLower.includes('digest')) return '🫄';
     if (nameLower.includes('diabet')) return '💉';
     if (nameLower.includes('cardio')) return '❤️';
-    if (nameLower.includes('derma')) return '🧴'; // ointment
+    if (nameLower.includes('derma') || nameLower.includes('skin')) return '🧴';
     if (nameLower.includes('eye')) return '👁️';
+    // Consumer Good
     if (nameLower.includes('baby')) return '🍼';
-    return '💊';
+    if (nameLower.includes('oral')) return '🦷';
+    if (nameLower.includes('hygiene')) return '🧼';
+    if (nameLower.includes('toiletries')) return '🧻';
+    if (nameLower.includes('first aid')) return '🚑';
+    if (nameLower.includes('family planning')) return '💊';
+    // Surgical
+    if (nameLower.includes('bandage') || nameLower.includes('dressing')) return '🩹';
+    if (nameLower.includes('syringe') || nameLower.includes('needle')) return '💉';
+    if (nameLower.includes('glove')) return '🧤';
+    if (nameLower.includes('suture') || nameLower.includes('catheter')) return '🧵';
+    if (nameLower.includes('instrument')) return '🔪';
+    if (nameLower.includes('orthopedic')) return '🦴';
+    // Medical Device
+    if (nameLower.includes('blood pressure') || nameLower.includes('monitor')) return '🩺';
+    if (nameLower.includes('thermometer')) return '🌡️';
+    if (nameLower.includes('glucometer')) return '🩸';
+    if (nameLower.includes('oximeter') || nameLower.includes('nebulizer')) return '💨';
+    if (nameLower.includes('mobility') || nameLower.includes('weighing')) return '⚖️';
+    // Asset
+    if (nameLower.includes('computer') || nameLower.includes('it')) return '💻';
+    if (nameLower.includes('furniture')) return '🪑';
+    if (nameLower.includes('refrigerator')) return '🧊';
+    if (nameLower.includes('air condition')) return '❄️';
+    if (nameLower.includes('fixture') || nameLower.includes('equipment')) return '🏥';
+    // Service
+    if (nameLower.includes('delivery')) return '🚚';
+    if (nameLower.includes('checkup') || nameLower.includes('consultation')) return '🩺';
+    if (nameLower.includes('test') || nameLower.includes('sugar')) return '🩸';
+    if (nameLower.includes('injection') || nameLower.includes('administration')) return '💉';
+    return '📦';
 };
+
+// ─── Item type icon ────────────────────────────────────────────────────────────
+const typeGroupIcon = (typeName) => {
+    const map = {
+        'Medicine': '💊',
+        'Consumer Good': '🛒',
+        'Surgical': '🔬',
+        'Medical Device': '🩺',
+        'Asset': '🏥',
+        'Service': '🛎️',
+    };
+    return map[typeName] || '📦';
+};
+
+// ─── Categories grouped by item type ─────────────────────────────────────────
+const categoriesByType = computed(() => {
+    const groups = {};
+    props.categories?.forEach(cat => {
+        const typeName = cat.item_type?.name || 'Other';
+        if (!groups[typeName]) groups[typeName] = [];
+        groups[typeName].push(cat);
+    });
+    return groups;
+});
+
+// Filtered categories based on search input
+const filteredCategoriesByType = computed(() => {
+    if (!categorySearchQuery.value.trim()) return categoriesByType.value;
+    const query = categorySearchQuery.value.toLowerCase();
+    const filtered = {};
+    Object.entries(categoriesByType.value).forEach(([typeName, cats]) => {
+        const matched = cats.filter(c => c.name.toLowerCase().includes(query));
+        if (matched.length) filtered[typeName] = matched;
+    });
+    return filtered;
+});
 </script>
 
 <template>
@@ -309,18 +408,44 @@ const categoryIcon = (name) => {
             <aside class="w-56 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 overflow-y-auto pt-4 px-3">
                 <button
                     @click="selectedCategory = null; activeFilter = 'all'"
-                    :class="['flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all rounded-xl mb-4 w-full text-left shadow-sm', selectedCategory === null && activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50']">
-                    <span class="text-lg">💊</span> 
-                    <span>All Categories</span>
+                    :class="['flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all rounded-xl mb-3 w-full text-left shadow-sm', selectedCategory === null && activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50']">
+                    <span class="text-lg">🏪</span>
+                    <span>All Items</span>
                 </button>
 
-                <div class="space-y-1 pb-4">
-                    <button v-for="cat in categories" :key="cat.id"
-                        @click="selectedCategory = cat.id; activeFilter = 'all'"
-                        :class="['flex items-center gap-3 px-4 py-2.5 text-sm transition-all rounded-xl w-full text-left', selectedCategory === cat.id ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm' : 'text-slate-600 bg-transparent hover:bg-slate-50 hover:text-slate-900']">
-                        <span class="text-lg">{{ categoryIcon(cat.name) }}</span>
-                        <span class="truncate">{{ cat.name }}</span>
-                    </button>
+                <!-- Category Search -->
+                <div class="relative mb-2 px-2">
+                    <input
+                        v-model="categorySearchQuery"
+                        type="text"
+                        placeholder="Search categories..."
+                        class="w-full bg-slate-50 border border-slate-300 rounded-md pl-3 pr-8 py-1.5 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                    <!-- Clear icon -->
+                    <span v-if="categorySearchQuery" @click="categorySearchQuery = ''"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        >✕</span>
+                </div>
+
+                <!-- Grouped Categories -->
+                <div class="space-y-3 pb-4">
+                    <template v-for="(cats, typeName) in filteredCategoriesByType" :key="typeName">
+                        <!-- Type Group Header -->
+                        <div>
+                            <div class="flex items-center gap-1.5 px-2 mb-1">
+                                <span class="text-sm">{{ typeGroupIcon(typeName) }}</span>
+                                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ typeName }}</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <button v-for="cat in cats" :key="cat.id"
+                                    @click="selectedCategory = cat.id; activeFilter = 'all'"
+                                    :class="['flex items-center gap-2.5 px-3 py-2 text-sm transition-all rounded-lg w-full text-left', selectedCategory === cat.id ? 'bg-emerald-50 text-emerald-700 font-semibold shadow-sm' : 'text-slate-600 bg-transparent hover:bg-slate-50 hover:text-slate-900']">
+                                    <span class="text-base leading-none">{{ categoryIcon(cat.name) }}</span>
+                                    <span class="truncate">{{ cat.name }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </aside>
 

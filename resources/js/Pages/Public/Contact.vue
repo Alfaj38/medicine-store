@@ -11,8 +11,11 @@ const form = useForm({
 });
 
 const submit = () => {
-    // Mock submit for marketing page
-    alert('Thank you for contacting us! We will get back to you shortly.');
+    Swal.fire({
+        icon: 'success',
+        title: 'Message Sent!',
+        text: 'Thank you for contacting us! We will get back to you shortly.',
+    });
     form.reset();
 };
 </script>

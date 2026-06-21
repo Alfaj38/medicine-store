@@ -99,7 +99,13 @@ const submit = () => {
                                     v-model="currentCompanyInput" 
                                     @focus="showDropdown = true"
                                     @blur="showDropdown = false"
-                                    type="text" 
+                                    type="search"
+                                    autocomplete="new-password"
+                                    autocorrect="off"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                    name="search_company"
+                                    id="search_company"
                                     class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" 
                                     placeholder="Search and add company...">
                                 

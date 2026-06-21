@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Models\Medicine;
 use App\Models\MedicineCategory;
+use App\Models\ItemCategory;
+use App\Models\ItemType;
 use App\Models\Customer;
 use App\Models\Sale;
 use App\Models\SaleItem;
@@ -19,7 +21,13 @@ class PosController extends Controller
     public function index()
     {
         $customers = Customer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'current_balance']);
-        $categories = MedicineCategory::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']);
+        // Load ALL item categories grouped by their item type for the sidebar
+        $itemTypes = ItemType::orderBy('name')->get(['id', 'name']);
+        $categories = ItemCategory::where('is_active', true)
+            ->with('itemType')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'icon', 'item_type_id']);
+        $medicineCategories = MedicineCategory::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']);
         $scope = app('data_scope');
         $saleQuery = Sale::query();
         $saleQuery = $scope->apply($saleQuery, auth()->user(), Sale::class);
@@ -33,6 +41,7 @@ class PosController extends Controller
         return Inertia::render('Pos/Index', [
             'customers' => $customers,
             'categories' => $categories,
+            'itemTypes' => $itemTypes,
             'recentSales' => $recentSales,
         ]);
     }

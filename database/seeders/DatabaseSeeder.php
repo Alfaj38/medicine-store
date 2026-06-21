@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             CompanySeeder::class,
             PharmaceuticalIndustrySeeder::class,
+            FetchBangladeshPharmaSeeder::class,
+            DiaperCompaniesSeeder::class,
+            IndustryComprehensiveSeeder::class,
             ReturnReasonSeeder::class,
         ]);
     }
