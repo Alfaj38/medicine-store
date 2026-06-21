@@ -55,6 +55,11 @@ class PublicController extends Controller
         return Inertia::render('Public/Contact');
     }
 
+    public function partner()
+    {
+        return Inertia::render('Public/Partner');
+    }
+
     public function bookDemo()
     {
         return Inertia::render('Public/BookDemo');

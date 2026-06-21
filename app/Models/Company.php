@@ -80,5 +80,15 @@ class Company extends Model
     {
         return $this->belongsToMany(ItemCategory::class, 'company_category', 'pharmaceutical_industry_id', 'category_id');
     }
+
+    public function referralCode()
+    {
+        return $this->belongsTo(ReferralCode::class, 'referral_code_id');
+    }
+
+    public function referral()
+    {
+        return $this->hasOne(Referral::class, 'company_id');
+    }
 }
 

@@ -1,9 +1,11 @@
 <script setup>
 import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
-    plans: Array
+    plans: Array,
+    referral_code: String,
 });
 
 const currentStep = ref(1);
@@ -29,7 +31,37 @@ const form = useForm({
     // Step 4: Trial Plan
     plan_id: props.plans?.find(p => p.slug === 'professional')?.id || props.plans[0]?.id || '',
     billing_cycle: 'monthly',
+    referral_code: props.referral_code || '',
     referral_source: '',
+});
+
+const validatingCode = ref(false);
+const validCode = ref(!!props.referral_code);
+const invalidCodeMsg = ref('');
+
+let timeout = null;
+watch(() => form.referral_code, (val) => {
+    if (props.referral_code) return; // Locked from link
+    invalidCodeMsg.value = '';
+    validCode.value = false;
+    
+    if (!val) return;
+
+    clearTimeout(timeout);
+    timeout = setTimeout(async () => {
+        validatingCode.value = true;
+        try {
+            const res = await axios.get('/api/promo-code/validate', { params: { code: val } });
+            if (res.data.valid) {
+                validCode.value = true;
+            } else {
+                invalidCodeMsg.value = res.data.message || 'Invalid code';
+            }
+        } catch (e) {
+            invalidCodeMsg.value = 'Invalid code';
+        }
+        validatingCode.value = false;
+    }, 500);
 });
 
 const nextStep = () => {
@@ -288,12 +320,28 @@ const referralOptions = ['Google Search', 'Facebook / Instagram', 'LinkedIn', 'F
                             </label>
                         </div>
 
-                        <div class="mt-6 border-t border-slate-100 pt-6">
-                            <label class="block text-xs font-bold text-slate-700 mb-1.5 text-center">How did you hear about us? (Optional)</label>
-                            <select v-model="form.referral_source" class="w-full max-w-sm mx-auto block rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 bg-white">
-                                <option value="">Select source...</option>
-                                <option v-for="opt in referralOptions" :key="opt" :value="opt">{{ opt }}</option>
-                            </select>
+                        <div class="mt-6 border-t border-slate-100 pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Referral/Promo Code (Optional)</label>
+                                <div class="relative">
+                                    <input v-model="form.referral_code" type="text" placeholder="e.g. MAMUN2026" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 bg-white pr-10 uppercase" :readonly="!!props.referral_code" :class="{'bg-slate-50 text-slate-500': !!props.referral_code}">
+                                    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg v-if="validatingCode" class="animate-spin w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                        <svg v-else-if="validCode" class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        <svg v-else-if="invalidCodeMsg" class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </div>
+                                </div>
+                                <p v-if="props.referral_code" class="text-[10px] text-emerald-600 font-bold mt-1">✓ Referral code applied from link</p>
+                                <p v-else-if="invalidCodeMsg" class="text-[10px] text-red-500 font-bold mt-1">{{ invalidCodeMsg }}</p>
+                                <p v-else-if="validCode" class="text-[10px] text-emerald-600 font-bold mt-1">✓ Code applied successfully</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">How did you hear about us? (Optional)</label>
+                                <select v-model="form.referral_source" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 bg-white">
+                                    <option value="">Select source...</option>
+                                    <option v-for="opt in referralOptions" :key="opt" :value="opt">{{ opt }}</option>
+                                </select>
+                            </div>
                         </div>
                         
                         <p v-if="form.errors.plan_id" class="text-red-500 text-xs text-center mt-2">{{ form.errors.plan_id }}</p>

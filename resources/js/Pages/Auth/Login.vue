@@ -58,8 +58,9 @@ const submit = () => {
                     </button>
                 </div>
 
-                <div class="text-center text-xs text-slate-500 font-medium mb-8">
-                    Don't have an account? <a :href="route('register')" class="text-[#344b8b] font-bold hover:underline">Register here</a>
+                <div class="text-center text-xs text-slate-500 font-medium mb-8 flex flex-col gap-2">
+                    <div>Don't have an account? <a :href="route('register')" class="text-[#344b8b] font-bold hover:underline">Register here</a></div>
+                    <div>Are you a Partner? <a :href="route('reseller.login')" class="text-emerald-600 font-bold hover:underline">Partner Login</a></div>
                 </div>
 
                 <form @submit.prevent="submit" class="space-y-5">

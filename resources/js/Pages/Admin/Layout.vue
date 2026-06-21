@@ -98,6 +98,31 @@
                     </Link>
                 </div>
 
+                <!-- Affiliate Management -->
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-3 mb-1">Affiliate System</p>
+                    <Link :href="route('admin.affiliate.applications')"
+                        :class="route().current('admin.affiliate.applications') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <span class="text-base">📝</span> Applications
+                    </Link>
+                    <Link :href="route('admin.affiliate.resellers')"
+                        :class="route().current('admin.affiliate.resellers*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <span class="text-base">🤝</span> Resellers
+                    </Link>
+                    <Link :href="route('admin.affiliate.commissions')"
+                        :class="route().current('admin.affiliate.commissions') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <span class="text-base">💰</span> Commissions
+                    </Link>
+                    <Link :href="route('admin.affiliate.withdrawals')"
+                        :class="route().current('admin.affiliate.withdrawals') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <span class="text-base">💸</span> Withdrawals
+                    </Link>
+                </div>
+
                 <!-- User Management -->
                 <div>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-3 mb-1">User Management</p>

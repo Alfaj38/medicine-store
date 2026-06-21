@@ -21,4 +21,9 @@ class SubscriptionPayment extends Model
     {
         return $this->belongsTo(Subscription::class);
     }
+
+    public function commission()
+    {
+        return $this->hasOne(Commission::class, 'subscription_payment_id');
+    }
 }

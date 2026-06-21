@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'company' => \App\Http\Middleware\CompanyMiddleware::class,
             'scope' => \App\Http\Middleware\ScopeMiddleware::class,
             'page_permission' => \App\Http\Middleware\CheckPagePermission::class,
+            'reseller' => \App\Http\Middleware\ResellerMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

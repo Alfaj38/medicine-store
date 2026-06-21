@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Models\SubscriptionPlan;
 use App\Models\SubscriptionPlanPrice;
 use App\Models\Subscription;
+use App\Models\ReferralCode;
+use App\Models\Referral;
 
 class CompanyRegistrationController extends Controller
 {
@@ -23,7 +25,8 @@ class CompanyRegistrationController extends Controller
         }])->get();
 
         return Inertia::render('Auth/Register', [
-            'plans' => $plans
+            'plans' => $plans,
+            'referral_code' => session('referral_code')
         ]);
     }
 
@@ -48,6 +51,7 @@ class CompanyRegistrationController extends Controller
             // Step 4: Subscription
             'plan_id' => 'required|exists:subscription_plans,id',
             'billing_cycle' => 'required|in:monthly,yearly',
+            'referral_code' => 'nullable|string',
             'referral_source' => 'nullable|string',
         ]);
 
@@ -57,12 +61,24 @@ class CompanyRegistrationController extends Controller
                 ->where('billing_cycle', $validated['billing_cycle'])
                 ->firstOrFail();
 
+            $referralCode = null;
+            if (!empty($validated['referral_code'])) {
+                $referralCode = ReferralCode::where('code', $validated['referral_code'])
+                    ->where('status', 'active')
+                    ->first();
+                
+                if ($referralCode && $referralCode->expires_at && $referralCode->expires_at->isPast()) {
+                    $referralCode = null;
+                }
+            }
+
             // We are creating a trial account.
             $company = Company::create([
                 'name' => $validated['company_name'],
                 'slug' => \Illuminate\Support\Str::slug($validated['company_name']),
                 'phone' => $validated['company_phone'],
                 'address' => $validated['company_address'],
+                'referral_code_id' => $referralCode ? $referralCode->id : null,
                 // Store additional setup context temporarily in address or add columns later if needed
                 'registration_status' => 'active',
                 'is_active' => true,
@@ -101,6 +117,22 @@ class CompanyRegistrationController extends Controller
                 'expires_at' => now()->addDays(14), // 14-Day Free Trial
                 'status' => 'trial',
             ]);
+
+            if ($referralCode) {
+                Referral::create([
+                    'reseller_id' => $referralCode->reseller_id,
+                    'referral_code_id' => $referralCode->id,
+                    'company_id' => $company->id,
+                    // If it was auto-filled from session vs manual
+                    'source' => session()->has('referral_code') && session('referral_code') === $referralCode->code ? 'link' : 'code',
+                ]);
+                
+                $referralCode->increment('total_companies');
+                // Clear session if used
+                if (session()->has('referral_code')) {
+                    session()->forget('referral_code');
+                }
+            }
         });
 
         // Redirect to success page for trial

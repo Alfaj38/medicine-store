@@ -9,9 +9,14 @@ Route::get('/features', [\App\Http\Controllers\PublicController::class, 'feature
 Route::get('/pricing', [\App\Http\Controllers\PublicController::class, 'pricing'])->name('pricing');
 Route::get('/contact', [\App\Http\Controllers\PublicController::class, 'contact'])->name('contact');
 
+Route::get('/partner', [\App\Http\Controllers\PublicController::class, 'partner'])->name('partner');
+Route::post('/partner/apply', [\App\Http\Controllers\Auth\ResellerApplicationController::class, 'store'])->name('partner.apply');
+
 Route::get('/demo-center', [\App\Http\Controllers\PublicController::class, 'demoCenter'])->name('demo-center');
 Route::get('/book-demo', [\App\Http\Controllers\PublicController::class, 'bookDemo'])->name('book-demo');
 Route::post('/book-demo', [\App\Http\Controllers\DemoRequestController::class, 'store'])->name('demo.store');
+Route::get('/r/{code}', [\App\Http\Controllers\ReferralLinkController::class, 'redirect'])->name('referral.link');
+Route::get('/api/promo-code/validate', [\App\Http\Controllers\ReferralLinkController::class, 'validateCode'])->name('promo-code.validate');
 Route::get('/success', [\App\Http\Controllers\PublicController::class, 'success'])->name('success');
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -19,6 +24,26 @@ Route::middleware('guest')->group(function () {
     
     Route::get('register', [App\Http\Controllers\Auth\CompanyRegistrationController::class, 'create'])->name('register');
     Route::post('register', [App\Http\Controllers\Auth\CompanyRegistrationController::class, 'store'])->name('register.store');
+    
+    Route::get('/reseller/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'create'])->name('reseller.login');
+    Route::post('/reseller/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'store']);
+});
+
+Route::post('/reseller/logout', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'destroy'])->name('reseller.logout');
+Route::get('/reseller/pending', function () {
+    return Inertia::render('Reseller/Pending');
+})->name('reseller.pending');
+
+Route::middleware(['reseller'])->prefix('reseller')->name('reseller.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Reseller\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/codes', [\App\Http\Controllers\Reseller\ReferralCodeController::class, 'index'])->name('codes.index');
+    Route::post('/codes', [\App\Http\Controllers\Reseller\ReferralCodeController::class, 'store'])->name('codes.store');
+    Route::patch('/codes/{id}/toggle', [\App\Http\Controllers\Reseller\ReferralCodeController::class, 'toggle'])->name('codes.toggle');
+    Route::get('/companies', [\App\Http\Controllers\Reseller\ReferredCompanyController::class, 'index'])->name('companies');
+    Route::get('/commissions', [\App\Http\Controllers\Reseller\CommissionController::class, 'index'])->name('commissions');
+    Route::get('/wallet', [\App\Http\Controllers\Reseller\WalletController::class, 'index'])->name('wallet');
+    Route::get('/withdrawals', [\App\Http\Controllers\Reseller\WithdrawalController::class, 'index'])->name('withdrawals.index');
+    Route::post('/withdrawals', [\App\Http\Controllers\Reseller\WithdrawalController::class, 'store'])->name('withdrawals.store');
 });
 
 Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group(function () {
@@ -101,6 +126,20 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::get('settings/payment-gateway', [\App\Http\Controllers\Admin\SettingController::class, 'paymentGateway'])->name('settings.payment-gateway');
         Route::resource('banks', \App\Http\Controllers\Admin\BankController::class)->except(['create', 'show', 'edit']);
         Route::resource('bank-branches', \App\Http\Controllers\Admin\BankBranchController::class)->only(['store', 'update', 'destroy']);
+
+        // Affiliate Management
+        Route::prefix('affiliate')->name('affiliate.')->group(function () {
+            Route::get('/applications', [\App\Http\Controllers\Admin\AffiliateController::class, 'applications'])->name('applications');
+            Route::patch('/{id}/approve', [\App\Http\Controllers\Admin\AffiliateController::class, 'approve'])->name('approve');
+            Route::patch('/{id}/reject', [\App\Http\Controllers\Admin\AffiliateController::class, 'reject'])->name('reject');
+            Route::get('/resellers', [\App\Http\Controllers\Admin\AffiliateController::class, 'resellers'])->name('resellers');
+            Route::get('/resellers/{id}', [\App\Http\Controllers\Admin\AffiliateController::class, 'show'])->name('resellers.show');
+            Route::get('/commissions', [\App\Http\Controllers\Admin\CommissionController::class, 'index'])->name('commissions');
+            Route::get('/withdrawals', [\App\Http\Controllers\Admin\WithdrawalController::class, 'index'])->name('withdrawals');
+            Route::patch('/withdrawals/{id}/approve', [\App\Http\Controllers\Admin\WithdrawalController::class, 'approve'])->name('withdrawals.approve');
+            Route::patch('/withdrawals/{id}/reject', [\App\Http\Controllers\Admin\WithdrawalController::class, 'reject'])->name('withdrawals.reject');
+            Route::patch('/withdrawals/{id}/pay', [\App\Http\Controllers\Admin\WithdrawalController::class, 'pay'])->name('withdrawals.pay');
+        });
     });
 
     // Company Portal

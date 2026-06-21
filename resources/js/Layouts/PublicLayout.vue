@@ -26,7 +26,7 @@ const mobileMenuOpen = ref(false);
                     <div class="hidden md:flex items-center gap-8 lg:gap-12">
                         <Link :href="route('features')" :class="['text-[13px] font-bold transition-colors', $page.url === '/features' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Features</Link>
                         <Link :href="route('pricing')" :class="['text-[13px] font-bold transition-colors', $page.url === '/pricing' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Pricing</Link>
-                        <Link href="#" :class="['text-[13px] font-bold transition-colors', $page.url === '/about' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">About</Link>
+                        <Link :href="route('partner')" :class="['text-[13px] font-bold transition-colors', $page.url === '/partner' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Partner Program</Link>
                         <Link :href="route('contact')" :class="['text-[13px] font-bold transition-colors', $page.url === '/contact' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Contact</Link>
                     </div>
 
@@ -54,7 +54,7 @@ const mobileMenuOpen = ref(false);
             <div v-show="mobileMenuOpen" class="md:hidden bg-white border-b border-slate-100 px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full left-0 top-20">
                 <Link :href="route('features')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Features</Link>
                 <Link :href="route('pricing')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Pricing</Link>
-                <Link href="#" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">About</Link>
+                <Link :href="route('partner')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Partner Program</Link>
                 <Link :href="route('contact')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Contact</Link>
                 <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
                     <Link :href="route('login')" class="block text-center px-4 py-2 text-sm font-bold text-slate-700 hover:text-emerald-600">Sign In</Link>
@@ -103,6 +103,7 @@ const mobileMenuOpen = ref(false);
                         <ul class="space-y-3">
                             <li><a href="#" class="text-[11px] font-medium text-slate-500 hover:text-emerald-600 transition-colors">About Us</a></li>
                             <li><Link :href="route('contact')" class="text-[11px] font-medium text-slate-500 hover:text-emerald-600 transition-colors">Contact</Link></li>
+                            <li><Link :href="route('partner')" class="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 font-bold transition-colors">Partner Program</Link></li>
                             <li><a href="#" class="text-[11px] font-medium text-slate-500 hover:text-emerald-600 transition-colors">Careers</a></li>
                             <li><a href="#" class="text-[11px] font-medium text-slate-500 hover:text-emerald-600 transition-colors">Privacy Policy</a></li>
                         </ul>

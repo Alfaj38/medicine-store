@@ -31,9 +31,12 @@ class AuthenticatedSessionController extends Controller
             $user = Auth::user();
 
             if ($user->user_type !== $credentials['login_type']) {
+                $actualType = $user->user_type === 'management' ? 'Management' : 'Company';
+                $attemptedTab = $credentials['login_type'] === 'management' ? 'Management' : 'Company';
+                
                 Auth::logout();
                 return back()->withErrors([
-                    'email' => 'Access denied. You do not have permission to log in to this portal.',
+                    'email' => "Access denied. You have a {$actualType} account, but you tried to log in through the {$attemptedTab} portal. Please switch to the {$actualType} Login tab.",
                 ])->onlyInput('email');
             }
 
