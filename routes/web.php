@@ -207,3 +207,24 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
 });
 
 Route::get('/store/{company:slug}', [\App\Http\Controllers\StorefrontController::class, 'show'])->name('storefront.show');
+
+// Storefront Placeholder Routes (For Multi-Tenant Modules)
+Route::get('/store/{company:slug}/medicines', function ($slug) {
+    return Inertia::render('Storefront/Placeholder', ['title' => 'Medicine Catalog', 'companySlug' => $slug]);
+})->name('storefront.medicines');
+
+Route::get('/store/{company:slug}/search', function ($slug) {
+    return Inertia::render('Storefront/Placeholder', ['title' => 'Search Medicines', 'companySlug' => $slug]);
+})->name('storefront.search');
+
+Route::get('/store/{company:slug}/prescription', function ($slug) {
+    return Inertia::render('Storefront/Placeholder', ['title' => 'Upload Prescription', 'companySlug' => $slug]);
+})->name('storefront.prescription');
+
+Route::get('/store/{company:slug}/blog', function ($slug) {
+    return Inertia::render('Storefront/Placeholder', ['title' => 'Health Blog & Wellness', 'companySlug' => $slug]);
+})->name('storefront.blog');
+
+Route::get('/store/{company:slug}/contact', function ($slug) {
+    return Inertia::render('Storefront/Placeholder', ['title' => 'Contact Us', 'companySlug' => $slug]);
+})->name('storefront.contact');
