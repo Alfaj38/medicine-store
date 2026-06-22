@@ -27,7 +27,7 @@ const mobileMenuOpen = ref(false);
                         <Link :href="route('features')" :class="['text-[13px] font-bold transition-colors', $page.url === '/features' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Features</Link>
                         <Link :href="route('pricing')" :class="['text-[13px] font-bold transition-colors', $page.url === '/pricing' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Pricing</Link>
                         <Link :href="route('partner')" :class="['text-[13px] font-bold transition-colors', $page.url === '/partner' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Partner Program</Link>
-                        <Link :href="route('contact')" :class="['text-[13px] font-bold transition-colors', $page.url === '/contact' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Contact</Link>
+                        <Link :href="route('track.order.page')" :class="['text-[13px] font-bold transition-colors', $page.url === '/track-order' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Track Order</Link>
                     </div>
 
                     <!-- Actions -->
@@ -55,7 +55,7 @@ const mobileMenuOpen = ref(false);
                 <Link :href="route('features')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Features</Link>
                 <Link :href="route('pricing')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Pricing</Link>
                 <Link :href="route('partner')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Partner Program</Link>
-                <Link :href="route('contact')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Contact</Link>
+                <Link :href="route('track.order.page')" class="block px-3 py-2 rounded-md text-sm font-bold text-slate-700 hover:text-emerald-600 hover:bg-slate-50">Track Order</Link>
                 <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
                     <Link :href="route('login')" class="block text-center px-4 py-2 text-sm font-bold text-slate-700 hover:text-emerald-600">Sign In</Link>
                     <Link :href="route('register')" class="block text-center bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-lg text-sm font-bold">Start Free Trial</Link>

@@ -14,6 +14,8 @@ Route::post('/partner/apply', [\App\Http\Controllers\Auth\ResellerApplicationCon
 
 Route::get('/demo-center', [\App\Http\Controllers\PublicController::class, 'demoCenter'])->name('demo-center');
 Route::get('/book-demo', [\App\Http\Controllers\PublicController::class, 'bookDemo'])->name('book-demo');
+Route::get('/track-order', [\App\Http\Controllers\PublicController::class, 'trackOrderPage'])->name('track.order.page');
+Route::post('/track-order', [\App\Http\Controllers\PublicController::class, 'trackOrder'])->name('track.order');
 Route::post('/book-demo', [\App\Http\Controllers\DemoRequestController::class, 'store'])->name('demo.store');
 Route::get('/r/{code}', [\App\Http\Controllers\ReferralLinkController::class, 'redirect'])->name('referral.link');
 Route::get('/api/promo-code/validate', [\App\Http\Controllers\ReferralLinkController::class, 'validateCode'])->name('promo-code.validate');
@@ -171,6 +173,9 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::get('/sale-returns/create', [\App\Http\Controllers\SaleReturnController::class, 'create'])->name('sale-returns.create');
         Route::post('/sale-returns', [\App\Http\Controllers\SaleReturnController::class, 'store'])->name('sale-returns.store');
         
+        // Online Orders
+        Route::resource('online-orders', \App\Http\Controllers\OnlineOrderController::class)->only(['index', 'show', 'update']);
+
         // Customers
         Route::resource('customers', \App\Http\Controllers\CustomerController::class);
         Route::post('customers/{customer}/receive-payment', [\App\Http\Controllers\CustomerController::class, 'receivePayment'])->name('customers.receivePayment');
@@ -209,13 +214,11 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
 Route::get('/store/{company:slug}', [\App\Http\Controllers\StorefrontController::class, 'show'])->name('storefront.show');
 
 // Storefront Placeholder Routes (For Multi-Tenant Modules)
-Route::get('/store/{company:slug}/medicines', function ($slug) {
-    return Inertia::render('Storefront/Placeholder', ['title' => 'Medicine Catalog', 'companySlug' => $slug]);
-})->name('storefront.medicines');
-
-Route::get('/store/{company:slug}/search', function ($slug) {
-    return Inertia::render('Storefront/Placeholder', ['title' => 'Search Medicines', 'companySlug' => $slug]);
-})->name('storefront.search');
+Route::get('/store/{company:slug}/medicines', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.medicines');
+Route::get('/store/{company:slug}/search', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.search');
+Route::get('/store/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'checkout'])->name('storefront.checkout');
+Route::post('/store/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'placeOrder'])->name('storefront.placeOrder');
+Route::get('/store/{company:slug}/order/{trackingNumber}', [\App\Http\Controllers\StorefrontController::class, 'orderSuccess'])->name('storefront.orderSuccess');
 
 Route::get('/store/{company:slug}/prescription', function ($slug) {
     return Inertia::render('Storefront/Placeholder', ['title' => 'Upload Prescription', 'companySlug' => $slug]);
