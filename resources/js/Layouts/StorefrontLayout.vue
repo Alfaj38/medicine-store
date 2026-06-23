@@ -29,48 +29,63 @@ const checkout = () => {
 <template>
     <div class="min-h-screen bg-[#f8fafc] font-sans text-[#1a202c] pb-20">
         <!-- Top Navbar -->
-        <nav class="bg-white py-3 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 border-b border-slate-100 shadow-sm">
-            <div class="max-w-[1400px] mx-auto w-full flex items-center justify-between">
-                <!-- Logo -->
-                <Link :href="route('storefront.show', company.slug)" class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-sm">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 10h-5V5h-4v5H5v4h5v5h4v-5h5v-4z"></path></svg>
-                    </div>
-                    <div class="flex flex-col">
-                        <div class="font-extrabold text-[17px] leading-tight text-emerald-600 tracking-tight">{{ company.name || 'Pharma Point' }}</div>
-                        <div class="text-[10px] text-slate-400 font-medium">Care you can trust</div>
-                    </div>
-                </Link>
-
-                <!-- Search Bar -->
-                <div class="hidden md:flex flex-1 max-w-xl mx-8">
-                    <div class="relative w-full">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+        <nav class="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-50">
+            <!-- Main Navbar Row -->
+            <div class="py-3 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                <div class="max-w-[1400px] mx-auto w-full flex items-center justify-between">
+                    <!-- Logo -->
+                    <Link :href="route('storefront.show', company.slug)" class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-sm">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 10h-5V5h-4v5H5v4h5v5h4v-5h5v-4z"></path></svg>
                         </div>
-                        <input type="search" name="global_store_search" autocomplete="off" spellcheck="false" v-model="searchQuery" @input="performSearch" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all" placeholder="Search medicines, health products...">
+                        <div class="flex flex-col">
+                            <div class="font-extrabold text-[17px] leading-tight text-emerald-600 tracking-tight">{{ company.name || 'Pharma Point' }}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">Care you can trust</div>
+                        </div>
+                    </Link>
+
+                    <!-- Desktop Search Bar -->
+                    <div class="hidden md:flex flex-1 max-w-xl mx-8">
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="search" name="global_store_search" autocomplete="off" spellcheck="false" v-model="searchQuery" @input="performSearch" class="block w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all" placeholder="Search medicines, health products...">
+                        </div>
+                    </div>
+
+                    <!-- Right Actions -->
+                    <div class="flex items-center gap-3 md:gap-6">
+                        <Link :href="route('storefront.prescription', company.slug)" class="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Upload Prescription
+                        </Link>
+                        
+                        <div class="hidden lg:flex items-center gap-1.5 text-sm font-medium text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>{{ company.address || 'Mohammadpur, Dhaka' }}</span>
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        
+                        <Link :href="route('storefront.contact', company.slug)" class="bg-[#0fbc81] hover:bg-emerald-600 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold shadow-md shadow-emerald-200 transition-all flex items-center gap-2">
+                            <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            Contact Us
+                        </Link>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Actions -->
-                <div class="flex items-center gap-6">
-                    <Link :href="route('storefront.prescription', company.slug)" class="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
-                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        Upload Prescription
-                    </Link>
-                    
-                    <div class="hidden lg:flex items-center gap-1.5 text-sm font-medium text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors">
-                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>{{ company.address || 'Mohammadpur, Dhaka' }}</span>
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden px-4 pb-3">
+                <div class="relative w-full">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
-                    
-                    <Link :href="route('storefront.contact', company.slug)" class="bg-[#0fbc81] hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-200 transition-all flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                        Contact Us
-                    </Link>
+                    <input type="search" name="mobile_store_search" autocomplete="off" spellcheck="false" v-model="searchQuery" @input="performSearch" class="block w-full pl-11 pr-4 py-2 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm transition-all" placeholder="Search medicines, health products...">
                 </div>
             </div>
         </nav>

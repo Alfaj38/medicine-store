@@ -64,8 +64,8 @@ const setFilter = (filter) => {
             </div>
                 
                 <!-- Filters -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-2 items-center justify-between">
-                    <div class="flex gap-2">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row flex-wrap gap-4 items-start sm:items-center justify-between mb-6">
+                    <div class="flex flex-wrap gap-2">
                         <button @click="setFilter('today')" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-colors', dateFilter === 'today' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100']">Today</button>
                         <button @click="setFilter('yesterday')" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-colors', dateFilter === 'yesterday' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100']">Yesterday</button>
                         <button @click="setFilter('this_week')" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-colors', dateFilter === 'this_week' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100']">This Week</button>
@@ -73,10 +73,10 @@ const setFilter = (filter) => {
                         <button @click="setFilter('custom')" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-colors', dateFilter === 'custom' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-600 hover:bg-slate-100']">Custom</button>
                     </div>
                     
-                    <div v-if="dateFilter === 'custom'" class="flex items-center gap-2">
-                        <input v-model="startDate" @change="handleDateChange" type="date" class="border-slate-300 rounded-lg text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <div v-if="dateFilter === 'custom'" class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <input v-model="startDate" @change="handleDateChange" type="date" class="flex-1 sm:flex-none border-slate-300 rounded-lg text-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <span class="text-slate-400">to</span>
-                        <input v-model="endDate" @change="handleDateChange" type="date" class="border-slate-300 rounded-lg text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <input v-model="endDate" @change="handleDateChange" type="date" class="flex-1 sm:flex-none border-slate-300 rounded-lg text-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                 </div>
 

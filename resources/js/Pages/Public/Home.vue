@@ -109,6 +109,11 @@ const handleSearch = () => {
 
 const clearSearch = () => {
     searchQuery.value = '';
+    selectedDivision.value = '';
+    selectedDistrict.value = '';
+    selectedUpazila.value = '';
+    locationQuery.value = '';
+    topRated.value = false;
     handleSearch();
 };
 
@@ -135,264 +140,232 @@ const addToCart = (item) => {
 };
 
 const subtotal = computed(() => cart.value.reduce((acc, c) => acc + (c.item.price * c.qty), 0));
+
+const carouselRef = ref(null);
+
+const scrollLeft = () => {
+    if (carouselRef.value) {
+        carouselRef.value.scrollBy({ left: -324, behavior: 'smooth' });
+    }
+};
+
+const scrollRight = () => {
+    if (carouselRef.value) {
+        carouselRef.value.scrollBy({ left: 324, behavior: 'smooth' });
+    }
+};
 </script>
 
 <template>
     <Head title="Pharmacy POS & ERP Software" />
     <PublicLayout>
         
-        <!-- Hero Section -->
-        <div class="relative bg-slate-50/50 pt-20 pb-24 overflow-hidden">
-            <!-- Background Decoration -->
-            <div class="absolute top-0 right-0 -mr-48 -mt-48 w-[800px] h-[800px] bg-emerald-50 rounded-full blur-3xl opacity-60"></div>
-            <div class="absolute bottom-0 left-0 -ml-48 -mb-48 w-[600px] h-[600px] bg-teal-50 rounded-full blur-3xl opacity-60"></div>
-
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="lg:grid lg:grid-cols-12 lg:gap-12 items-center">
-                    
-                    <!-- Left Content -->
-                    <div class="lg:col-span-5 mb-16 lg:mb-0">
-                        <div class="inline-flex items-center px-3 py-1.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-bold tracking-wide uppercase mb-6">
-                            All-in-One Pharmacy Management System
-                        </div>
-                        <h1 class="text-3xl sm:text-4xl lg:text-[46px] font-extrabold text-slate-900 leading-[1.2] mb-6 tracking-tight">
-                            The Complete Cloud<br/>
-                            POS & ERP for<br/>
-                            <span class="text-emerald-500">Modern Pharmacies</span>
-                        </h1>
-                        <p class="text-sm text-slate-600 mb-8 max-w-lg leading-relaxed font-medium">
-                            Manage sales, inventory, purchases, and multi-branches effortlessly. Increase efficiency, reduce losses, and grow your pharmacy business.
-                        </p>
-                        
-                        <div class="flex flex-col sm:flex-row items-center gap-4 mb-8">
-                            <Link :href="route('register')" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold px-8 py-3.5 rounded-lg shadow-lg shadow-emerald-500/20 transition-all text-center">
-                                Start Free Trial
-                            </Link>
-                            <Link :href="route('book-demo')" class="w-full sm:w-auto bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-bold px-8 py-3.5 rounded-lg transition-all flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6V4z"/></svg>
-                                Book a Demo
-                            </Link>
-                        </div>
-                        
-                        <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] font-bold text-slate-500">
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center"><svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></div>
-                                <span>No Credit Card<br/>Required</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center"><svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                                <span>Setup in<br/>5 Minutes</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center"><svg class="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                                <span>Trusted by<br/>500+ Pharmacies</span>
-                            </div>
-                        </div>
+        <!-- Page Top Header (Desktop/Tablet) -->
+        <div class="hidden lg:flex items-center justify-between px-8 py-5 bg-white border-b border-slate-100">
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input v-model="searchQuery" @keyup.enter="handleSearch" type="text" placeholder="Search medicine or category..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder-slate-400 font-medium" />
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-6 ml-8">
+                <!-- Cart -->
+                <Link :href="route('track.order.page')" class="relative text-slate-600 hover:text-emerald-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span class="absolute -top-2 -right-2 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white text-[9px] font-bold text-white flex items-center justify-center">0</span>
+                </Link>
+                <!-- Bell -->
+                <button class="relative text-slate-600 hover:text-emerald-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                </button>
+                <!-- User Profile -->
+                <div class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer group">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=10b981&color=fff" alt="User" class="w-9 h-9 rounded-full ring-2 ring-transparent group-hover:ring-emerald-200 transition-all" />
+                    <div class="hidden xl:block">
+                        <div class="text-sm font-bold text-slate-700">John Doe</div>
                     </div>
-
-                    <!-- Right Graphic -->
-                    <div class="lg:col-span-7 relative">
-                        <div class="relative w-full aspect-[4/3] transform rotate-[4deg] hover:rotate-0 transition-transform duration-700 ease-out">
-                            <!-- Floating Stats -->
-                            <div class="absolute -top-6 left-12 bg-white rounded-xl shadow-xl shadow-slate-200/50 p-3 flex items-center gap-3 z-20 border border-slate-100 animate-bounce-slow">
-                                <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">💰</div>
-                                <div>
-                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Today's Sales</div>
-                                    <div class="text-sm font-extrabold text-slate-800">$4,285.00 <span class="text-[9px] text-emerald-500 font-bold">+15.3%</span></div>
-                                </div>
-                            </div>
-                            <div class="absolute top-10 right-4 bg-white rounded-xl shadow-xl shadow-slate-200/50 p-3 flex items-center gap-3 z-20 border border-slate-100">
-                                <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">⚠️</div>
-                                <div>
-                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Low Stock Items</div>
-                                    <div class="text-sm font-extrabold text-orange-500">24 <span class="text-[9px] text-slate-400 font-bold ml-1 cursor-pointer hover:underline">View All</span></div>
-                                </div>
-                            </div>
-                            <div class="absolute top-32 -right-6 bg-white rounded-xl shadow-xl shadow-slate-200/50 p-3 flex items-center gap-3 z-20 border border-slate-100">
-                                <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500">🛑</div>
-                                <div>
-                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Expiry Alert</div>
-                                    <div class="text-sm font-extrabold text-red-500">18 <span class="text-[9px] text-slate-400 font-bold ml-1 cursor-pointer hover:underline">View All</span></div>
-                                </div>
-                            </div>
-
-                            <!-- Main App Mockup -->
-                            <div class="absolute inset-0 bg-white rounded-2xl shadow-2xl shadow-slate-300/60 border border-slate-200 overflow-hidden flex flex-col z-10">
-                                <!-- Mockup Header -->
-                                <div class="h-10 border-b border-slate-100 flex items-center px-4 justify-between bg-slate-50">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-5 h-5 bg-emerald-500 rounded text-white flex items-center justify-center text-[10px] font-bold">+</div>
-                                        <span class="text-xs font-bold text-slate-700">SaaSMedi</span>
-                                    </div>
-                                    <div class="w-64 h-6 bg-white border border-slate-200 rounded text-[9px] text-slate-400 flex items-center px-2 shadow-inner">
-                                        🔍 Search barcode or medicine...
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <div class="w-6 h-6 rounded-full bg-slate-200"></div>
-                                        <div class="w-6 h-6 rounded-full bg-emerald-100"></div>
-                                    </div>
-                                </div>
-                                <!-- Mockup Body -->
-                                <div class="flex flex-1 overflow-hidden">
-                                    <!-- Sidebar -->
-                                    <div class="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-4 gap-4">
-                                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">🏠</div>
-                                        <div class="w-8 h-8 rounded-lg text-slate-500 flex items-center justify-center text-xs">📦</div>
-                                        <div class="w-8 h-8 rounded-lg text-slate-500 flex items-center justify-center text-xs">👥</div>
-                                        <div class="w-8 h-8 rounded-lg text-slate-500 flex items-center justify-center text-xs">📈</div>
-                                    </div>
-                                    <!-- Content Area -->
-                                    <div class="flex-1 p-4 bg-slate-50 flex gap-4">
-                                        <!-- Items List -->
-                                        <div class="flex-1 bg-white rounded-lg border border-slate-100 p-3 flex flex-col gap-2">
-                                            <div class="flex justify-between items-center pb-2 border-b border-slate-50">
-                                                <span class="text-[10px] font-bold text-slate-600">Medicine (Click to Add)</span>
-                                                <span class="text-[10px] font-bold text-slate-600">Price</span>
-                                            </div>
-                                            <div v-for="item in items" :key="item.id" @click="addToCart(item)" class="flex justify-between items-center py-1.5 px-2 rounded hover:bg-slate-50 cursor-pointer transition-colors group">
-                                                <div>
-                                                    <div class="text-[10px] font-bold text-slate-800 group-hover:text-emerald-600 transition-colors">{{ item.name }}</div>
-                                                    <div class="text-[8px] text-slate-400">{{ item.desc }}</div>
-                                                </div>
-                                                <div class="text-[10px] font-bold text-emerald-600">${{ item.price.toFixed(2) }}</div>
-                                            </div>
-                                        </div>
-                                        <!-- Current Sale -->
-                                        <div class="w-48 bg-white rounded-lg border border-slate-100 p-3 flex flex-col">
-                                            <div class="text-[11px] font-bold text-slate-800 border-b border-slate-100 pb-2 mb-2 flex justify-between">
-                                                <span>Current Sale</span>
-                                                <span class="text-slate-400 cursor-pointer hover:text-red-500" @click="cart = []">Clear</span>
-                                            </div>
-                                            <div class="flex-1 flex flex-col gap-2 overflow-y-auto min-h-[100px]">
-                                                <div v-if="cart.length === 0" class="text-[9px] text-slate-400 text-center py-4">Cart is empty</div>
-                                                <div v-for="(c, idx) in cart" :key="idx" class="flex justify-between items-center animate-pulse-once">
-                                                    <div class="flex items-center gap-1.5">
-                                                        <div :class="`w-5 h-5 rounded bg-${c.item.color}-100 text-${c.item.color}-600 flex items-center justify-center text-[8px]`">💊</div>
-                                                        <div>
-                                                            <div class="text-[9px] font-bold text-slate-700">{{ c.item.name }}</div>
-                                                            <div class="text-[7px] text-slate-400">{{ c.qty }} x ${{ c.item.price.toFixed(2) }}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="text-[9px] font-bold text-slate-700">${{ (c.item.price * c.qty).toFixed(2) }}</div>
-                                                </div>
-                                            </div>
-                                            <div class="pt-2 border-t border-slate-100 mt-2">
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <span class="text-[10px] text-slate-500 font-medium">Subtotal</span>
-                                                    <span class="text-[10px] font-bold text-slate-700">${{ subtotal.toFixed(2) }}</span>
-                                                </div>
-                                                <div class="flex justify-between items-center mb-3">
-                                                    <span class="text-[10px] text-slate-500 font-medium">Tax</span>
-                                                    <span class="text-[10px] font-bold text-slate-700">$0.00</span>
-                                                </div>
-                                                <div class="flex justify-between items-end mb-3">
-                                                    <span class="text-xs font-bold text-slate-800">Total</span>
-                                                    <span class="text-lg font-black text-slate-900">${{ subtotal.toFixed(2) }}</span>
-                                                </div>
-                                                <button class="w-full bg-emerald-500 hover:bg-emerald-600 transition-colors text-white text-[10px] font-bold py-2 rounded-md shadow-sm">Pay (F9)</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
             </div>
         </div>
 
-        <!-- Featured Pharmacies Section (Improved) -->
-        <div class="pt-20 pb-16 bg-[#f8fdfb]">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <!-- Header Section -->
-                <div class="flex flex-col md:flex-row justify-between items-center mb-12">
-                    <div class="max-w-2xl">
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-sm font-bold border border-emerald-100 mb-6">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-5A1.5 1.5 0 0112.5 10h1a1.5 1.5 0 011.5 1.5v5H11z"/></svg>
-                            Trusted by Thousands
-                        </div>
-                        <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Our Network of Pharmacies</h2>
-                        <p class="text-base md:text-lg text-slate-600 font-medium">Discover and order medicines & health products from trusted pharmacies near you.</p>
-                    </div>
-                    <div class="hidden md:block">
-                        <img src="/images/medicine_sample.png" alt="SaaSMedi Pharmacy" class="h-32 object-contain drop-shadow-xl" />
-                    </div>
-                </div>
+        <!-- Mobile Search Bar (Below Header) -->
+        <div class="lg:hidden px-4 py-3 bg-white border-b border-slate-100 sticky top-16 z-40">
+            <div class="relative">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input v-model="searchQuery" @keyup.enter="handleSearch" type="text" placeholder="Search medicine or category..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+            </div>
+        </div>
 
-                <!-- Search Bar -->
-                <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-2.5 mb-12 flex flex-col md:flex-row items-center gap-3 relative z-20">
-                    <div class="flex-1 flex items-center px-4 w-full md:border-r border-slate-100">
-                        <svg class="w-5 h-5 text-emerald-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input v-model="searchQuery" @keyup.enter="handleSearch" type="text" placeholder="Search pharmacy name, area or location..." class="w-full bg-transparent border-0 focus:ring-0 text-sm text-slate-700 placeholder-slate-400 py-2.5 outline-none font-medium" />
-                        
-                        <button v-if="searchQuery.length > 0" @click="clearSearch" class="text-slate-400 hover:text-slate-600 p-1 mr-1 rounded-full transition-colors flex-shrink-0" title="Clear search">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-
-                        <button @click="handleSearch" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm ml-2 whitespace-nowrap">
-                            Search
-                        </button>
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto">
+            
+            <!-- Hero Section -->
+            <div class="bg-white rounded-3xl p-6 lg:p-12 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] mb-8 flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden">
+                <!-- Content -->
+                <div class="lg:w-1/2 relative z-10 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-6 border border-emerald-100">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        Trusted by 500+ Pharmacies
                     </div>
                     
-                    <div class="flex flex-wrap items-center gap-3 px-2 w-full md:w-auto py-1">
-                        <div class="relative">
-                            <button @click="showLocationDropdown = !showLocationDropdown" :class="[showLocationDropdown || locationQuery ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-colors whitespace-nowrap">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                {{ locationQuery ? (locationQuery.length > 15 ? locationQuery.substring(0, 15) + '...' : locationQuery) : 'All Locations' }}
-                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                            </button>
-                            
-                            <!-- Location Dropdown Panel -->
-                            <div v-if="showLocationDropdown" class="absolute left-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 flex flex-col gap-3">
-                                <div class="flex justify-between items-center mb-1">
-                                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Select Location</h4>
-                                    <button @click="selectedDivision = ''; selectedDistrict = ''; selectedUpazila = ''; showLocationDropdown = false; handleSearch();" class="text-[10px] text-red-500 hover:text-red-700 font-bold">Clear</button>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Division</label>
-                                    <select v-model="selectedDivision" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-                                        <option value="">Any Division</option>
-                                        <option v-for="div in divisions" :key="div.id" :value="div.id">{{ div.name }}</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1" v-if="selectedDivision">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">District</label>
-                                    <select v-model="selectedDistrict" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-                                        <option value="">Any District</option>
-                                        <option v-for="dist in districts" :key="dist.id" :value="dist.id">{{ dist.name }}</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="flex flex-col gap-1" v-if="selectedDistrict">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Upazila / Area</label>
-                                    <select v-model="selectedUpazila" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-                                        <option value="">Any Upazila</option>
-                                        <option v-for="upa in upazilas" :key="upa.id" :value="upa.id">{{ upa.name }}</option>
-                                    </select>
-                                </div>
-                                
-                                <button @click="showLocationDropdown = false; handleSearch();" class="mt-2 w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">
-                                    Apply Location
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <button @click="topRated = !topRated; handleSearch()" :class="[topRated ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-colors whitespace-nowrap">
-                            <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            Top Rated
+                    <h1 class="text-4xl sm:text-5xl lg:text-[54px] font-black text-slate-900 leading-[1.15] mb-6 tracking-tight">
+                        Your Trusted <span class="text-emerald-500">Online<br>Medicine</span> Partner
+                    </h1>
+                    
+                    <p class="text-[15px] text-slate-500 mb-8 max-w-md mx-auto lg:mx-0 leading-relaxed font-medium">
+                        Order medicines & healthcare products online from verified pharmacies near you.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                        <Link :href="route('register')" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 text-center">
+                            Start Free Trial
+                        </Link>
+                        <Link :href="route('features')" class="w-full sm:w-auto bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-bold px-8 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Explore Features
+                        </Link>
+                    </div>
+                </div>
+                
+                <!-- Illustration -->
+                <div class="lg:w-1/2 flex justify-center relative mt-8 lg:mt-0">
+                    <div class="absolute inset-0 bg-emerald-50 rounded-full blur-3xl opacity-50 transform scale-150"></div>
+                    <img src="/images/medicine_sample.png" alt="App Preview" class="w-full max-w-[320px] lg:max-w-[400px] h-auto object-contain relative z-10 drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+                </div>
+            </div>
+
+            <!-- Features Row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                <div class="bg-[#f0fdf4] border border-emerald-100 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <span class="text-xs sm:text-sm font-bold text-slate-800 leading-tight">100% Genuine<br>Medicines</span>
+                </div>
+                
+                <div class="bg-[#fff7ed] border border-orange-100 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <span class="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Fast Home<br>Delivery</span>
+                </div>
+
+                <div class="bg-[#f0f9ff] border border-sky-100 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <span class="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Secure<br>Payments</span>
+                </div>
+
+                <div class="bg-[#f5f3ff] border border-violet-100 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </div>
+                    <span class="text-xs sm:text-sm font-bold text-slate-800 leading-tight">24/7 Customer<br>Support</span>
+                </div>
+            </div>
+
+            <!-- Popular Categories -->
+            <div class="mb-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900">Popular Categories</h3>
+                    <button class="text-xs font-bold text-emerald-600 hover:text-emerald-700">View All</button>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-xl">💊</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Pain Relief</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-xl">🌡️</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Antibiotics</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-xl">🍯</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Vitamins</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center text-xl">👶</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Baby Care</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-xl">🧴</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Personal Care</span>
+                    </div>
+                    <div class="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:-translate-y-1 transition-transform cursor-pointer shadow-sm hover:shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-xl">🩺</div>
+                        <span class="text-[11px] font-bold text-slate-700 text-center">Health Devices</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pharmacies Title (Now using View All approach) -->
+            <div id="pharmacies" class="flex justify-between items-center mb-6">
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900">Top Rated Pharmacies</h3>
+                <button class="text-xs font-bold text-emerald-600 hover:text-emerald-700">View All</button>
+            </div>
+
+
+                <!-- Filters Bar -->
+                <div class="mb-10 flex flex-wrap items-center gap-3 relative z-20">
+                    <div class="relative">
+                        <button @click="showLocationDropdown = !showLocationDropdown" :class="[showLocationDropdown || locationQuery ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-colors whitespace-nowrap shadow-sm">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            {{ locationQuery ? (locationQuery.length > 15 ? locationQuery.substring(0, 15) + '...' : locationQuery) : 'All Locations' }}
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         
-                        <div class="relative">
-                            <button @click="showMoreFilters = !showMoreFilters" :class="[showMoreFilters ? 'bg-slate-100 border-slate-300' : 'bg-white hover:bg-slate-50 border-slate-200']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold text-slate-700 transition-colors whitespace-nowrap">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                                More Filters
-                            </button>
-                            <div v-if="showMoreFilters" class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 p-4 z-50">
-                                <p class="text-xs text-slate-500 text-center font-medium">Advanced filters coming soon!</p>
+                        <!-- Location Dropdown Panel -->
+                        <div v-if="showLocationDropdown" class="absolute left-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 flex flex-col gap-3">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Select Location</h4>
+                                <button @click="selectedDivision = ''; selectedDistrict = ''; selectedUpazila = ''; showLocationDropdown = false; handleSearch();" class="text-[10px] text-red-500 hover:text-red-700 font-bold">Clear</button>
                             </div>
+                            
+                            <div class="flex flex-col gap-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Division</label>
+                                <select v-model="selectedDivision" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                                    <option value="">Any Division</option>
+                                    <option v-for="div in divisions" :key="div.id" :value="div.id">{{ div.name }}</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1" v-if="selectedDivision">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">District</label>
+                                <select v-model="selectedDistrict" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                                    <option value="">Any District</option>
+                                    <option v-for="dist in districts" :key="dist.id" :value="dist.id">{{ dist.name }}</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex flex-col gap-1" v-if="selectedDistrict">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Upazila / Area</label>
+                                <select v-model="selectedUpazila" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                                    <option value="">Any Upazila</option>
+                                    <option v-for="upa in upazilas" :key="upa.id" :value="upa.id">{{ upa.name }}</option>
+                                </select>
+                            </div>
+                            
+                            <button @click="showLocationDropdown = false; handleSearch();" class="mt-2 w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">
+                                Apply Location
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button @click="topRated = !topRated; handleSearch()" :class="[topRated ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-colors whitespace-nowrap shadow-sm">
+                        <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        Top Rated
+                    </button>
+                    
+                    <div class="relative">
+                        <button @click="showMoreFilters = !showMoreFilters" :class="[showMoreFilters ? 'bg-slate-100 border-slate-300' : 'bg-white hover:bg-slate-50 border-slate-200']" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold text-slate-700 transition-colors whitespace-nowrap shadow-sm">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                            More Filters
+                        </button>
+                        <div v-if="showMoreFilters" class="absolute right-0 lg:left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 p-4 z-50">
+                            <p class="text-xs text-slate-500 text-center font-medium">Advanced filters coming soon!</p>
                         </div>
                     </div>
                 </div>
@@ -416,12 +389,12 @@ const subtotal = computed(() => cart.value.reduce((acc, c) => acc + (c.item.pric
 
                 <!-- Pharmacy Cards Carousel -->
                 <div v-if="pharmacies && pharmacies.length > 0" class="relative group">
-                    <!-- Scroll Left Arrow (Mock) -->
-                    <button class="absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 shadow-lg z-10 hidden md:group-hover:flex hover:text-emerald-600 hover:border-emerald-300">
+                    <!-- Scroll Left Arrow -->
+                    <button @click="scrollLeft" class="absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 shadow-lg z-10 hidden md:group-hover:flex hover:text-emerald-600 hover:border-emerald-300 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
                     
-                    <div class="flex overflow-x-auto gap-6 pb-6 pt-2 snap-x snap-mandatory scrollbar-hide px-1" style="scrollbar-width: none;">
+                    <div ref="carouselRef" class="flex overflow-x-auto gap-6 pb-6 pt-2 snap-x snap-mandatory scrollbar-hide px-1" style="scrollbar-width: none;">
                         <div 
                             v-for="(pharmacy, index) in pharmacies" 
                             :key="pharmacy.id"
@@ -476,8 +449,8 @@ const subtotal = computed(() => cart.value.reduce((acc, c) => acc + (c.item.pric
                         </div>
                     </div>
                     
-                    <!-- Scroll Right Arrow (Mock) -->
-                    <button class="absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 shadow-lg z-10 hidden md:group-hover:flex hover:text-emerald-600 hover:border-emerald-300">
+                    <!-- Scroll Right Arrow -->
+                    <button @click="scrollRight" class="absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 shadow-lg z-10 hidden md:group-hover:flex hover:text-emerald-600 hover:border-emerald-300 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
@@ -568,7 +541,7 @@ const subtotal = computed(() => cart.value.reduce((acc, c) => acc + (c.item.pric
                     </div>
                 </div>
             </div>
-        </div>
+
 
         <!-- Problems We Solve Section -->
         <div class="py-20 bg-white">

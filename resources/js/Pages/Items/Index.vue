@@ -1,8 +1,9 @@
 <script setup>
 import TopNavbar from '@/Components/TopNavbar.vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, onMounted } from 'vue';
 import debounce from 'lodash/debounce';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     items: Object,
@@ -17,6 +18,33 @@ watch(search, debounce((value) => {
         replace: true,
     });
 }, 300));
+
+const page = usePage();
+
+const showSuccessAlert = () => {
+    if (page.props.flash?.success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: page.props.flash.success,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+        });
+    }
+};
+
+onMounted(() => {
+    showSuccessAlert();
+});
+
+watch(() => page.props.flash?.success, (newVal) => {
+    if (newVal) {
+        showSuccessAlert();
+    }
+});
 </script>
 
 <template>

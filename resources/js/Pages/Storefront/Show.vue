@@ -27,7 +27,7 @@ const props = defineProps({
                     </svg>
                 </div>
 
-                <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between py-6 px-10 lg:py-6 lg:px-16 gap-8 max-w-[1400px] mx-auto w-full">
+                <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between py-6 px-4 sm:px-10 lg:py-6 lg:px-16 gap-8 max-w-[1400px] mx-auto w-full">
                     <!-- Left: Text -->
                     <div class="flex-1 lg:pr-8 max-w-[650px]">
                         <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-emerald-100 text-[#0fbc81] text-[11px] font-bold mb-4 shadow-sm">
@@ -79,7 +79,7 @@ const props = defineProps({
                         </div>
 
                         <!-- Company Info Card (Matching exactly) -->
-                        <div class="bg-white rounded-[24px] p-5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] relative z-40 w-[360px] transform lg:translate-x-8 border border-white">
+                        <div class="bg-white rounded-[24px] p-5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] relative z-40 w-full max-w-[360px] transform lg:translate-x-8 border border-white">
                             <div class="flex items-start mb-3">
                                 <div class="w-14 h-14 bg-[#f8fafc] rounded-xl border border-slate-100 flex flex-col items-center justify-center p-2">
                                     <img v-if="company.logo" :src="`/storage/${company.logo}`" class="w-full h-full object-contain mb-1" />
@@ -173,7 +173,7 @@ const props = defineProps({
                     <!-- Middle Section Row -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                         <!-- Our Branches -->
-                        <div class="md:col-span-2 bg-white rounded-[20px] p-6 lg:p-7 shadow-sm border border-slate-200 relative overflow-hidden flex flex-col justify-between h-[230px]">
+                        <div class="md:col-span-2 bg-white rounded-[20px] p-6 lg:p-7 shadow-sm border border-slate-200 relative overflow-hidden flex flex-col justify-between min-h-[230px] lg:h-[230px]">
                             <h3 class="font-bold text-[#1a202c] text-[17px] mb-4 flex items-center gap-2">
                                 <svg class="w-5 h-5 text-[#0fbc81]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
                                 Our Branches

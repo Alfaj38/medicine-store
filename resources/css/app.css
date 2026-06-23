@@ -5,6 +5,9 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 }
 @layer base {
+    html {
+        scroll-behavior: smooth;
+    }
     button, a, [role="button"] {
         cursor: pointer;
     }

@@ -193,25 +193,25 @@ const submit = () => {
                                 </tr>
                                 <tr v-for="(item, index) in form.items" :key="index" class="bg-white">
                                     <td class="py-2 pl-4">
-                                        <div class="font-semibold text-slate-900 text-sm">{{ item.name }}</div>
+                                        <div class="font-semibold text-slate-900 text-sm min-w-[150px]">{{ item.name }}</div>
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.batch_no" type="text" placeholder="Optional" class="block w-full rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
+                                        <input v-model="item.batch_no" type="text" placeholder="Optional" class="block w-full min-w-[100px] rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.expiry_date" type="date" class="block w-full rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
+                                        <input v-model="item.expiry_date" type="date" class="block w-full min-w-[130px] rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.quantity" type="number" min="1" required class="block w-full rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
+                                        <input v-model="item.quantity" type="number" min="1" required class="block w-full min-w-[80px] rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.unit_price" @input="item.mrp = parseFloat((item.unit_price * (1 + item.profit_percent / 100)).toFixed(2))" type="number" step="0.01" min="0" required class="block w-full rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
+                                        <input v-model="item.unit_price" @input="item.mrp = parseFloat((item.unit_price * (1 + item.profit_percent / 100)).toFixed(2))" type="number" step="0.01" min="0" required class="block w-full min-w-[100px] rounded-lg border-slate-200 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.profit_percent" @input="item.mrp = parseFloat((item.unit_price * (1 + item.profit_percent / 100)).toFixed(2))" type="number" step="0.1" required class="block w-full rounded-lg border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500 py-1.5">
+                                        <input v-model="item.profit_percent" @input="item.mrp = parseFloat((item.unit_price * (1 + item.profit_percent / 100)).toFixed(2))" type="number" step="0.1" required class="block w-full min-w-[80px] rounded-lg border-slate-200 text-sm focus:border-blue-500 focus:ring-blue-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-2">
-                                        <input v-model="item.mrp" @input="item.unit_price > 0 ? item.profit_percent = parseFloat((((item.mrp - item.unit_price) / item.unit_price) * 100).toFixed(1)) : 0" type="number" step="0.01" min="0" required class="block w-full rounded-lg border-slate-200 text-sm focus:border-indigo-500 focus:ring-indigo-500 py-1.5">
+                                        <input v-model="item.mrp" @input="item.unit_price > 0 ? item.profit_percent = parseFloat((((item.mrp - item.unit_price) / item.unit_price) * 100).toFixed(1)) : 0" type="number" step="0.01" min="0" required class="block w-full min-w-[100px] rounded-lg border-slate-200 text-sm focus:border-indigo-500 focus:ring-indigo-500 py-1.5">
                                     </td>
                                     <td class="py-2 px-3 text-right font-medium text-slate-700">
                                         ${{ (item.quantity * item.unit_price).toFixed(2) }}

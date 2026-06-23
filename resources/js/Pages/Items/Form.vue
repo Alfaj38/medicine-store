@@ -1,13 +1,14 @@
 <script setup>
 import TopNavbar from '@/Components/TopNavbar.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     item: Object,
     itemTypes: Array,
     categories: Array,
     uoms: Array,
+    pharmaceuticalIndustries: Array,
 });
 
 const isEdit = !!props.item;
@@ -55,6 +56,26 @@ const filteredCategories = computed(() => {
     return props.categories.filter(c => !c.item_type_id || c.item_type_id === form.item_type_id);
 });
 
+// Manufacturer Searchable Dropdown State
+const manufacturerDropdownOpen = ref(false);
+const manufacturerSearch = ref('');
+
+const filteredManufacturers = computed(() => {
+    if (!manufacturerSearch.value) {
+        return props.pharmaceuticalIndustries;
+    }
+    const lowerQuery = manufacturerSearch.value.toLowerCase();
+    return props.pharmaceuticalIndustries.filter(industry => 
+        industry.name.toLowerCase().includes(lowerQuery)
+    );
+});
+
+const selectManufacturer = (name) => {
+    form.manufacturer_name = name;
+    manufacturerDropdownOpen.value = false;
+    manufacturerSearch.value = '';
+};
+
 const submit = () => {
     if (isEdit) {
         form.put(route('items.update', props.item.id));
@@ -85,7 +106,7 @@ const submit = () => {
                     <div class="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
                         
                         <!-- Item Classification -->
-                        <div class="sm:col-span-2 p-4 bg-slate-50 rounded-xl border border-slate-100 flex gap-4">
+                        <div class="sm:col-span-2 p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col sm:flex-row gap-4">
                             <div class="flex-1">
                                 <label class="block text-sm font-bold text-slate-700 mb-1">Item Type</label>
                                 <select v-model="form.item_type_id" class="block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm bg-white">
@@ -156,9 +177,50 @@ const submit = () => {
                                 <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700">Manufacturer / Brand</label>
-                            <input v-model="form.manufacturer_name" type="text" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. Beximco">
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Manufacturer / Brand</label>
+                            
+                            <!-- Custom Searchable Dropdown -->
+                            <div class="relative">
+                                <div v-if="manufacturerDropdownOpen" @click="manufacturerDropdownOpen = false" class="fixed inset-0 z-10"></div>
+                                
+                                <div class="relative z-20">
+                                    <button type="button" @click="manufacturerDropdownOpen = !manufacturerDropdownOpen" class="w-full bg-white border border-slate-300 rounded-xl shadow-sm pl-3 pr-10 py-2.5 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm">
+                                        <span class="block truncate" :class="form.manufacturer_name ? 'text-slate-900' : 'text-slate-500'">
+                                            {{ form.manufacturer_name || 'Select Manufacturer / Brand' }}
+                                        </span>
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                                                <path d="M7 7l3-3 3 3m0 6l-3 3-3-3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </span>
+                                    </button>
+
+                                    <div v-show="manufacturerDropdownOpen" class="absolute z-50 mt-1 w-full bg-white shadow-xl max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-hidden focus:outline-none sm:text-sm flex flex-col">
+                                        <div class="p-2 border-b border-slate-100 bg-white">
+                                            <input type="text" v-model="manufacturerSearch" @click.stop class="w-full border-slate-200 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" placeholder="Search manufacturers..." autofocus>
+                                        </div>
+                                        <ul class="overflow-y-auto max-h-48 py-1">
+                                            <li @click="selectManufacturer('')" class="text-slate-500 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-slate-50 transition-colors">
+                                                Clear Selection
+                                            </li>
+                                            <li v-for="industry in filteredManufacturers" :key="industry.id" @click="selectManufacturer(industry.name)" class="text-slate-900 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-emerald-50 hover:text-emerald-900 transition-colors">
+                                                <span class="block truncate" :class="form.manufacturer_name === industry.name ? 'font-semibold' : 'font-normal'">
+                                                    {{ industry.name }}
+                                                </span>
+                                                <span v-if="form.manufacturer_name === industry.name" class="absolute inset-y-0 right-0 flex items-center pr-4 text-emerald-600">
+                                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </li>
+                                            <li v-if="filteredManufacturers.length === 0" class="text-slate-500 cursor-default select-none relative py-3 px-3 text-center">
+                                                No manufacturers found.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="sm:col-span-2 mt-4">

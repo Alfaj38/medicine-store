@@ -29,6 +29,8 @@ const taxPercent        = ref(0);
 const saleNote          = ref('');
 const showRecentBills   = ref(false);
 const isSubmitting      = ref(false);
+const mobileCartOpen    = ref(false);
+const mobileCategoriesOpen = ref(false);
 const now               = ref(new Date());
 
 // New Customer Modal
@@ -404,8 +406,8 @@ const filteredCategoriesByType = computed(() => {
         <!-- ── MAIN BODY ── -->
         <div class="flex flex-1 overflow-hidden">
 
-            <!-- ── LEFT SIDEBAR: Categories ── -->
-            <aside class="w-56 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 overflow-y-auto pt-4 px-3">
+            <!-- ── LEFT SIDEBAR: Categories (Hidden on mobile) ── -->
+            <aside class="hidden lg:flex w-56 bg-white border-r border-slate-200 flex-col flex-shrink-0 overflow-y-auto pt-4 px-3">
                 <button
                     @click="selectedCategory = null; activeFilter = 'all'"
                     :class="['flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all rounded-xl mb-3 w-full text-left shadow-sm', selectedCategory === null && activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50']">
@@ -467,10 +469,14 @@ const filteredCategoriesByType = computed(() => {
                             />
                             <span v-if="isLoadingSearch" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 animate-pulse">Searching...</span>
                         </div>
+                        <!-- Mobile Categories Toggle -->
+                        <button @click="mobileCategoriesOpen = true" class="lg:hidden flex items-center justify-center w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        </button>
                         <!-- Quick Add -->
                         <button class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors flex-shrink-0">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Quick Add <kbd class="ml-1 text-xs bg-emerald-700 px-1.5 py-0.5 rounded">F2</kbd>
+                            <span class="hidden sm:inline">Quick Add</span> <kbd class="hidden sm:inline ml-1 text-xs bg-emerald-700 px-1.5 py-0.5 rounded">F2</kbd>
                         </button>
                     </div>
 
@@ -572,8 +578,12 @@ const filteredCategoriesByType = computed(() => {
                 </div>
             </main>
 
-            <!-- ── RIGHT PANEL: Cart ── -->
-            <aside class="w-80 xl:w-96 bg-white border-l border-slate-200 flex flex-col flex-shrink-0">
+            <!-- ── RIGHT PANEL: Cart (Desktop: fixed side, Mobile: sliding panel) ── -->
+            <aside :class="['w-80 xl:w-96 bg-white border-l border-slate-200 flex flex-col flex-shrink-0 z-40 transition-transform duration-300', mobileCartOpen ? 'fixed inset-y-0 right-0 shadow-2xl' : 'hidden lg:flex']">
+                <!-- Mobile close button -->
+                <button v-if="mobileCartOpen" @click="mobileCartOpen = false" class="absolute top-2 left-[-40px] bg-white w-10 h-10 flex items-center justify-center rounded-l-xl shadow-l text-slate-500 hover:text-slate-900 border border-slate-200 border-r-0 lg:hidden">
+                    ✕
+                </button>
 
                 <!-- Customer -->
                 <div class="px-3 pt-2 pb-1.5 border-b border-slate-200 flex-shrink-0">
@@ -697,29 +707,87 @@ const filteredCategoriesByType = computed(() => {
         </div>
 
         <!-- ── BOTTOM BAR ── -->
-        <footer class="flex items-center justify-between bg-white border-t border-slate-200 px-4 h-10 flex-shrink-0 z-20">
+        <footer class="flex items-center justify-between bg-white border-t border-slate-200 px-4 h-10 flex-shrink-0 z-20 overflow-x-auto whitespace-nowrap scrollbar-hide">
             <div class="flex items-center gap-4 text-xs text-slate-500">
-                <button type="button" @click="handleHoldInvoice" class="flex items-center gap-1.5 hover:text-slate-900 transition-colors">
+                <button type="button" @click="handleHoldInvoice" class="hidden sm:flex items-center gap-1.5 hover:text-slate-900 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <kbd class="bg-slate-50 px-1 rounded">F1</kbd> Hold Invoice
+                    <kbd class="bg-slate-50 px-1 rounded">F1</kbd> <span class="hidden md:inline">Hold Invoice</span>
                 </button>
                 <Link :href="route('customers.index')" class="flex items-center gap-1.5 hover:text-slate-900 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <kbd class="bg-slate-50 px-1 rounded">F4</kbd> Search Patient
+                    <kbd class="bg-slate-50 px-1 rounded">F4</kbd> Search <span class="hidden md:inline">Patient</span>
                 </Link>
                 <button @click="showRecentBills = !showRecentBills" class="flex items-center gap-1.5 hover:text-slate-900 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    <kbd class="bg-slate-50 px-1 rounded">F10</kbd> Recent Bills
+                    <kbd class="bg-slate-50 px-1 rounded">F10</kbd> Recent <span class="hidden md:inline">Bills</span>
                 </button>
             </div>
-            <div class="flex items-center gap-3 text-xs text-slate-500">
+            <div class="flex items-center gap-3 text-xs text-slate-500 ml-4">
                 <div class="flex items-center gap-1.5">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    Online
+                    <span class="hidden sm:inline">Online</span>
                 </div>
-                <span>Session: CS-{{ String(Math.floor(Math.random() * 90000) + 10000) }}</span>
+                <span class="hidden sm:inline">Session: CS-{{ String(Math.floor(Math.random() * 90000) + 10000) }}</span>
             </div>
         </footer>
+
+        <!-- ── FLOATING CART BUTTON (Mobile Only) ── -->
+        <button v-if="!mobileCartOpen" @click="mobileCartOpen = true" class="lg:hidden fixed bottom-14 right-4 z-30 bg-emerald-600 hover:bg-emerald-500 transition-colors text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center">
+            <span class="relative">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <span v-if="cart.length" class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">{{ cart.length }}</span>
+            </span>
+        </button>
+
+        <!-- ── MOBILE CATEGORIES MODAL ── -->
+        <Teleport to="body">
+            <div v-if="mobileCategoriesOpen" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center lg:hidden">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="mobileCategoriesOpen = false"></div>
+
+                <!-- Modal -->
+                <div class="relative bg-white w-full sm:w-80 h-[80vh] sm:h-auto sm:max-h-[80vh] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-transform animate-slide-up sm:animate-none">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-900">Categories</h3>
+                        <button @click="mobileCategoriesOpen = false" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+                            ✕
+                        </button>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="p-3 border-b border-slate-100">
+                        <input v-model="categorySearchQuery" type="text" placeholder="Search categories..." class="w-full bg-slate-50 border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-emerald-500" />
+                    </div>
+
+                    <!-- Categories List -->
+                    <div class="flex-1 overflow-y-auto p-3 space-y-3">
+                        <button @click="selectedCategory = null; activeFilter = 'all'; mobileCategoriesOpen = false"
+                            :class="['flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all rounded-xl mb-3 w-full text-left shadow-sm', selectedCategory === null && activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'text-slate-700 bg-white border border-slate-200']">
+                            <span class="text-lg">🏪</span>
+                            <span>All Items</span>
+                        </button>
+
+                        <template v-for="(cats, typeName) in filteredCategoriesByType" :key="typeName">
+                            <div>
+                                <div class="flex items-center gap-1.5 px-2 mb-1">
+                                    <span class="text-sm">{{ typeGroupIcon(typeName) }}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ typeName }}</span>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <button v-for="cat in cats" :key="cat.id"
+                                        @click="selectedCategory = cat.id; activeFilter = 'all'; mobileCategoriesOpen = false"
+                                        :class="['flex items-center gap-2.5 px-3 py-2 text-sm transition-all rounded-lg w-full text-left', selectedCategory === cat.id ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-slate-600']">
+                                        <span class="text-base leading-none">{{ categoryIcon(cat.name) }}</span>
+                                        <span class="truncate">{{ cat.name }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 
         <!-- ── RECENT BILLS PANEL ── -->
         <div v-if="showRecentBills"

@@ -8,6 +8,7 @@ use App\Models\ItemCategory;
 use App\Models\ItemType;
 use App\Models\Uom;
 use App\Models\Manufacturer;
+use App\Models\PharmaceuticalIndustry;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,7 @@ class ItemController extends Controller
             'itemTypes' => ItemType::orderBy('name')->get(),
             'categories' => ItemCategory::where('is_active', true)->orderBy('name')->get(),
             'uoms' => Uom::orderBy('name')->get(),
+            'pharmaceuticalIndustries' => PharmaceuticalIndustry::orderBy('name')->get(),
         ]);
     }
 
@@ -144,6 +146,7 @@ class ItemController extends Controller
             'itemTypes' => ItemType::orderBy('name')->get(),
             'categories' => ItemCategory::where('is_active', true)->orderBy('name')->get(),
             'uoms' => Uom::orderBy('name')->get(),
+            'pharmaceuticalIndustries' => PharmaceuticalIndustry::orderBy('name')->get(),
         ]);
     }
 
