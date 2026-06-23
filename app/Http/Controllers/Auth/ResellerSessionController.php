@@ -11,6 +11,7 @@ class ResellerSessionController extends Controller
 {
     public function create()
     {
+        \Log::info('ResellerSessionController@create called');
         return Inertia::render('Reseller/Login');
     }
 

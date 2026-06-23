@@ -19,63 +19,79 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-50 flex font-sans">
+    <div class="min-h-screen bg-slate-50 flex font-sans text-slate-900 selection:bg-emerald-500 selection:text-white">
         <!-- Sidebar -->
-        <div class="w-64 bg-slate-900 text-white flex-shrink-0 fixed inset-y-0 left-0 flex flex-col z-20">
-            <div class="p-6">
-                <div class="flex items-center gap-3 mb-8">
-                    <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-black text-xl shadow-lg">+</div>
-                    <div>
-                        <div class="font-bold text-lg leading-tight">Partner</div>
-                        <div class="text-xs text-emerald-400 font-medium">SaaSMedi</div>
+        <aside class="hidden lg:flex flex-col w-72 bg-white border-r border-slate-100 flex-shrink-0 h-screen sticky top-0 overflow-y-auto z-20">
+            <!-- Logo -->
+            <div class="px-6 py-8">
+                <Link :href="route('home')" class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                        <span class="text-white font-black text-xl leading-none">+</span>
                     </div>
-                </div>
-
-                <div class="space-y-1">
-                    <Link v-for="item in navigation" :key="item.name" :href="item.href"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm"
-                        :class="isActive(item.href) ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
-                        </svg>
-                        {{ item.name }}
-                    </Link>
-                </div>
+                    <span class="font-extrabold text-2xl tracking-tight text-emerald-600">SaaS<span class="text-slate-800">Medi</span></span>
+                </Link>
+                <div class="mt-2 text-xs font-bold text-emerald-500 tracking-wider uppercase ml-11">Partner Portal</div>
             </div>
 
-            <div class="mt-auto p-6">
-                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-                    <div class="text-xs text-slate-400 mb-1">Commission Rate</div>
-                    <div class="text-2xl font-black text-emerald-400">{{ reseller?.commission_rate || 10 }}%</div>
+            <div class="flex-1 px-4 py-2 space-y-1">
+                <Link v-for="item in navigation" :key="item.name" :href="item.href"
+                    class="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-colors"
+                    :class="isActive(item.href) ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                    </svg>
+                    {{ item.name }}
+                </Link>
+            </div>
+
+            <!-- Bottom Cards -->
+            <div class="px-6 py-6 space-y-4 border-t border-slate-100 mt-auto">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                    <div class="text-[13px] font-semibold text-slate-600 mb-1">Commission Rate</div>
+                    <div class="text-2xl font-black text-emerald-600">{{ reseller?.commission_rate || 10 }}%</div>
                 </div>
                 
-                <Link :href="route('reseller.logout')" method="post" as="button" class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-red-400 hover:text-white hover:bg-red-500 transition-colors">
+                <Link :href="route('reseller.logout')" method="post" as="button" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 rounded-xl text-[13px] font-bold text-red-600 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                     Logout
                 </Link>
             </div>
-        </div>
+        </aside>
+
+        <!-- Mobile Top Header -->
+        <header class="lg:hidden fixed top-0 w-full bg-white z-50 border-b border-slate-100 h-16 flex items-center justify-between px-4">
+            <button class="text-slate-700 p-2 -ml-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <Link :href="route('home')" class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-md bg-emerald-600 flex items-center justify-center">
+                    <span class="text-white font-black text-sm leading-none">+</span>
+                </div>
+                <span class="font-extrabold text-[20px] tracking-tight text-emerald-600">SaaS<span class="text-slate-800">Medi</span></span>
+            </Link>
+            <div class="w-8"></div> <!-- Spacer for centering -->
+        </header>
 
         <!-- Main Content -->
-        <div class="flex-1 ml-64 flex flex-col min-h-screen">
+        <main class="flex-1 lg:ml-0 flex flex-col min-h-screen pt-16 lg:pt-0 w-full overflow-hidden">
             <!-- Header -->
-            <header class="bg-white border-b border-slate-200 h-20 flex items-center justify-between px-8 sticky top-0 z-10">
-                <h1 class="text-xl font-black text-slate-900">Partner Dashboard</h1>
+            <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 h-20 hidden lg:flex items-center justify-between px-8 sticky top-0 z-10">
+                <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">Partner Dashboard</h1>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-sm font-bold text-slate-900">{{ reseller?.name }}</div>
-                        <div class="text-xs text-slate-500 font-medium">{{ reseller?.reseller_code }}</div>
+                        <div class="text-[15px] font-bold text-slate-900 leading-tight">{{ reseller?.name }}</div>
+                        <div class="text-xs text-slate-500 font-semibold">{{ reseller?.reseller_code }}</div>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shadow-inner">
                         {{ reseller?.name?.charAt(0) || 'P' }}
                     </div>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 p-8">
+            <div class="flex-1 p-6 lg:p-8">
                 <slot />
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 </template>

@@ -20,6 +20,7 @@ const locationQuery = ref(props.filters?.location || '');
 const topRated = ref(props.filters?.top_rated === true || props.filters?.top_rated === '1');
 const showMoreFilters = ref(false);
 const showLocationDropdown = ref(false);
+const userDropdownOpen = ref(false);
 
 const divisions = ref([]);
 const districts = ref([]);
@@ -180,13 +181,49 @@ const scrollRight = () => {
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                     <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
                 </button>
-                <!-- User Profile -->
-                <div class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer group">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=10b981&color=fff" alt="User" class="w-9 h-9 rounded-full ring-2 ring-transparent group-hover:ring-emerald-200 transition-all" />
-                    <div class="hidden xl:block">
-                        <div class="text-sm font-bold text-slate-700">John Doe</div>
-                    </div>
-                    <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                <!-- User Profile / Login -->
+                <div class="flex items-center gap-3 pl-6 border-l border-slate-200">
+                    <template v-if="$page.props.auth?.user">
+                        <div class="relative">
+                            <div @click="userDropdownOpen = !userDropdownOpen" class="flex items-center gap-3 cursor-pointer group select-none">
+                                <img v-if="$page.props.auth.user.avatar" :src="'/storage/' + $page.props.auth.user.avatar" alt="User" class="w-9 h-9 rounded-full ring-2 ring-transparent group-hover:ring-emerald-200 transition-all object-cover" />
+                                <div v-else class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-sm ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
+                                    {{ $page.props.auth.user.name.charAt(0) }}
+                                </div>
+                                <div class="hidden xl:block">
+                                    <div class="text-sm font-bold text-slate-700 truncate max-w-[120px]">{{ $page.props.auth.user.name }}</div>
+                                </div>
+                                <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            
+                            <!-- Invisible overlay to close dropdown -->
+                            <div v-if="userDropdownOpen" @click="userDropdownOpen = false" class="fixed inset-0 z-40"></div>
+                            
+                            <!-- Dropdown Menu -->
+                            <div v-show="userDropdownOpen" class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg shadow-slate-200/50 py-1 border border-slate-100 z-50">
+                                <div class="px-4 py-2 border-b border-slate-100 mb-1">
+                                    <p class="text-sm font-bold text-slate-900 truncate">{{ $page.props.auth.user.name }}</p>
+                                    <p class="text-xs text-slate-500 truncate">{{ $page.props.auth.user.email }}</p>
+                                </div>
+                                <Link :href="route('dashboard')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                    Dashboard
+                                </Link>
+                                <Link :href="route('logout')" method="post" as="button" class="block w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors border-t border-slate-100 mt-1 pt-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                    Log Out
+                                </Link>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <Link :href="route('login')" class="hidden sm:inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
+                            Sign In
+                        </Link>
+                        <Link :href="route('register')" class="inline-flex items-center justify-center px-5 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors shadow-md shadow-emerald-500/20">
+                            Start Free Trial
+                        </Link>
+                    </template>
                 </div>
             </div>
         </div>

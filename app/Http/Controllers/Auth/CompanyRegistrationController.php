@@ -63,7 +63,10 @@ class CompanyRegistrationController extends Controller
 
             $referralCode = null;
             if (!empty($validated['referral_code'])) {
-                $referralCode = ReferralCode::where('code', $validated['referral_code'])
+                $codeToFind = $validated['referral_code'];
+                $referralCode = ReferralCode::where(function($q) use ($codeToFind) {
+                        $q->where('code', $codeToFind)->orWhere('label', $codeToFind);
+                    })
                     ->where('status', 'active')
                     ->first();
                 

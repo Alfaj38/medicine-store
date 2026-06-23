@@ -9,7 +9,9 @@ class ReferralLinkController extends Controller
 {
     public function redirect($code)
     {
-        $referralCode = ReferralCode::where('code', $code)
+        $referralCode = ReferralCode::where(function($q) use ($code) {
+                $q->where('code', $code)->orWhere('label', $code);
+            })
             ->where('status', 'active')
             ->first();
 
@@ -28,7 +30,9 @@ class ReferralLinkController extends Controller
             return response()->json(['valid' => false, 'message' => 'No code provided.']);
         }
 
-        $referralCode = ReferralCode::where('code', $code)->first();
+        $referralCode = ReferralCode::where(function($q) use ($code) {
+            $q->where('code', $code)->orWhere('label', $code);
+        })->first();
 
         if (!$referralCode) {
             return response()->json(['valid' => false, 'message' => 'Invalid referral code.']);

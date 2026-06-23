@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'page_permission' => \App\Http\Middleware\CheckPagePermission::class,
             'reseller' => \App\Http\Middleware\ResellerMiddleware::class,
         ]);
+
+        $middleware->redirectUsersTo(fn (Request $request) => $request->is('reseller/*') || $request->is('reseller') ? route('reseller.dashboard') : route('dashboard'));
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('reseller/*') || $request->is('reseller') ? route('reseller.login') : route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

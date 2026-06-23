@@ -47,6 +47,11 @@ watch(() => form.referral_code, (val) => {
     
     if (!val) return;
 
+    if (val !== val.toUpperCase()) {
+        form.referral_code = val.toUpperCase();
+        return;
+    }
+
     clearTimeout(timeout);
     timeout = setTimeout(async () => {
         validatingCode.value = true;

@@ -38,28 +38,39 @@ class HandleInertiaRequests extends Middleware
         $authData = null;
 
         if ($request->user()) {
+            $user = $request->user();
             $permissions = [];
             
-            if ($request->user()->roles && $request->user()->roles->count() > 0) {
-                $roleId = $request->user()->roles->first()->id;
-                $permissions = \App\Models\PagePermission::where('role_id', $roleId)
-                    ->get()
-                    ->keyBy('page')
-                    ->toArray();
-            }
+            if ($user instanceof \App\Models\User) {
+                if ($user->roles && $user->roles->count() > 0) {
+                    $roleId = $user->roles->first()->id;
+                    $permissions = \App\Models\PagePermission::where('role_id', $roleId)
+                        ->get()
+                        ->keyBy('page')
+                        ->toArray();
+                }
 
-            $authData = [
-                'user' => collect($request->user())->except(['password', 'remember_token']),
-                'scope' => $request->user()->data_scope,
-                'permissions' => $permissions,
-                'branches' => $request->user()->getAllowedBranchIds(),
-            ];
+                $authData = [
+                    'user' => collect($user)->except(['password', 'remember_token']),
+                    'scope' => $user->data_scope,
+                    'permissions' => $permissions,
+                    'branches' => $user->getAllowedBranchIds(),
+                ];
+            } else {
+                // For Resellers or other models
+                $authData = [
+                    'user' => collect($user)->except(['password', 'remember_token']),
+                    'scope' => 'all',
+                    'permissions' => [],
+                    'branches' => [],
+                ];
+            }
         }
 
         // Alert counts shared only for management users (used in admin sidebar/header)
         $pendingBranches = 0;
         $newLeads        = 0;
-        if ($request->user() && $request->user()->isManagement()) {
+        if ($request->user() && $request->user() instanceof \App\Models\User && $request->user()->isManagement()) {
             $pendingBranches = \App\Models\Branch::where('approval_status', 'pending')->count();
             $newLeads        = \App\Models\DemoRequest::where('status', 'pending')->count();
         }

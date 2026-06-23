@@ -32,12 +32,10 @@ Route::middleware('guest')->group(function () {
     
     Route::get('register', [App\Http\Controllers\Auth\CompanyRegistrationController::class, 'create'])->name('register');
     Route::post('register', [App\Http\Controllers\Auth\CompanyRegistrationController::class, 'store'])->name('register.store');
-    
-    Route::get('/reseller/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'create'])->name('reseller.login');
-    Route::post('/reseller/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'store']);
 });
 
 Route::post('/reseller/logout', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'destroy'])->name('reseller.logout');
+Route::get('/reseller/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'create'])->name('reseller.login');
 Route::get('/reseller/pending', function () {
     return Inertia::render('Reseller/Pending');
 })->name('reseller.pending');
@@ -213,6 +211,7 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
             Route::resource('documents', \App\Http\Controllers\Company\DocumentController::class)->only(['store', 'destroy']);
             
             Route::get('subscription', [\App\Http\Controllers\Company\SubscriptionController::class, 'index'])->name('subscription.index');
+            Route::post('subscription/upgrade', [\App\Http\Controllers\Company\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
         });
     });
 });
@@ -237,3 +236,18 @@ Route::get('/store/{company:slug}/blog', function ($slug) {
 Route::get('/store/{company:slug}/contact', function ($slug) {
     return Inertia::render('Storefront/Placeholder', ['title' => 'Contact Us', 'companySlug' => $slug]);
 })->name('storefront.contact');
+
+// Reseller / Affiliate Portal Routes
+Route::prefix('reseller')->name('reseller.')->group(function () {
+    Route::middleware('guest:reseller')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'create'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'store']);
+    });
+
+    Route::post('/logout', [\App\Http\Controllers\Auth\ResellerSessionController::class, 'destroy'])->name('logout');
+    
+    Route::get('/pending', function () {
+        return Inertia::render('Reseller/Pending');
+    })->name('pending');
+});
+
