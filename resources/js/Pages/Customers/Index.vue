@@ -45,7 +45,7 @@ const processPayment = () => {
 </script>
 
 <template>
-    <Head title="Customers - MediSaaS" />
+    <Head title="Customers - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

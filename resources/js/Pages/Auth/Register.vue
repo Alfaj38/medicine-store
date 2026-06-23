@@ -84,7 +84,7 @@ const referralOptions = ['Google Search', 'Facebook / Instagram', 'LinkedIn', 'F
 </script>
 
 <template>
-    <Head title="Start Free Trial - MediSaaS" />
+    <Head title="Start Free Trial - SaaSMedi" />
     
     <div class="min-h-screen bg-slate-50 flex font-sans">
         
@@ -97,10 +97,10 @@ const referralOptions = ['Google Search', 'Facebook / Instagram', 'LinkedIn', 'F
                     <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-lg">
                         <span class="text-emerald-600 font-bold text-lg leading-none">+</span>
                     </div>
-                    <span class="font-bold text-xl tracking-tight text-white">MediSaaS</span>
+                    <span class="font-bold text-xl tracking-tight text-white">SaaSMedi</span>
                 </Link>
                 
-                <h2 class="text-4xl font-black mb-6 leading-tight">Join 500+ pharmacies growing with MediSaaS.</h2>
+                <h2 class="text-4xl font-black mb-6 leading-tight">Join 500+ pharmacies growing with SaaSMedi.</h2>
                 <ul class="space-y-4 mb-12">
                     <li class="flex items-center gap-3">
                         <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">✓</div>
@@ -144,7 +144,7 @@ const referralOptions = ['Google Search', 'Facebook / Instagram', 'LinkedIn', 'F
                         <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-lg">
                             <span class="text-white font-bold text-lg leading-none">+</span>
                         </div>
-                        <span class="font-bold text-2xl tracking-tight text-slate-900">MediSaaS</span>
+                        <span class="font-bold text-2xl tracking-tight text-slate-900">SaaSMedi</span>
                     </Link>
                 </div>
 

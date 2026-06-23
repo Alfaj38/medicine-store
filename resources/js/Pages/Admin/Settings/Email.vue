@@ -49,11 +49,11 @@
                     <div class="grid grid-cols-2 gap-5">
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1.5">From Address</label>
-                            <input v-model="form.mail_from_address" type="email" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="noreply@medisaas.com">
+                            <input v-model="form.mail_from_address" type="email" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="noreply@saasmedi.com">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1.5">From Name</label>
-                            <input v-model="form.mail_from_name" type="text" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="MediSaaS Platform">
+                            <input v-model="form.mail_from_name" type="text" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="SaaSMedi Platform">
                         </div>
                     </div>
 

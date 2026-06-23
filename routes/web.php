@@ -20,6 +20,12 @@ Route::post('/book-demo', [\App\Http\Controllers\DemoRequestController::class, '
 Route::get('/r/{code}', [\App\Http\Controllers\ReferralLinkController::class, 'redirect'])->name('referral.link');
 Route::get('/api/promo-code/validate', [\App\Http\Controllers\ReferralLinkController::class, 'validateCode'])->name('promo-code.validate');
 Route::get('/success', [\App\Http\Controllers\PublicController::class, 'success'])->name('success');
+
+// Location API
+Route::get('/api/locations/divisions', [\App\Http\Controllers\LocationController::class, 'divisions'])->name('locations.divisions');
+Route::get('/api/locations/districts/{division_id}', [\App\Http\Controllers\LocationController::class, 'districts'])->name('locations.districts');
+Route::get('/api/locations/upazilas/{district_id}', [\App\Http\Controllers\LocationController::class, 'upazilas'])->name('locations.upazilas');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);

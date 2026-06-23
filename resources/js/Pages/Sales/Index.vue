@@ -50,7 +50,7 @@ const setFilter = (filter) => {
 </script>
 
 <template>
-    <Head title="Sales History - MediSaaS" />
+    <Head title="Sales History - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

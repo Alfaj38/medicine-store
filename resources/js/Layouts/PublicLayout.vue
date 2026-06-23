@@ -18,22 +18,22 @@ const mobileMenuOpen = ref(false);
                             <div class="w-7 h-7 rounded-md bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
                                 <span class="text-white font-black text-lg leading-none">+</span>
                             </div>
-                            <span class="font-extrabold text-xl tracking-tight text-emerald-600">Medi<span class="text-slate-800">SaaS</span></span>
+                            <span class="font-extrabold text-2xl tracking-tight text-emerald-600">SaaS<span class="text-slate-800">Medi</span></span>
                         </Link>
                     </div>
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex items-center gap-8 lg:gap-12">
-                        <Link :href="route('features')" :class="['text-[13px] font-bold transition-colors', $page.url === '/features' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Features</Link>
-                        <Link :href="route('pricing')" :class="['text-[13px] font-bold transition-colors', $page.url === '/pricing' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Pricing</Link>
-                        <Link :href="route('partner')" :class="['text-[13px] font-bold transition-colors', $page.url === '/partner' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Partner Program</Link>
-                        <Link :href="route('track.order.page')" :class="['text-[13px] font-bold transition-colors', $page.url === '/track-order' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Track Order</Link>
+                        <Link :href="route('features')" :class="['text-base font-bold transition-colors', $page.url === '/features' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Features</Link>
+                        <Link :href="route('pricing')" :class="['text-base font-bold transition-colors', $page.url === '/pricing' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Pricing</Link>
+                        <Link :href="route('partner')" :class="['text-base font-bold transition-colors', $page.url === '/partner' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Partner Program</Link>
+                        <Link :href="route('track.order.page')" :class="['text-base font-bold transition-colors', $page.url === '/track-order' ? 'text-emerald-600' : 'text-slate-600 hover:text-emerald-600']">Track Order</Link>
                     </div>
 
                     <!-- Actions -->
                     <div class="hidden md:flex items-center gap-5">
-                        <Link :href="route('login')" class="text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
-                        <Link :href="route('register')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[13px] font-bold px-6 py-2.5 rounded-lg shadow-md shadow-emerald-500/20 transition-all hover:-translate-y-0.5">
+                        <Link :href="route('login')" class="text-base font-bold text-slate-600 hover:text-slate-900 transition-colors">Sign In</Link>
+                        <Link :href="route('register')" class="bg-emerald-500 hover:bg-emerald-600 text-white text-base font-bold px-6 py-2.5 rounded-lg shadow-md shadow-emerald-500/20 transition-all hover:-translate-y-0.5">
                             Start Free Trial
                         </Link>
                     </div>
@@ -77,7 +77,7 @@ const mobileMenuOpen = ref(false);
                             <div class="w-6 h-6 rounded bg-emerald-600 flex items-center justify-center">
                                 <span class="text-white font-black text-sm leading-none">+</span>
                             </div>
-                            <span class="font-extrabold text-lg text-emerald-600 tracking-tight">Medi<span class="text-slate-800">SaaS</span></span>
+                            <span class="font-extrabold text-lg text-emerald-600 tracking-tight">SaaS<span class="text-slate-800">Medi</span></span>
                         </Link>
                         <p class="text-[11px] text-slate-500 mb-6 leading-relaxed max-w-xs font-medium">
                             The complete cloud POS & ERP solution for modern pharmacies to manage and grow their business efficiently.
@@ -120,7 +120,7 @@ const mobileMenuOpen = ref(false);
                 </div>
                 <div class="border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-center items-center">
                     <p class="text-[10px] text-slate-400 font-medium">
-                        &copy; {{ new Date().getFullYear() }} MediSaaS. All rights reserved.
+                        &copy; {{ new Date().getFullYear() }} SaaSMedi. All rights reserved.
                     </p>
                 </div>
             </div>

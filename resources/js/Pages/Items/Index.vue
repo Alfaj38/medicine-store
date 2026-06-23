@@ -20,7 +20,7 @@ watch(search, debounce((value) => {
 </script>
 
 <template>
-    <Head title="Catalog - MediSaaS" />
+    <Head title="Catalog - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

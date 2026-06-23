@@ -34,7 +34,7 @@ const formatStatus = (status) => {
 </script>
 
 <template>
-    <Head title="Online Orders - MediSaaS" />
+    <Head title="Online Orders - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

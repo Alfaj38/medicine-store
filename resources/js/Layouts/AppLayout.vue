@@ -6,7 +6,7 @@
                     <div class="flex">
                         <!-- Logo -->
                         <div class="shrink-0 flex items-center">
-                            <span class="text-xl font-bold text-indigo-600">MediSaaS ERP</span>
+                            <span class="text-xl font-bold text-indigo-600">SaaSMedi ERP</span>
                         </div>
 
                         <!-- Navigation Links -->

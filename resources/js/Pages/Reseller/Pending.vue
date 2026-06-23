@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <Head title="Application Pending - MediSaaS Partner" />
+    <Head title="Application Pending - SaaSMedi Partner" />
     
     <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 text-center border border-slate-100">
@@ -13,7 +13,7 @@ import { Head, Link } from '@inertiajs/vue3';
             
             <h1 class="text-2xl font-black text-slate-900 mb-4">Application Under Review</h1>
             <p class="text-slate-500 mb-8 leading-relaxed">
-                Thank you for applying to the MediSaaS Partner Program! We are currently reviewing your application. You will receive an email once your account is approved.
+                Thank you for applying to the SaaSMedi Partner Program! We are currently reviewing your application. You will receive an email once your account is approved.
             </p>
             
             <Link :href="route('home')" class="inline-block font-bold text-emerald-600 hover:text-emerald-700 transition-colors">

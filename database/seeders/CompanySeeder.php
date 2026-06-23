@@ -39,7 +39,7 @@ class CompanySeeder extends Seeder
         // Platform Admin
         \App\Models\User::create([
             'name' => 'Super Admin',
-            'email' => 'superadmin@medisaas.com',
+            'email' => 'superadmin@saasmedi.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'user_type' => 'management',
             'data_scope' => 'platform',
@@ -50,7 +50,7 @@ class CompanySeeder extends Seeder
         $company = \App\Models\Company::create([
             'name' => 'Demo Pharmacy',
             'slug' => 'demo',
-            'email' => 'contact@demo.medisaas.com',
+            'email' => 'contact@demo.saasmedi.com',
             'registration_status' => 'active',
             'is_active' => true,
         ]);
@@ -66,7 +66,7 @@ class CompanySeeder extends Seeder
             'company_id' => $company->id,
             'branch_id' => $branch->id,
             'name' => 'Company Owner',
-            'email' => 'admin@medisaas.com',
+            'email' => 'admin@saasmedi.com',
             'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'user_type' => 'company',
             'data_scope' => 'company',

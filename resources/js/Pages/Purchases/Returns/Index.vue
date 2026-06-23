@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Purchase Returns - MediSaaS" />
+    <Head title="Purchase Returns - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

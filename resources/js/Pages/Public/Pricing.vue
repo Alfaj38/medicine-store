@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="Pricing - MediSaaS" />
+    <Head title="Pricing - SaaSMedi" />
     <PublicLayout>
         <!-- Header -->
         <div class="bg-slate-50 pt-20 pb-24 border-b border-slate-200">

@@ -8,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="Return Details - MediSaaS" />
+    <Head title="Return Details - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
         <TopNavbar />

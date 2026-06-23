@@ -21,7 +21,7 @@ class TenantMiddleware
         } else {
             $host = $request->getHost();
             
-            // Extract subdomain (e.g. "squarepharma" from "squarepharma.medisaas.com" or "squarepharma.localhost")
+            // Extract subdomain (e.g. "squarepharma" from "squarepharma.saasmedi.com" or "squarepharma.localhost")
             $parts = explode('.', $host);
             
             if (count($parts) >= 2 && $parts[0] !== 'www') {

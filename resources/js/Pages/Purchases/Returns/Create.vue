@@ -95,7 +95,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="New Purchase Return - MediSaaS" />
+    <Head title="New Purchase Return - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
         <TopNavbar />

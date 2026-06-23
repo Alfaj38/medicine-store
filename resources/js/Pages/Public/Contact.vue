@@ -21,7 +21,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Contact Us - MediSaaS" />
+    <Head title="Contact Us - SaaSMedi" />
     <PublicLayout>
         <div class="bg-white py-16 md:py-24">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +50,7 @@ const submit = () => {
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-bold text-slate-900">Email</h4>
-                                    <p class="text-slate-600 mt-1">info@medisaas.com</p>
+                                    <p class="text-slate-600 mt-1">info@saasmedi.com</p>
                                 </div>
                             </div>
 

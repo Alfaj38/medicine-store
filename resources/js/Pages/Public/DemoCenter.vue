@@ -27,7 +27,7 @@ const features = [
 </script>
 
 <template>
-    <Head title="Demo Center - MediSaaS" />
+    <Head title="Demo Center - SaaSMedi" />
     <PublicLayout>
         
         <!-- Header -->
@@ -38,7 +38,7 @@ const features = [
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     Interactive Demo Center
                 </div>
-                <h1 class="text-4xl md:text-5xl font-black mb-6">Explore MediSaaS in Action</h1>
+                <h1 class="text-4xl md:text-5xl font-black mb-6">Explore SaaSMedi in Action</h1>
                 <p class="text-xl text-slate-400 max-w-2xl mx-auto">Watch our product tour, explore core features, and see exactly why 500+ pharmacies run their entire business on our platform.</p>
             </div>
         </div>

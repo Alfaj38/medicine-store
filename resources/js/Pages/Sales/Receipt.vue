@@ -17,7 +17,7 @@ const printReceipt = () => {
 </script>
 
 <template>
-    <Head title="Receipt - MediSaaS" />
+    <Head title="Receipt - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-100 flex flex-col items-center py-10 print:py-0 print:bg-white">
         
@@ -45,7 +45,7 @@ const printReceipt = () => {
             
             <!-- Header -->
             <div class="text-center mb-6">
-                <div class="font-bold text-2xl mb-1 tracking-tight">MediSaaS</div>
+                <div class="font-bold text-2xl mb-1 tracking-tight">SaaSMedi</div>
                 <div class="text-xs text-slate-600">123 Health Avenue, Medical City</div>
                 <div class="text-xs text-slate-600">Phone: +1 234 567 890</div>
                 <div class="text-xs text-slate-600 mt-2 font-bold">TAX INVOICE</div>
@@ -130,7 +130,7 @@ const printReceipt = () => {
             <div class="text-center text-xs mt-6">
                 <div class="font-bold mb-1">Thank you for your visit!</div>
                 <div class="text-[10px] text-slate-500">Wishing you a quick recovery.</div>
-                <div class="mt-4 text-[10px] text-slate-400">Software by MediSaaS</div>
+                <div class="mt-4 text-[10px] text-slate-400">Software by SaaSMedi</div>
             </div>
             
             <!-- Barcode Placeholder (Optional) -->

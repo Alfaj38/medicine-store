@@ -79,7 +79,7 @@ const submitPayment = () => {
 </script>
 
 <template>
-    <Head title="Purchases - MediSaaS" />
+    <Head title="Purchases - SaaSMedi" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar />

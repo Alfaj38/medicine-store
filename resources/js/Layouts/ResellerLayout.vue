@@ -27,7 +27,7 @@ const isActive = (href) => {
                     <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center font-black text-xl shadow-lg">+</div>
                     <div>
                         <div class="font-bold text-lg leading-tight">Partner</div>
-                        <div class="text-xs text-emerald-400 font-medium">MediSaaS</div>
+                        <div class="text-xs text-emerald-400 font-medium">SaaSMedi</div>
                     </div>
                 </div>
 

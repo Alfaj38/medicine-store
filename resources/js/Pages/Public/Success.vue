@@ -42,7 +42,7 @@ const c = config[props.type] || config.demo;
 </script>
 
 <template>
-    <Head :title="`${isDemo ? 'Demo Booked' : 'Trial Started'} - MediSaaS`" />
+    <Head :title="`${isDemo ? 'Demo Booked' : 'Trial Started'} - SaaSMedi`" />
     <PublicLayout>
         <div class="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30 flex items-center justify-center py-20 px-4">
             <div class="max-w-2xl w-full text-center">
@@ -98,7 +98,7 @@ const c = config[props.type] || config.demo;
                 </div>
 
                 <p class="text-sm text-slate-400 mt-8">
-                    Questions? <a :href="'mailto:info@medisaas.com'" class="text-emerald-600 hover:underline font-medium">Email us at info@medisaas.com</a>
+                    Questions? <a :href="'mailto:info@saasmedi.com'" class="text-emerald-600 hover:underline font-medium">Email us at info@saasmedi.com</a>
                 </p>
             </div>
         </div>

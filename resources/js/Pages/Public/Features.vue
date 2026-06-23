@@ -29,7 +29,7 @@ const inventory = [
 </script>
 
 <template>
-    <Head title="Features - MediSaaS" />
+    <Head title="Features - SaaSMedi" />
     <PublicLayout>
         <!-- Header -->
         <div class="bg-slate-50/50 pt-32 pb-16 text-center px-4 sm:px-6 lg:px-8">

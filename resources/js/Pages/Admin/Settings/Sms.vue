@@ -33,7 +33,7 @@
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1.5">Sender ID / Masking Name</label>
-                        <input v-model="form.sms_sender_id" type="text" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. MEDISAAS">
+                        <input v-model="form.sms_sender_id" type="text" class="w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. SAASMEDI">
                         <p class="text-xs text-slate-500 mt-1.5">Must be approved by your SMS provider if using masking.</p>
                     </div>
 

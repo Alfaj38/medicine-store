@@ -39,7 +39,7 @@ const minDate = tomorrow.toISOString().split('T')[0];
 </script>
 
 <template>
-    <Head title="Book a Demo - MediSaaS" />
+    <Head title="Book a Demo - SaaSMedi" />
     <PublicLayout>
         <div class="bg-gradient-to-br from-slate-50 to-emerald-50/30 min-h-screen py-16 px-4">
             <div class="max-w-6xl mx-auto">
@@ -50,8 +50,8 @@ const minDate = tomorrow.toISOString().split('T')[0];
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         Free 30-Minute Live Demo
                     </div>
-                    <h1 class="text-4xl font-black text-slate-900 mb-3">See MediSaaS in Action</h1>
-                    <p class="text-slate-500 max-w-xl mx-auto">Book a personalized demo and see exactly how MediSaaS solves your pharmacy's challenges.</p>
+                    <h1 class="text-4xl font-black text-slate-900 mb-3">See SaaSMedi in Action</h1>
+                    <p class="text-slate-500 max-w-xl mx-auto">Book a personalized demo and see exactly how SaaSMedi solves your pharmacy's challenges.</p>
                 </div>
 
                 <div class="grid lg:grid-cols-5 gap-8 items-start">
@@ -81,7 +81,7 @@ const minDate = tomorrow.toISOString().split('T')[0];
                         <!-- Social proof -->
                         <div class="bg-emerald-600 rounded-2xl p-6 text-white">
                             <div class="text-3xl font-black mb-1">500+</div>
-                            <div class="text-emerald-100 text-sm mb-4">Pharmacies already using MediSaaS across Bangladesh</div>
+                            <div class="text-emerald-100 text-sm mb-4">Pharmacies already using SaaSMedi across Bangladesh</div>
                             <div class="flex -space-x-2">
                                 <div v-for="i in 5" :key="i" class="w-8 h-8 rounded-full bg-white/20 border-2 border-emerald-600 flex items-center justify-center text-xs font-bold">
                                     {{ ['A','B','C','D','E'][i-1] }}

@@ -21,7 +21,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Log in - MediSaaS" />
+    <Head title="Log in - SaaSMedi" />
     
     <!-- Light mint background pattern (approximated with a CSS pattern) -->
     <div class="min-h-screen bg-[#e8f7f2] flex items-center justify-center font-sans p-4" 
@@ -73,7 +73,7 @@ const submit = () => {
                             required 
                             autofocus 
                             class="w-full bg-[#f0f4f8] border-2 border-emerald-500 text-slate-900 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-0 transition-colors font-medium text-sm" 
-                            placeholder="admin@medisaas.com"
+                            placeholder="admin@saasmedi.com"
                         />
                         <p v-if="form.errors.email" class="text-red-500 text-xs mt-1.5 ml-1">{{ form.errors.email }}</p>
                     </div>
@@ -142,7 +142,7 @@ const submit = () => {
                             <div class="w-10 h-10 rounded-full border-4 border-emerald-400 flex items-center justify-center border-t-transparent animate-[spin_3s_linear_infinite]">
                                 <div class="w-4 h-4 bg-emerald-400 rounded-full"></div>
                             </div>
-                            <h2 class="text-4xl font-bold tracking-wider">MediSaaS</h2>
+                            <h2 class="text-4xl font-bold tracking-wider">SaaSMedi</h2>
                         </div>
                         <p class="text-emerald-100 text-sm font-medium">Pharmacy & ERP solutions to suit your business</p>
                     </div>

@@ -27,7 +27,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Partner Program - MediSaaS" />
+    <Head title="Partner Program - SaaSMedi" />
     <PublicLayout>
         <!-- Hero Section -->
         <section class="relative bg-slate-900 pt-32 pb-20 overflow-hidden">
@@ -38,7 +38,7 @@ const submit = () => {
                     By Referring Pharmacies
                 </h1>
                 <p class="text-xl text-slate-300 max-w-2xl mx-auto mb-10">
-                    Join the MediSaaS Partner Program and earn a 10% lifetime commission for every pharmacy you refer that becomes a subscriber.
+                    Join the SaaSMedi Partner Program and earn a 10% lifetime commission for every pharmacy you refer that becomes a subscriber.
                 </p>
                 <a href="#apply" class="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-lg transition-colors shadow-lg shadow-emerald-500/30">
                     Apply Now

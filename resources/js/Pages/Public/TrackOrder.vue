@@ -13,7 +13,7 @@ const submitTracking = () => {
 </script>
 
 <template>
-    <Head title="Track Your Order - MediSaaS" />
+    <Head title="Track Your Order - SaaSMedi" />
 
     <PublicLayout>
         <div class="bg-white min-h-[70vh] flex flex-col justify-center items-center py-20 px-4 sm:px-6 lg:px-8">

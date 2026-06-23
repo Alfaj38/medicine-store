@@ -48,7 +48,7 @@ const printPackingSlip = () => {
 </script>
 
 <template>
-    <Head :title="`Order ${order.tracking_number} - MediSaaS`" />
+    <Head :title="`Order ${order.tracking_number} - SaaSMedi`" />
 
     <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
         <TopNavbar class="print:hidden" />

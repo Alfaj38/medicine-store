@@ -15,7 +15,7 @@ class ManagementUserSeeder extends Seeder
             'company_id' => null,
             'branch_id' => null,
             'name' => 'Platform Admin',
-            'email' => 'admin@medisaas.com',
+            'email' => 'admin@saasmedi.com',
             'password' => Hash::make('password'),
             'user_type' => 'management',
             'data_scope' => 'platform',

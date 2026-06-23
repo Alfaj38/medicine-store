@@ -8,9 +8,43 @@ use App\Models\SubscriptionPlan;
 
 class PublicController extends Controller
 {
-    public function home()
+
+    public function home(Request $request)
     {
-        return Inertia::render('Public/Home');
+        $query = \App\Models\Company::where('is_active', true)
+            ->where('registration_status', 'active');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('address', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('location') && $request->location !== 'all') {
+            $location = $request->location;
+            $query->where('address', 'like', "%{$location}%");
+        }
+
+        if ($request->boolean('top_rated')) {
+            $query->orderByDesc('id'); // Mock sorting for top rated
+        } else {
+            $query->orderBy('id', 'desc'); // Default ordering
+        }
+
+        $pharmacies = $query->select('id', 'name', 'slug', 'address', 'logo')
+            ->limit(12) // show up to 12
+            ->get();
+
+        return Inertia::render('Public/Home', [
+            'pharmacies' => $pharmacies,
+            'filters' => [
+                'search' => $request->search,
+                'location' => $request->location ?? 'all',
+                'top_rated' => $request->boolean('top_rated')
+            ]
+        ]);
     }
 
     public function features()

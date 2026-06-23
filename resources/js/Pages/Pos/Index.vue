@@ -373,7 +373,7 @@ const filteredCategoriesByType = computed(() => {
 </script>
 
 <template>
-    <Head title="POS - MediSaaS" />
+    <Head title="POS - SaaSMedi" />
 
     <div class="flex flex-col h-screen bg-slate-50 text-slate-900 overflow-hidden select-none">
 
@@ -384,7 +384,7 @@ const filteredCategoriesByType = computed(() => {
                     <div class="w-7 h-7 rounded-md bg-emerald-500 flex items-center justify-center">
                         <span class="text-xs font-bold text-white">M</span>
                     </div>
-                    <span class="font-bold text-sm text-slate-900 tracking-wide">MediSaaS POS</span>
+                    <span class="font-bold text-sm text-slate-900 tracking-wide">SaaSMedi POS</span>
                 </div>
                 <Link :href="route('dashboard')" class="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
