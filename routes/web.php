@@ -62,6 +62,21 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         return redirect('/dashboard');
     });
 
+    Route::get('/email/verify', function () {
+        return Inertia::render('Auth/VerifyEmail');
+    })->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect('/dashboard');
+    })->middleware(['signed'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('flash', ['success' => 'Verification link sent!']);
+    })->middleware(['throttle:6,1'])->name('verification.send');
+
+
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     // Profile Routes
@@ -70,7 +85,7 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
     Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Management Portal
-    Route::middleware(['management'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['management', 'verified'])->prefix('admin')->name('admin.')->group(function () {
         // Demo Requests Management
         Route::get('demo-requests', [\App\Http\Controllers\Admin\DemoRequestController::class, 'index'])->name('demo-requests.index');
         Route::get('demo-requests/{demoRequest}', [\App\Http\Controllers\Admin\DemoRequestController::class, 'show'])->name('demo-requests.show');
@@ -149,7 +164,7 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
     });
 
     // Company Portal
-    Route::middleware(['company'])->group(function () {
+    Route::middleware(['company', 'verified'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('items', \App\Http\Controllers\ItemController::class);

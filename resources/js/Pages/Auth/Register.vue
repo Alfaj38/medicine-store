@@ -79,7 +79,25 @@ const prevStep = () => {
 
 const submit = () => {
     form.post(route('register.store'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
+        preserveScroll: true,
+        onError: (errors) => {
+            if (errors.company_name || errors.company_type || errors.branch_count) {
+                currentStep.value = 1;
+            } else if (errors.company_country || errors.company_currency || errors.company_timezone || errors.company_address || errors.company_phone) {
+                currentStep.value = 2;
+            } else if (errors.owner_name || errors.owner_email || errors.owner_phone || errors.password) {
+                currentStep.value = 3;
+                // Only reset password if the password itself had an error
+                if (errors.password) {
+                    form.reset('password', 'password_confirmation');
+                }
+            } else if (errors.plan_id || errors.billing_cycle || errors.referral_code) {
+                currentStep.value = 4;
+            }
+        },
+        onSuccess: () => {
+            form.reset('password', 'password_confirmation');
+        }
     });
 };
 

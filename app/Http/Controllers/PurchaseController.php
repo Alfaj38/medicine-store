@@ -99,8 +99,12 @@ class PurchaseController extends Controller
             return response()->json([]);
         }
 
-        // Get Manufacturer IDs that match the supplier's company names
-        $manufacturerIds = \App\Models\Manufacturer::whereIn('name', $companies)->pluck('id');
+        // Get Manufacturer IDs that match the supplier's company names (using LIKE to handle 'Ltd.' mismatches)
+        $manufacturerIds = \App\Models\Manufacturer::where(function($q) use ($companies) {
+            foreach ($companies as $company) {
+                $q->orWhere('name', 'like', "%{$company}%");
+            }
+        })->pluck('id');
 
         $items = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
             ->with(['medicineDetails', 'prices' => function($q) {

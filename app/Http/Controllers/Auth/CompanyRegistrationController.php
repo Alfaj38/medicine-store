@@ -55,7 +55,7 @@ class CompanyRegistrationController extends Controller
             'referral_source' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated) {
             $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
             $price = SubscriptionPlanPrice::where('plan_id', $plan->id)
                 ->where('billing_cycle', $validated['billing_cycle'])
@@ -136,9 +136,13 @@ class CompanyRegistrationController extends Controller
                     session()->forget('referral_code');
                 }
             }
+
+            return $user;
         });
 
-        // Redirect to success page for trial
-        return redirect()->route('success', ['type' => 'trial', 'name' => $validated['owner_name']]);
+        event(new \Illuminate\Auth\Events\Registered($user));
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        return redirect()->route('verification.notice');
     }
 }
