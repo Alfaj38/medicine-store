@@ -71,7 +71,7 @@ class PosController extends Controller
             })
             ->with(['medicineDetails', 'prices' => function($q) {
                 $q->where('price_type', 'Retail');
-            }, 'category']);
+            }, 'category', 'units', 'uom']);
 
         if ($categoryId) {
             $query->where('category_id', $categoryId);
@@ -98,17 +98,8 @@ class PosController extends Controller
         }
 
         $itemIds = $query->pluck('id')->toArray();
-        $fallbackPrices = [];
-        if (!empty($itemIds)) {
-            $fallbackPrices = \Illuminate\Support\Facades\DB::table('purchase_items')
-                ->whereIn('medicine_id', $itemIds)
-                ->groupBy('medicine_id')
-                ->select('medicine_id', \Illuminate\Support\Facades\DB::raw('MAX(unit_price) as max_price'))
-                ->pluck('max_price', 'medicine_id')
-                ->toArray();
-        }
 
-        $items = $query->take(32)->get()->map(function($item) use ($companyId, $fallbackPrices) {
+        $items = $query->take(32)->get()->map(function($item) use ($companyId) {
             // Get stock details for frontend format
             $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
             if ($companyId) {
@@ -119,8 +110,8 @@ class PosController extends Controller
             $stockQty = $inventory->sum('quantity');
 
             $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
-            if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
-                $sellPrice = $fallbackPrices[$item->id];
+            if ($sellPrice <= 0 && $inventory->count() > 0) {
+                $sellPrice = $inventory->max('mrp');
             }
 
             // Fallback inventory mrp to sell_price if it's 0 so frontend shows correct price
@@ -131,15 +122,35 @@ class PosController extends Controller
                 return $inv;
             });
 
+            $units = $item->units;
+            if ($units->isEmpty()) {
+                $uomName = $item->uom ? $item->uom->name : 'Unit';
+                $fallbackUnit = [
+                    'id' => 'fallback',
+                    'unit_name' => $uomName,
+                    'factor' => 1,
+                    'is_base_unit' => true,
+                    'is_purchase_unit' => true,
+                    'is_sales_unit' => true
+                ];
+                $units = collect([(object) $fallbackUnit]);
+            }
+
+            $salesUnit = $units->firstWhere('is_sales_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
+            $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+
             return [
                 'id'           => $item->id,
                 'name'         => $item->name,
                 'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
                 'barcode'      => $item->barcode,
-                'sell_price'   => $sellPrice,
+                'sell_price'   => $sellPrice, // Base selling price
                 'category'     => $item->category,
-                'stock_qty'    => (int) $stockQty,
+                'stock_qty'    => (int) $stockQty, // Base stock quantity
                 'inventory'    => $inventory,
+                'units'        => $units,
+                'default_unit' => $salesUnit,
+                'base_unit'    => $baseUnit,
             ];
         });
 
@@ -208,21 +219,12 @@ class PosController extends Controller
             });
 
         $itemIds = $query->pluck('id')->toArray();
-        $fallbackPrices = [];
-        if (!empty($itemIds)) {
-            $fallbackPrices = \Illuminate\Support\Facades\DB::table('purchase_items')
-                ->whereIn('medicine_id', $itemIds)
-                ->groupBy('medicine_id')
-                ->select('medicine_id', \Illuminate\Support\Facades\DB::raw('MAX(unit_price) as max_price'))
-                ->pluck('max_price', 'medicine_id')
-                ->toArray();
-        }
 
         $items = $query->with(['medicineDetails', 'prices' => function($q) {
                 $q->where('price_type', 'Retail');
-            }])
+            }, 'units', 'uom'])
             ->take(15)
-            ->get()->map(function($item) use ($companyId, $fallbackPrices) {
+            ->get()->map(function($item) use ($companyId) {
                 // Get stock details for frontend format
                 $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
                 if ($companyId) {
@@ -231,8 +233,8 @@ class PosController extends Controller
                 $inventory = $inventoryQuery->get();
 
                 $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
-                if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
-                    $sellPrice = $fallbackPrices[$item->id];
+                if ($sellPrice <= 0 && $inventory->count() > 0) {
+                    $sellPrice = $inventory->max('mrp');
                 }
 
                 $inventory->transform(function ($inv) use ($sellPrice) {
@@ -242,6 +244,23 @@ class PosController extends Controller
                     return $inv;
                 });
                     
+                $units = $item->units;
+                if ($units->isEmpty()) {
+                    $uomName = $item->uom ? $item->uom->name : 'Unit';
+                    $fallbackUnit = [
+                        'id' => 'fallback',
+                        'unit_name' => $uomName,
+                        'factor' => 1,
+                        'is_base_unit' => true,
+                        'is_purchase_unit' => true,
+                        'is_sales_unit' => true
+                    ];
+                    $units = collect([(object) $fallbackUnit]);
+                }
+
+                $salesUnit = $units->firstWhere('is_sales_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
+                $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+
                 return [
                     'id' => $item->id,
                     'name' => $item->name,
@@ -249,6 +268,9 @@ class PosController extends Controller
                     'barcode' => $item->barcode,
                     'sell_price' => $sellPrice,
                     'inventory' => $inventory,
+                    'units' => $units,
+                    'default_unit' => $salesUnit,
+                    'base_unit' => $baseUnit,
                 ];
             });
 
@@ -267,6 +289,8 @@ class PosController extends Controller
             'payment_method' => 'required|string',
             'items' => 'required|array|min:1',
             'items.*.medicine_id' => 'required|exists:items,id',
+            'items.*.unit_id' => 'nullable|exists:item_units,id',
+            'items.*.unit_factor' => 'nullable|integer|min:1',
             'items.*.batch_no' => 'nullable|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
@@ -304,6 +328,8 @@ class PosController extends Controller
             foreach ($validated['items'] as $item) {
                 $sale->items()->create([
                     'medicine_id' => $item['medicine_id'],
+                    'unit_id' => $item['unit_id'] ?? null,
+                    'unit_factor' => $item['unit_factor'] ?? 1,
                     'batch_no' => $item['batch_no'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
@@ -312,16 +338,20 @@ class PosController extends Controller
                     'total' => $item['subtotal'],
                 ]);
 
+                $factor = $item['unit_factor'] ?? 1;
+                $deductionQuantity = $item['quantity'] * $factor;
+
                 // Deduct Inventory
                 $inventory = Inventory::where('company_id', auth()->user()->company_id)
                     ->where('medicine_id', $item['medicine_id'])
                     ->when($item['batch_no'], function($q) use ($item) {
                         return $q->where('batch_no', $item['batch_no']);
                     })
+                    ->orderBy('expiry_date', 'asc') // FEFO priority
                     ->first();
 
                 if ($inventory) {
-                    $inventory->decrement('quantity', $item['quantity']);
+                    $inventory->decrement('quantity', $deductionQuantity);
                     
                     // Stock Ledger
                     StockLedger::create([
@@ -330,7 +360,7 @@ class PosController extends Controller
                         'reference_type' => Sale::class,
                         'reference_id' => $sale->id,
                         'type' => 'out',
-                        'quantity' => -$item['quantity'],
+                        'quantity' => -$deductionQuantity,
                         'balance_after' => $inventory->fresh()->quantity,
                         'notes' => 'Sale ' . $invoiceNo,
                     ]);

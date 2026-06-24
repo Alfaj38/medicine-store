@@ -175,6 +175,15 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::get('/purchase-returns/get-batches', [App\Http\Controllers\PurchaseReturnController::class, 'getBatches'])->name('purchase-returns.batches');
         Route::resource('purchase-returns', App\Http\Controllers\PurchaseReturnController::class)->except(['edit', 'update', 'destroy']);
 
+        // Requisitions
+        Route::get('requisitions/search-medicines', [\App\Http\Controllers\RequisitionController::class, 'searchMedicines'])->name('requisitions.search');
+        Route::get('requisitions/auto-generate', [\App\Http\Controllers\RequisitionController::class, 'autoGenerate'])->name('requisitions.auto-generate');
+        Route::patch('requisitions/{requisition}/status', [\App\Http\Controllers\RequisitionController::class, 'updateStatus'])->name('requisitions.status');
+        Route::resource('requisitions', \App\Http\Controllers\RequisitionController::class);
+        
+        // Purchase Orders
+        Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class)->only(['index', 'show']);
+
         // Purchases
         Route::get('/purchases/search-medicines', [App\Http\Controllers\PurchaseController::class, 'searchMedicines'])->name('purchases.search');
         Route::get('/purchases/suppliers/{supplier}/pending-credit-notes', [App\Http\Controllers\PaymentController::class, 'pendingCreditNotes'])->name('purchases.pending-credit-notes');

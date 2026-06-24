@@ -157,8 +157,13 @@ const addToCart = (medicine) => {
                 batch_no: batch.batch_no,
                 expiry_date: batch.expiry_date ? batch.expiry_date.substring(0, 7) : '',
                 available_qty: batch.quantity,
+                available_units: medicine.units || [],
+                unit_id: medicine.default_unit?.id || null,
+                unit_factor: medicine.default_unit?.factor || 1,
+                unit_name: medicine.default_unit?.unit_name || 'Unit',
                 quantity: 1,
-                unit_price: parseFloat(batch.mrp || medicine.sell_price || 0),
+                unit_price: parseFloat(batch.mrp || medicine.sell_price || 0) * (medicine.default_unit?.factor || 1),
+                base_price: parseFloat(batch.mrp || medicine.sell_price || 0),
             });
         }
     } else {
@@ -176,8 +181,13 @@ const addToCart = (medicine) => {
                 batch_no: null,
                 expiry_date: '',
                 available_qty: 9999,
+                available_units: medicine.units || [],
+                unit_id: medicine.default_unit?.id || null,
+                unit_factor: medicine.default_unit?.factor || 1,
+                unit_name: medicine.default_unit?.unit_name || 'Unit',
                 quantity: 1,
-                unit_price: parseFloat(medicine.sell_price || 0),
+                unit_price: parseFloat(medicine.sell_price || 0) * (medicine.default_unit?.factor || 1),
+                base_price: parseFloat(medicine.sell_price || 0),
             });
         }
     }
@@ -195,8 +205,23 @@ const updateQty = (idx, delta) => {
     const item = cart.value[idx];
     const newQty = item.quantity + delta;
     if (newQty < 1) { removeFromCart(idx); return; }
-    if (newQty > item.available_qty) return;
+    if (newQty * item.unit_factor > item.available_qty) return;
     item.quantity = newQty;
+};
+
+const onUnitChange = (item) => {
+    if (!item.unit_id) return;
+    let selectedUnit = item.available_units.find(u => u.id === item.unit_id);
+    if (selectedUnit) {
+        item.unit_factor = selectedUnit.factor;
+        item.unit_name = selectedUnit.unit_name;
+        item.unit_price = item.base_price * selectedUnit.factor;
+        
+        if (item.quantity * item.unit_factor > item.available_qty) {
+            item.quantity = Math.floor(item.available_qty / item.unit_factor);
+            if (item.quantity < 1) item.quantity = 1;
+        }
+    }
 };
 
 const clearCart = () => {
@@ -227,6 +252,8 @@ const completeSale = () => {
         notes: saleNote.value,
         items: cart.value.map(i => ({
             medicine_id: i.medicine_id,
+            unit_id: i.unit_id === 'fallback' ? null : i.unit_id,
+            unit_factor: i.unit_factor,
             batch_no: i.batch_no,
             quantity: i.quantity,
             unit_price: i.unit_price,
@@ -628,7 +655,12 @@ const filteredCategoriesByType = computed(() => {
                                 <div class="text-[13px] font-bold text-emerald-600 flex-shrink-0">${{ (item.unit_price * item.quantity).toFixed(2) }}</div>
                             </div>
                             <div class="flex justify-between items-center mt-1">
-                                <div class="text-[10px] text-slate-500 truncate">{{ item.type }} · B:{{ item.batch_no || '-' }}</div>
+                                <div class="text-[10px] text-slate-500 truncate flex items-center gap-1">
+                                    <span>{{ item.type }} · B:{{ item.batch_no || '-' }}</span>
+                                    <select v-if="item.available_units && item.available_units.length > 0" v-model="item.unit_id" @change="onUnitChange(item)" class="bg-slate-100 border border-slate-200 rounded px-1 py-0.5 text-[10px] text-slate-700 ml-1 focus:outline-none">
+                                        <option v-for="u in item.available_units" :key="u.id" :value="u.id">{{ u.unit_name }}</option>
+                                    </select>
+                                </div>
                                 <div class="flex items-center gap-1.5 flex-shrink-0 bg-slate-100 rounded-md p-0.5">
                                     <button @click="updateQty(idx, -1)" class="w-5 h-5 rounded bg-white border border-slate-200 text-slate-700 flex items-center justify-center leading-none hover:bg-slate-200">−</button>
                                     <span class="w-5 text-center text-xs font-bold text-slate-900">{{ item.quantity }}</span>

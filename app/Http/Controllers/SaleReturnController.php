@@ -66,7 +66,7 @@ class SaleReturnController extends Controller
                 
                 $availableToReturn = $saleItem->quantity - $saleItem->returned_quantity;
                 if ($itemData['return_quantity'] > $availableToReturn) {
-                    throw new \Exception("Cannot return more than sold quantity for " . $saleItem->medicine->name);
+                    throw new \Exception("Cannot return more than sold quantity for " . ($saleItem->medicine->name ?? 'Unknown Item'));
                 }
 
                 $subtotal = $itemData['return_quantity'] * $saleItem->unit_price;

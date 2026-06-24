@@ -29,29 +29,46 @@ const mobileMenuOpen = ref(false);
                         </div>
                         <span class="font-bold text-xl tracking-tight text-slate-800">SaaSMedi</span>
                     </div>
-                    <div class="hidden sm:flex space-x-4 lg:space-x-8 h-full overflow-x-auto whitespace-nowrap flex-1" style="scrollbar-width: none;">
-                        <Link :href="route('dashboard')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url === '/dashboard' ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                    <div class="hidden sm:flex space-x-4 lg:space-x-8 h-full overflow-x-visible whitespace-nowrap flex-1">
+                        <Link :href="route('dashboard')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url === '/dashboard' ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Dashboard
                         </Link>
-                        <Link :href="route('items.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/medicines') || $page.url.startsWith('/items') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        <Link :href="route('items.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/medicines') || $page.url.startsWith('/items') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Master Data
                         </Link>
-                        <Link :href="route('suppliers.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/suppliers') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            Suppliers
-                        </Link>
-                        <Link :href="route('purchases.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/purchases') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            Purchases
-                        </Link>
-                        <Link :href="route('sales.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/sales') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            Sales
-                        </Link>
-                        <Link :href="route('online-orders.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/online-orders') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            Online Orders
-                        </Link>
-                        <Link :href="route('customers.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/customers') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
-                            Customers
-                        </Link>
-                        <Link :href="route('reports.expiry')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors" :class="$page.url.startsWith('/reports') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        
+                        <!-- Procurement Dropdown -->
+                        <div class="relative group h-full flex items-center">
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 h-full text-sm font-medium transition-colors" :class="$page.url.startsWith('/suppliers') || $page.url.startsWith('/requisitions') || $page.url.startsWith('/purchase-orders') || $page.url.startsWith('/purchases') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                                Procurement
+                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div class="absolute top-full left-0 w-48 bg-white rounded-b-xl shadow-lg border border-slate-100 hidden group-hover:block z-50 pt-1">
+                                <div class="py-2 bg-white rounded-b-xl">
+                                    <Link :href="route('suppliers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Suppliers</Link>
+                                    <Link :href="route('requisitions.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Requisitions</Link>
+                                    <Link :href="route('purchase-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Purchase Orders</Link>
+                                    <Link :href="route('purchases.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Purchases (GRN)</Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sales & CRM Dropdown -->
+                        <div class="relative group h-full flex items-center">
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 h-full text-sm font-medium transition-colors" :class="$page.url.startsWith('/sales') || $page.url.startsWith('/online-orders') || $page.url.startsWith('/customers') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                                Sales & CRM
+                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div class="absolute top-full left-0 w-48 bg-white rounded-b-xl shadow-lg border border-slate-100 hidden group-hover:block z-50 pt-1">
+                                <div class="py-2 bg-white rounded-b-xl">
+                                    <Link :href="route('sales.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Sales Invoices</Link>
+                                    <Link :href="route('online-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Online Orders</Link>
+                                    <Link :href="route('customers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Customers</Link>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Link :href="route('reports.expiry')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/reports') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Reports
                         </Link>
                     </div>
@@ -113,14 +130,22 @@ const mobileMenuOpen = ref(false);
                 <Link :href="route('items.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/medicines') || $page.url.startsWith('/items') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
                     Master Data
                 </Link>
+                <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Procurement</div>
                 <Link :href="route('suppliers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/suppliers') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
                     Suppliers
                 </Link>
-                <Link :href="route('purchases.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchases') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
-                    Purchases
+                <Link :href="route('requisitions.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/requisitions') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                    Requisitions
                 </Link>
+                <Link :href="route('purchase-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchase-orders') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                    Purchase Orders
+                </Link>
+                <Link :href="route('purchases.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchases') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                    Purchases (GRN)
+                </Link>
+                <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Sales & CRM</div>
                 <Link :href="route('sales.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/sales') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
-                    Sales
+                    Sales Invoices
                 </Link>
                 <Link :href="route('online-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/online-orders') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
                     Online Orders
@@ -128,6 +153,7 @@ const mobileMenuOpen = ref(false);
                 <Link :href="route('customers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/customers') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
                     Customers
                 </Link>
+                <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Other</div>
                 <Link :href="route('reports.expiry')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/reports') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
                     Reports
                 </Link>

@@ -120,6 +120,73 @@ const props = defineProps({
                 </div>
             </div>
 
+            <!-- Procurement Overview -->
+            <div v-if="procurement" class="mb-8">
+                <h2 class="text-xl font-bold text-slate-900 mb-4">Procurement & Inventory Alerts</h2>
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    
+                    <!-- Items Below Reorder -->
+                    <div class="bg-white overflow-hidden rounded-2xl shadow-sm border border-slate-200">
+                        <div class="p-5 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-500 truncate">Below Reorder Level</p>
+                                <div class="mt-1 text-2xl font-bold" :class="procurement.items_below_reorder > 0 ? 'text-rose-600' : 'text-slate-900'">
+                                    {{ procurement.items_below_reorder }} Items
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending Requisitions -->
+                    <div class="bg-white overflow-hidden rounded-2xl shadow-sm border border-slate-200">
+                        <div class="p-5 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-500 truncate">Pending Requisitions</p>
+                                <div class="mt-1 text-2xl font-bold text-slate-900">
+                                    {{ procurement.pending_requisitions }}
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Urgent Requisitions -->
+                    <div class="bg-white overflow-hidden rounded-2xl shadow-sm border border-rose-200 ring-1 ring-rose-50" :class="{'animate-pulse': procurement.urgent_requisitions > 0}">
+                        <div class="p-5 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-500 truncate">Urgent Requisitions</p>
+                                <div class="mt-1 text-2xl font-bold" :class="procurement.urgent_requisitions > 0 ? 'text-rose-600' : 'text-slate-900'">
+                                    {{ procurement.urgent_requisitions }}
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pending POs -->
+                    <div class="bg-white overflow-hidden rounded-2xl shadow-sm border border-slate-200">
+                        <div class="p-5 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-500 truncate">Pending Purchase Orders</p>
+                                <div class="mt-1 text-2xl font-bold text-slate-900">
+                                    {{ procurement.pending_pos }}
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Recent Activity -->
             <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
                 <div class="px-4 py-5 border-b border-slate-200 sm:px-6 flex justify-between items-center">

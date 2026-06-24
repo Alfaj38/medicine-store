@@ -90,4 +90,9 @@ class Item extends Model
     {
         return $this->hasMany(Inventory::class, 'medicine_id');
     }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(ItemUnit::class);
+    }
 }

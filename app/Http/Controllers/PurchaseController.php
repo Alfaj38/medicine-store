@@ -69,12 +69,20 @@ class PurchaseController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $po_id = $request->query('po_id');
+        $prefillPo = null;
+
+        if ($po_id) {
+            $prefillPo = \App\Models\PurchaseOrder::with('items.item')->find($po_id);
+        }
+
         return Inertia::render('Purchases/Form', [
             'suppliers' => Supplier::where('is_active', true)->orderBy('name')->get(),
             'medicines' => [], // Will be loaded asynchronously via search
-            'reference_no' => 'PO-' . date('Ymd') . '-' . rand(1000, 9999),
+            'reference_no' => 'GRN-' . date('Ymd') . '-' . rand(1000, 9999),
+            'prefillPo' => $prefillPo
         ]);
     }
 
@@ -109,7 +117,7 @@ class PurchaseController extends Controller
         $items = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
             ->with(['medicineDetails', 'prices' => function($q) {
                 $q->where('price_type', 'Purchase');
-            }])
+            }, 'units', 'uom'])
             ->where('is_active', true)
             ->whereIn('manufacturer_id', $manufacturerIds)
             ->where(function($q) {
@@ -129,11 +137,32 @@ class PurchaseController extends Controller
 
         // Map to expected format for the frontend
         $mapped = $items->map(function ($item) {
+            $units = $item->units;
+            if ($units->isEmpty()) {
+                // Fallback unit if no multi-level units configured
+                $uomName = $item->uom ? $item->uom->name : 'Unit';
+                $fallbackUnit = [
+                    'id' => 'fallback',
+                    'unit_name' => $uomName,
+                    'factor' => 1,
+                    'is_base_unit' => true,
+                    'is_purchase_unit' => true,
+                    'is_sales_unit' => true
+                ];
+                $units = collect([(object) $fallbackUnit]);
+            }
+
+            $purchaseUnit = $units->firstWhere('is_purchase_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
+            $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+            
             return [
                 'id' => $item->id,
                 'name' => $item->name,
                 'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
                 'buy_price' => $item->prices->first() ? $item->prices->first()->price : 0,
+                'units' => $units,
+                'default_unit' => $purchaseUnit,
+                'base_unit' => $baseUnit,
             ];
         });
 
@@ -144,6 +173,7 @@ class PurchaseController extends Controller
     {
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
+            'purchase_order_id' => 'nullable|exists:purchase_orders,id',
             'reference_no' => 'required|string|unique:purchases,reference_no',
             'purchase_date' => 'required|date',
             'discount' => 'numeric|min:0',
@@ -151,12 +181,17 @@ class PurchaseController extends Controller
             'paid_amount' => 'numeric|min:0',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.purchase_order_item_id' => 'nullable|exists:purchase_order_items,id',
             'items.*.medicine_id' => 'required|exists:items,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.mrp' => 'required|numeric|min:0',
+            'items.*.bonus_quantity' => 'nullable|integer|min:0',
+            'items.*.trade_discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.batch_no' => 'nullable|string',
             'items.*.expiry_date' => 'nullable|date',
+            'items.*.unit_id' => 'nullable|exists:item_units,id',
+            'items.*.unit_factor' => 'nullable|integer|min:1',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -166,7 +201,28 @@ class PurchaseController extends Controller
             foreach ($validated['items'] as $item) {
                 $itemSubtotal = $item['quantity'] * $item['unit_price'];
                 $subtotal += $itemSubtotal;
-                $itemsData[] = array_merge($item, ['subtotal' => $itemSubtotal, 'mrp' => $item['mrp']]);
+                $itemsData[] = [
+                    'medicine_id' => $item['medicine_id'],
+                    'purchase_order_item_id' => $item['purchase_order_item_id'] ?? null,
+                    'unit_id' => $item['unit_id'] ?? null,
+                    'unit_factor' => $item['unit_factor'] ?? 1,
+                    'batch_no' => $item['batch_no'] ?? null,
+                    'expiry_date' => $item['expiry_date'] ?? null,
+                    'quantity' => $item['quantity'],
+                    'bonus_quantity' => $item['bonus_quantity'] ?? 0,
+                    'unit_price' => $item['unit_price'],
+                    'mrp' => $item['mrp'],
+                    'trade_discount_percent' => $item['trade_discount_percent'] ?? 0,
+                    'subtotal' => $itemSubtotal,
+                ];
+                
+                // Update PurchaseOrderItem received quantity
+                if (!empty($item['purchase_order_item_id'])) {
+                    $poItem = \App\Models\PurchaseOrderItem::find($item['purchase_order_item_id']);
+                    if ($poItem) {
+                        $poItem->increment('received_qty', $item['quantity']);
+                    }
+                }
             }
 
             $totalAmount = $subtotal - ($validated['discount'] ?? 0) + ($validated['tax'] ?? 0);
@@ -180,6 +236,7 @@ class PurchaseController extends Controller
 
             $purchase = Purchase::create([
                 'supplier_id' => $validated['supplier_id'],
+                'purchase_order_id' => $validated['purchase_order_id'] ?? null,
                 'reference_no' => $validated['reference_no'],
                 'purchase_date' => $validated['purchase_date'],
                 'subtotal' => $subtotal,
@@ -192,8 +249,31 @@ class PurchaseController extends Controller
                 'notes' => $validated['notes'],
             ]);
 
+            // Update PurchaseOrder status
+            if (!empty($validated['purchase_order_id'])) {
+                $po = \App\Models\PurchaseOrder::with('items')->find($validated['purchase_order_id']);
+                if ($po) {
+                    $allReceived = true;
+                    $anyReceived = false;
+                    foreach ($po->items as $poItem) {
+                        if ($poItem->received_qty < $poItem->ordered_qty) {
+                            $allReceived = false;
+                        }
+                        if ($poItem->received_qty > 0) {
+                            $anyReceived = true;
+                        }
+                    }
+                    $po->update(['status' => $allReceived ? 'Completed' : ($anyReceived ? 'Partial' : 'Pending')]);
+                }
+            }
+
             foreach ($itemsData as $itemData) {
                 $purchase->items()->create($itemData);
+
+                $factor = $itemData['unit_factor'] ?: 1;
+                $baseQuantityAdded = ($itemData['quantity'] + ($itemData['bonus_quantity'] ?? 0)) * $factor;
+                $baseTradePrice = $itemData['unit_price'] / $factor;
+                $baseMrp = $itemData['mrp'] / $factor;
 
                 // Update Inventory
                 $inventory = Inventory::firstOrCreate(
@@ -203,11 +283,20 @@ class PurchaseController extends Controller
                         'medicine_id' => $itemData['medicine_id'],
                         'batch_no' => $itemData['batch_no'],
                     ],
-                    ['quantity' => 0, 'expiry_date' => $itemData['expiry_date'], 'mrp' => $itemData['mrp']]
+                    [
+                        'quantity' => 0, 
+                        'expiry_date' => $itemData['expiry_date'], 
+                        'mrp' => $baseMrp,
+                        'trade_price' => $baseTradePrice
+                    ]
                 );
 
-                $inventory->update(['mrp' => $itemData['mrp']]);
-                $inventory->increment('quantity', $itemData['quantity']);
+                $inventory->update([
+                    'mrp' => $baseMrp,
+                    'trade_price' => $baseTradePrice
+                ]);
+                
+                $inventory->increment('quantity', $baseQuantityAdded);
 
                 // Create Stock Ledger
                 StockLedger::create([
@@ -216,9 +305,9 @@ class PurchaseController extends Controller
                     'reference_type' => Purchase::class,
                     'reference_id' => $purchase->id,
                     'type' => 'in',
-                    'quantity' => $itemData['quantity'],
+                    'quantity' => $baseQuantityAdded,
                     'balance_after' => $inventory->fresh()->quantity,
-                    'notes' => 'Purchase ' . $purchase->reference_no,
+                    'notes' => 'Purchase ' . $purchase->reference_no . (($itemData['bonus_quantity'] > 0) ? ' (includes ' . $itemData['bonus_quantity'] . ' bonus ' . ($itemData['unit_name'] ?? 'units') . ')' : ''),
                 ]);
             }
 

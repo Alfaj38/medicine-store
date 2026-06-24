@@ -55,12 +55,47 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Procurement Stats
+        $pendingRequisitions = \App\Models\Requisition::where('company_id', $companyId)
+            ->whereNotIn('status', ['PO Generated', 'Cancelled'])
+            ->count();
+
+        $urgentRequisitions = \App\Models\Requisition::where('company_id', $companyId)
+            ->where('priority', 'Urgent')
+            ->whereNotIn('status', ['PO Generated', 'Cancelled'])
+            ->count();
+
+        $pendingPos = \App\Models\PurchaseOrder::where('company_id', $companyId)
+            ->whereIn('status', ['Pending', 'Partial'])
+            ->count();
+
+        // Items below reorder level
+        $itemsBelowReorder = 0;
+        $itemsWithReorder = \App\Models\Item::where('company_id', $companyId)
+            ->where('inventory_type', 'Stock Item')
+            ->where('is_active', true)
+            ->where('reorder_level', '>', 0)
+            ->get();
+
+        foreach ($itemsWithReorder as $item) {
+            $stock = Inventory::where('company_id', $companyId)->where('medicine_id', $item->id)->sum('quantity');
+            if ($stock <= $item->reorder_level) {
+                $itemsBelowReorder++;
+            }
+        }
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'today_sales' => $todaySales,
                 'today_purchases' => $todayPurchases,
                 'today_collections' => $totalCollectionsToday,
                 'stock_value' => $stockValue,
+            ],
+            'procurement' => [
+                'pending_requisitions' => $pendingRequisitions,
+                'urgent_requisitions' => $urgentRequisitions,
+                'pending_pos' => $pendingPos,
+                'items_below_reorder' => $itemsBelowReorder,
             ],
             'recent_sales' => $recentSales,
         ]);

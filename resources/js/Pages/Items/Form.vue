@@ -9,6 +9,7 @@ const props = defineProps({
     categories: Array,
     uoms: Array,
     pharmaceuticalIndustries: Array,
+    suppliers: Array,
 });
 
 const isEdit = !!props.item;
@@ -38,11 +39,34 @@ const form = useForm({
     track_serial: props.item ? !!props.item.track_serial : false,
     is_active: props.item ? !!props.item.is_active : true,
 
+    // Procurement & Sourcing
+    preferred_supplier_id: props.item?.preferred_supplier_id || '',
+    alternate_supplier_id: props.item?.alternate_supplier_id || '',
+    reorder_level: props.item?.reorder_level || 0,
+    reorder_qty: props.item?.reorder_qty || 0,
+    safety_stock: props.item?.safety_stock || 0,
+    lead_time_days: props.item?.lead_time_days || 0,
+
     // Medicine specifics
     generic_name: props.item?.medicine_details?.generic_name || '',
     strength: props.item?.medicine_details?.strength || '',
     dosage_form: props.item?.medicine_details?.dosage_form || '',
+
+    // Units
+    units: props.item?.units && props.item.units.length > 0 
+        ? props.item.units 
+        : [{ id: null, unit_name: 'Tablet', factor: 1, is_base_unit: true, is_purchase_unit: true, is_sales_unit: true }],
 });
+
+const addUnit = () => {
+    form.units.push({ id: null, unit_name: '', factor: 1, is_base_unit: false, is_purchase_unit: false, is_sales_unit: false });
+};
+
+const removeUnit = (index) => {
+    if (form.units.length > 1) {
+        form.units.splice(index, 1);
+    }
+};
 
 // Computed property to check if current selected type is 'Medicine'
 const isMedicineType = computed(() => {
@@ -249,6 +273,52 @@ const submit = () => {
                             </select>
                         </div>
 
+                        <!-- Multi-Level Units Configurator -->
+                        <div class="sm:col-span-2 mt-6">
+                            <div class="flex justify-between items-center border-b pb-2 mb-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-slate-800">Multi-Level Units Configuration</h3>
+                                    <p class="text-xs text-slate-500">Define packages (e.g. Box = 100 Tablets). At least one Base Unit is required.</p>
+                                </div>
+                                <button type="button" @click="addUnit" class="text-sm font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">+ Add Unit</button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div v-for="(unit, index) in form.units" :key="index" class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-wrap gap-4 items-end relative">
+                                    <button type="button" @click="removeUnit(index)" v-if="form.units.length > 1" class="absolute top-2 right-2 text-rose-500 hover:text-rose-700 bg-rose-50 p-1 rounded-md">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                    
+                                    <div class="flex-1 min-w-[150px]">
+                                        <label class="block text-xs font-bold text-slate-700 mb-1">Unit Name</label>
+                                        <select v-model="unit.unit_name" class="block w-full rounded-lg border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-3 bg-white">
+                                            <option value="" disabled>Select Unit</option>
+                                            <option v-for="u in uoms" :key="u.id" :value="u.name">{{ u.name }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1 min-w-[120px]">
+                                        <label class="block text-xs font-bold text-slate-700 mb-1">Factor (multiplier)</label>
+                                        <input v-model="unit.factor" type="number" min="1" class="block w-full rounded-lg border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500 py-1.5 px-3" placeholder="e.g. 100">
+                                    </div>
+                                    
+                                    <div class="flex gap-4 items-center mb-2 min-w-[300px]">
+                                        <label class="flex items-center gap-1.5 cursor-pointer">
+                                            <input type="radio" :name="'base_unit'" :checked="unit.is_base_unit" @change="form.units.forEach(u => u.is_base_unit = false); unit.is_base_unit = true;" class="text-emerald-600 focus:ring-emerald-500">
+                                            <span class="text-xs font-medium text-slate-700">Base Unit</span>
+                                        </label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer">
+                                            <input type="checkbox" v-model="unit.is_purchase_unit" class="text-blue-600 focus:ring-blue-500 rounded">
+                                            <span class="text-xs font-medium text-slate-700">Purchase</span>
+                                        </label>
+                                        <label class="flex items-center gap-1.5 cursor-pointer">
+                                            <input type="checkbox" v-model="unit.is_sales_unit" class="text-indigo-600 focus:ring-indigo-500 rounded">
+                                            <span class="text-xs font-medium text-slate-700">Sales</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <template v-if="form.inventory_type === 'Stock Item'">
                             <div class="sm:col-span-2 mt-4">
                                 <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Inventory Tracking Rules</h3>
@@ -267,6 +337,42 @@ const submit = () => {
                                     <input type="checkbox" v-model="form.track_serial" class="text-emerald-600 focus:ring-emerald-500 rounded">
                                     <span class="text-sm font-medium text-slate-700">Track Serial Numbers</span>
                                 </label>
+                            </div>
+
+                            <div class="sm:col-span-2 mt-6">
+                                <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Procurement & Auto-Requisition Settings</h3>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Preferred Supplier</label>
+                                <select v-model="form.preferred_supplier_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                                    <option value="">No Preferred Supplier</option>
+                                    <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Alternate Supplier</label>
+                                <select v-model="form.alternate_supplier_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                                    <option value="">No Alternate Supplier</option>
+                                    <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Reorder Level (Alert Threshold)</label>
+                                <input v-model="form.reorder_level" type="number" min="0" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. 50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Reorder Quantity (Default Order)</label>
+                                <input v-model="form.reorder_qty" type="number" min="0" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. 200">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Safety Stock (Buffer)</label>
+                                <input v-model="form.safety_stock" type="number" min="0" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. 20">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Lead Time (Days to Deliver)</label>
+                                <input v-model="form.lead_time_days" type="number" min="0" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="e.g. 3">
                             </div>
                         </template>
 

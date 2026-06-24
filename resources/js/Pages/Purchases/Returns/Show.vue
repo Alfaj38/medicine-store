@@ -53,8 +53,8 @@ const props = defineProps({
                         <tbody class="divide-y divide-slate-100 bg-white">
                             <tr v-for="item in returnRecord.items" :key="item.id" class="hover:bg-slate-50/50 transition-colors">
                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 sm:pl-8">
-                                    <div class="font-bold text-slate-900">{{ item.medicine.name }}</div>
-                                    <div class="text-xs text-slate-500">{{ item.medicine.generic_name }}</div>
+                                    <div class="font-bold text-slate-900">{{ item.medicine?.name || 'Unknown Item' }}</div>
+                                    <div class="text-xs text-slate-500">{{ item.medicine?.generic_name }}</div>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-4">
                                     <div class="text-sm text-slate-700">Batch: <span class="font-semibold">{{ item.batch_no }}</span></div>

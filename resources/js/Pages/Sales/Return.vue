@@ -118,7 +118,7 @@ const submitReturn = () => {
                                             <input type="checkbox" v-model="item.selected" @change="item.selected && item.return_quantity === 0 ? item.return_quantity = 1 : null" class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 h-4 w-4">
                                         </td>
                                         <td class="py-3 px-4 text-sm">
-                                            <div class="font-medium text-slate-900">{{ item.medicine.name }}</div>
+                                            <div class="font-medium text-slate-900">{{ item.medicine?.name || 'Unknown Item' }}</div>
                                             <div class="text-xs text-slate-500">Batch: {{ item.batch_no }}</div>
                                         </td>
                                         <td class="py-3 px-4 text-sm text-center font-medium text-slate-700">

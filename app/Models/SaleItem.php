@@ -24,11 +24,11 @@ class SaleItem extends Model
 
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Item::class, 'medicine_id');
+        return $this->belongsTo(Item::class, 'medicine_id')->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
     }
 
     public function medicine(): BelongsTo
     {
-        return $this->belongsTo(Item::class, 'medicine_id');
+        return $this->belongsTo(Item::class, 'medicine_id')->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
     }
 }

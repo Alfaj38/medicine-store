@@ -143,11 +143,12 @@ const printReceipt = () => {
         </div>
     </div>
 
-    <style>
-        /* CSS to hide non-receipt elements during printing */
-        @media print {
-            body { background: white; }
-            @page { margin: 0; size: 80mm auto; }
-        }
-    </style>
 </template>
+
+<style>
+    /* CSS to hide non-receipt elements during printing */
+    @media print {
+        body { background: white; }
+        @page { margin: 0; size: 80mm auto; }
+    }
+</style>

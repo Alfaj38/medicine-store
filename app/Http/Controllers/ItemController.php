@@ -9,6 +9,7 @@ use App\Models\ItemType;
 use App\Models\Uom;
 use App\Models\Manufacturer;
 use App\Models\PharmaceuticalIndustry;
+use App\Models\Supplier;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +20,7 @@ class ItemController extends Controller
         $search = $request->input('search');
         
         $items = Item::query()
-            ->with(['itemType', 'category', 'manufacturer', 'medicineDetails', 'prices'])
+            ->with(['itemType', 'category', 'manufacturer', 'medicineDetails', 'prices', 'units'])
             ->where('company_id', auth()->user()->company_id)
             ->when($search, function ($query, $search) {
                 $query->where(function($q) use ($search) {
@@ -48,6 +49,7 @@ class ItemController extends Controller
             'categories' => ItemCategory::where('is_active', true)->orderBy('name')->get(),
             'uoms' => Uom::orderBy('name')->get(),
             'pharmaceuticalIndustries' => PharmaceuticalIndustry::orderBy('name')->get(),
+            'suppliers' => Supplier::where('company_id', auth()->user()->company_id)->orderBy('name')->get(),
         ]);
     }
 
@@ -75,6 +77,22 @@ class ItemController extends Controller
             'generic_name' => 'nullable|string|max:191',
             'strength' => 'nullable|string|max:100',
             'dosage_form' => 'nullable|string|max:100',
+            
+            // Procurement & Sourcing
+            'preferred_supplier_id' => 'nullable|exists:suppliers,id',
+            'alternate_supplier_id' => 'nullable|exists:suppliers,id',
+            'reorder_level' => 'nullable|integer|min:0',
+            'reorder_qty' => 'nullable|integer|min:0',
+            'safety_stock' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:0',
+
+            // Units
+            'units' => 'required|array|min:1',
+            'units.*.unit_name' => 'required|string|max:100',
+            'units.*.factor' => 'required|integer|min:1',
+            'units.*.is_base_unit' => 'boolean',
+            'units.*.is_purchase_unit' => 'boolean',
+            'units.*.is_sales_unit' => 'boolean',
         ]);
 
         return DB::transaction(function () use ($validated) {
@@ -101,6 +119,12 @@ class ItemController extends Controller
                 'track_expiry' => $validated['track_expiry'] ?? false,
                 'track_serial' => $validated['track_serial'] ?? false,
                 'is_active' => $validated['is_active'] ?? true,
+                'preferred_supplier_id' => $validated['preferred_supplier_id'] ?? null,
+                'alternate_supplier_id' => $validated['alternate_supplier_id'] ?? null,
+                'reorder_level' => $validated['reorder_level'] ?? 0,
+                'reorder_qty' => $validated['reorder_qty'] ?? 0,
+                'safety_stock' => $validated['safety_stock'] ?? 0,
+                'lead_time_days' => $validated['lead_time_days'] ?? 0,
             ]);
 
             // Save Prices
@@ -129,6 +153,17 @@ class ItemController extends Controller
                 ]);
             }
 
+            // Save Units
+            foreach ($validated['units'] as $unit) {
+                $item->units()->create([
+                    'unit_name' => $unit['unit_name'],
+                    'factor' => $unit['factor'],
+                    'is_base_unit' => $unit['is_base_unit'] ?? false,
+                    'is_purchase_unit' => $unit['is_purchase_unit'] ?? false,
+                    'is_sales_unit' => $unit['is_sales_unit'] ?? false,
+                ]);
+            }
+
             return redirect()->route('items.index')->with('success', 'Item added successfully.');
         });
     }
@@ -139,7 +174,7 @@ class ItemController extends Controller
             abort(403);
         }
 
-        $item->load(['medicineDetails', 'prices', 'manufacturer']);
+        $item->load(['medicineDetails', 'prices', 'manufacturer', 'units']);
 
         return Inertia::render('Items/Form', [
             'item' => $item,
@@ -147,6 +182,7 @@ class ItemController extends Controller
             'categories' => ItemCategory::where('is_active', true)->orderBy('name')->get(),
             'uoms' => Uom::orderBy('name')->get(),
             'pharmaceuticalIndustries' => PharmaceuticalIndustry::orderBy('name')->get(),
+            'suppliers' => Supplier::where('company_id', auth()->user()->company_id)->orderBy('name')->get(),
         ]);
     }
 
@@ -176,6 +212,23 @@ class ItemController extends Controller
             'generic_name' => 'nullable|string|max:191',
             'strength' => 'nullable|string|max:100',
             'dosage_form' => 'nullable|string|max:100',
+
+            // Procurement & Sourcing
+            'preferred_supplier_id' => 'nullable|exists:suppliers,id',
+            'alternate_supplier_id' => 'nullable|exists:suppliers,id',
+            'reorder_level' => 'nullable|integer|min:0',
+            'reorder_qty' => 'nullable|integer|min:0',
+            'safety_stock' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:0',
+
+            // Units
+            'units' => 'required|array|min:1',
+            'units.*.id' => 'nullable|integer',
+            'units.*.unit_name' => 'required|string|max:100',
+            'units.*.factor' => 'required|integer|min:1',
+            'units.*.is_base_unit' => 'boolean',
+            'units.*.is_purchase_unit' => 'boolean',
+            'units.*.is_sales_unit' => 'boolean',
         ]);
 
         return DB::transaction(function () use ($validated, $item) {
@@ -200,6 +253,12 @@ class ItemController extends Controller
                 'track_expiry' => $validated['track_expiry'] ?? false,
                 'track_serial' => $validated['track_serial'] ?? false,
                 'is_active' => $validated['is_active'] ?? true,
+                'preferred_supplier_id' => $validated['preferred_supplier_id'] ?? null,
+                'alternate_supplier_id' => $validated['alternate_supplier_id'] ?? null,
+                'reorder_level' => $validated['reorder_level'] ?? 0,
+                'reorder_qty' => $validated['reorder_qty'] ?? 0,
+                'safety_stock' => $validated['safety_stock'] ?? 0,
+                'lead_time_days' => $validated['lead_time_days'] ?? 0,
             ]);
 
             // Update Prices (simplified)
@@ -219,6 +278,37 @@ class ItemController extends Controller
                 );
             } else {
                 $item->medicineDetails()->delete();
+            }
+
+            // Update Units
+            $existingUnitIds = $item->units->pluck('id')->toArray();
+            $updatedUnitIds = [];
+
+            foreach ($validated['units'] as $unit) {
+                $unitData = [
+                    'unit_name' => $unit['unit_name'],
+                    'factor' => $unit['factor'],
+                    'is_base_unit' => $unit['is_base_unit'] ?? false,
+                    'is_purchase_unit' => $unit['is_purchase_unit'] ?? false,
+                    'is_sales_unit' => $unit['is_sales_unit'] ?? false,
+                ];
+
+                if (!empty($unit['id'])) {
+                    $itemUnit = $item->units()->find($unit['id']);
+                    if ($itemUnit) {
+                        $itemUnit->update($unitData);
+                        $updatedUnitIds[] = $itemUnit->id;
+                    }
+                } else {
+                    $newUnit = $item->units()->create($unitData);
+                    $updatedUnitIds[] = $newUnit->id;
+                }
+            }
+
+            // delete missing
+            $missing = array_diff($existingUnitIds, $updatedUnitIds);
+            if (count($missing) > 0) {
+                $item->units()->whereIn('id', $missing)->delete();
             }
 
             return redirect()->route('items.index')->with('success', 'Item updated successfully.');
