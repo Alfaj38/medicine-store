@@ -236,18 +236,26 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
             
             Route::get('subscription', [\App\Http\Controllers\Company\SubscriptionController::class, 'index'])->name('subscription.index');
             Route::post('subscription/upgrade', [\App\Http\Controllers\Company\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+            
+            Route::get('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'index'])->name('seo-analytics.index');
+            Route::post('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'update'])->name('seo-analytics.update');
         });
     });
 });
 
-Route::get('/store/{company:slug}', [\App\Http\Controllers\StorefrontController::class, 'show'])->name('storefront.show');
+Route::get('/pharmacy/{company:slug}', [\App\Http\Controllers\StorefrontController::class, 'show'])->name('storefront.show');
 
 // Storefront Placeholder Routes (For Multi-Tenant Modules)
-Route::get('/store/{company:slug}/medicines', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.medicines');
-Route::get('/store/{company:slug}/search', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.search');
-Route::get('/store/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'checkout'])->name('storefront.checkout');
-Route::post('/store/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'placeOrder'])->name('storefront.placeOrder');
-Route::get('/store/{company:slug}/order/{trackingNumber}', [\App\Http\Controllers\StorefrontController::class, 'orderSuccess'])->name('storefront.orderSuccess');
+Route::get('/pharmacy/{company:slug}/delivery/{area}', [\App\Http\Controllers\StorefrontController::class, 'deliveryArea'])->name('storefront.deliveryArea');
+Route::get('/pharmacy/{company:slug}/medicines', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.medicines');
+Route::get('/pharmacy/{company:slug}/medicine/{medicine}', [\App\Http\Controllers\StorefrontController::class, 'medicineDetails'])->name('storefront.medicine.details');
+Route::get('/pharmacy/{company:slug}/search', [\App\Http\Controllers\StorefrontController::class, 'medicines'])->name('storefront.search');
+Route::get('/pharmacy/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'checkout'])->name('storefront.checkout');
+Route::post('/pharmacy/{company:slug}/checkout', [\App\Http\Controllers\StorefrontController::class, 'placeOrder'])->name('storefront.placeOrder');
+Route::get('/pharmacy/{company:slug}/order/{trackingNumber}', [\App\Http\Controllers\StorefrontController::class, 'orderSuccess'])->name('storefront.orderSuccess');
+
+// Dynamic OG Image
+Route::get('/og-image/medicine/{company:slug}/{medicineSlug}', [\App\Http\Controllers\OgImageController::class, 'medicine'])->name('og.medicine');
 
 Route::get('/store/{company:slug}/prescription', function ($slug) {
     return Inertia::render('Storefront/Placeholder', ['title' => 'Upload Prescription', 'companySlug' => $slug]);

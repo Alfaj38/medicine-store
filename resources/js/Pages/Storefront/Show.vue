@@ -2,16 +2,19 @@
 import { Head, Link } from '@inertiajs/vue3';
 import StorefrontLayout from '@/Layouts/StorefrontLayout.vue';
 
+import SeoHead from '@/Components/SeoHead.vue';
+
 const props = defineProps({
     company: Object,
     categories: Array,
     medicines: Object,
     filters: Object,
+    seo: Object,
 });
 </script>
 
 <template>
-    <Head :title="company.name" />
+    <SeoHead v-if="seo" :seo="seo" />
     <StorefrontLayout :company="company" :initial-search-query="filters?.q">
 
         <div class="w-full">

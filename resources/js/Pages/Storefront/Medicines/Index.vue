@@ -5,12 +5,14 @@ import { debounce } from 'lodash';
 import StorefrontLayout from '@/Layouts/StorefrontLayout.vue';
 import { useCart } from '@/Composables/useCart';
 import MedicineIcon from '@/Components/MedicineIcon.vue';
+import SeoHead from '@/Components/SeoHead.vue';
 
 const props = defineProps({
     company: Object,
     categories: Array,
     medicines: Object,
     filters: Object,
+    seo: Object,
 });
 
 const { cart, addToCart, removeFromCart, updateQuantity, cartTotal, cartCount, clearCart } = useCart();
@@ -113,7 +115,7 @@ const getIconId = (med) => {
 </script>
 
 <template>
-    <Head :title="`Medicines - ${company.name}`" />
+    <SeoHead v-if="seo" :seo="seo" />
 
     <StorefrontLayout :company="company" :initial-search-query="filters.q" hide-cart>
         
