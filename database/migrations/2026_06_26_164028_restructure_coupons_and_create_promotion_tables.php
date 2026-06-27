@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Make migration idempotent in case of partial failure
+        Schema::dropIfExists('coupon_usages');
+        Schema::dropIfExists('coupon_business_types');
+        Schema::dropIfExists('coupon_packages');
+        Schema::dropIfExists('coupons');
+        Schema::dropIfExists('campaigns');
+
         // 1. Create campaigns table
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
@@ -22,43 +29,28 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 2. Update coupons table
-        Schema::table('coupons', function (Blueprint $table) {
-            // Drop old columns that are changing or not needed in the same format
-            // Let's modify existing instead of dropping if possible, or drop and re-add.
-            // Since we need to change enum `type` to `discount_type`, it's easier to drop and add for sqlite compatibility, 
-            // but for MySQL we can just drop the column. 
-            // `type` enum was 'percentage', 'fixed'. We need discount_type.
-            // In laravel, dropping enum columns often requires doctrine/dbal. 
-            // Alternatively, just rename the table to old_coupons and create a new one since we are building a new system.
-            // Let's just create a new structure and copy data if any, but it's a dev environment so it's fine.
-        });
-
-        // Let's drop and recreate for clean state, since it's a massive change.
-        Schema::dropIfExists('coupons');
-
+        // 2. Create coupons table
         Schema::create('coupons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedBigInteger('campaign_id')->nullable()->index();
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
-            $table->string('subscription_type')->default('all'); // new_subscription, renewal, upgrade, downgrade, all
-            $table->string('discount_type')->default('percentage'); // percentage, fixed, free_trial, upgrade, free_addon, custom_price
+            $table->string('subscription_type')->default('all'); 
+            $table->string('discount_type')->default('percentage'); 
             $table->decimal('discount_value', 10, 2)->nullable();
             $table->decimal('max_discount_amount', 10, 2)->nullable();
             $table->decimal('minimum_purchase', 10, 2)->nullable();
             $table->timestamp('start_date')->nullable();
             $table->timestamp('expire_date')->nullable();
             
-            // Usage limits
             $table->integer('max_uses_total')->nullable();
             $table->integer('max_uses_per_company')->nullable();
             $table->integer('total_uses')->default(0);
             
             $table->boolean('is_auto_apply')->default(false);
             $table->boolean('is_hidden')->default(false);
-            $table->string('status')->default('active'); // active, scheduled, expired, disabled
+            $table->string('status')->default('active');
             
             $table->timestamps();
         });
@@ -66,15 +58,15 @@ return new class extends Migration
         // 3. coupon_packages (Many-to-Many)
         Schema::create('coupon_packages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('coupon_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('package_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('coupon_id')->index();
+            $table->unsignedBigInteger('package_id')->index();
             $table->timestamps();
         });
 
         // 4. coupon_business_types
         Schema::create('coupon_business_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('coupon_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('coupon_id')->index();
             $table->string('business_type');
             $table->timestamps();
         });
@@ -82,12 +74,12 @@ return new class extends Migration
         // 5. coupon_usages
         Schema::create('coupon_usages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('coupon_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('invoice_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedBigInteger('coupon_id')->index();
+            $table->unsignedBigInteger('company_id')->index();
+            $table->unsignedBigInteger('invoice_id')->nullable()->index();
+            $table->unsignedBigInteger('subscription_id')->nullable()->index();
             $table->decimal('discount_amount_applied', 10, 2)->default(0);
-            $table->timestamp('used_at');
+            $table->timestamp('used_at')->useCurrent();
             $table->timestamps();
         });
     }
