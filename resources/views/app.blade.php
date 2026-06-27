@@ -16,6 +16,10 @@
                 @foreach($page['props']['seo']['open_graph'] as $key => $value)
                     <meta property="{{ $key }}" content="{{ $value }}">
                 @endforeach
+                {{-- Schema.org / WhatsApp fallback microdata --}}
+                <meta itemprop="name" content="{{ $page['props']['seo']['title'] }}">
+                <meta itemprop="description" content="{{ $page['props']['seo']['description'] }}">
+                <meta itemprop="image" content="{{ $page['props']['seo']['open_graph']['og:image'] ?? '' }}">
             @endif
 
             @if(isset($page['props']['seo']['twitter']))

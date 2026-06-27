@@ -434,7 +434,7 @@ const submit = () => {
 
                                 <div>
                                     <label class="block text-sm font-bold text-slate-800 mb-3">Number of Branches <span class="text-red-500">*</span></label>
-                                    <div class="grid grid-cols-4 gap-3">
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                         <label class="flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer text-center transition-all duration-200"
                                             :class="form.branch_count === '1' ? 'border-[#00b67a] bg-[#F3FBF8] shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'">
                                             <input type="radio" v-model="form.branch_count" value="1" class="sr-only">
