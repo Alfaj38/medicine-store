@@ -300,7 +300,7 @@ const submit = () => {
 
 
             <!-- Progress Bar Tracker -->
-            <div class="max-w-4xl mx-auto w-full px-6 xl:px-12 pt-10 pb-6">
+            <div class="max-w-4xl mx-auto w-full px-6 xl:px-12 pt-6 pb-4">
                 <!-- Step Labels Row -->
                 <div class="relative flex items-start justify-between">
                     
@@ -312,41 +312,35 @@ const submit = () => {
 
                     <!-- Each Step -->
                     <div v-for="step in 4" :key="step"
-                        class="relative z-10 flex flex-col items-center gap-2.5 cursor-pointer w-1/4"
+                        class="relative z-10 flex flex-col items-center gap-1.5 cursor-pointer w-1/4"
                         @click="currentStep = step">
 
                         <!-- Circle -->
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg transition-all duration-300 shadow-md"
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base transition-all duration-300 shadow-sm"
                             :class="step < currentStep
-                                ? 'bg-[#00b67a] text-white ring-4 ring-[#00b67a]/20 shadow-[#00b67a]/30'
+                                ? 'bg-[#00b67a] text-white ring-2 ring-[#00b67a]/20'
                                 : step === currentStep
-                                    ? 'bg-[#024329] text-white ring-4 ring-[#024329]/15 scale-110 shadow-lg shadow-[#024329]/20'
-                                    : 'bg-white border-2 border-slate-200 text-slate-400 shadow-sm'">
-                            <!-- Checkmark for completed -->
-                            <svg v-if="step < currentStep" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    ? 'bg-[#024329] text-white ring-2 ring-[#024329]/20 scale-110 shadow-md'
+                                    : 'bg-white border-2 border-slate-200 text-slate-400'">
+                            <svg v-if="step < currentStep" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <!-- Step icon for active/inactive -->
                             <template v-else>
-                                <span v-if="step === 1">🏪</span>
-                                <span v-else-if="step === 2">⚙️</span>
-                                <span v-else-if="step === 3">👤</span>
-                                <span v-else>💳</span>
+                                <span v-if="step === 1" class="text-sm">🏪</span>
+                                <span v-else-if="step === 2" class="text-sm">⚙️</span>
+                                <span v-else-if="step === 3" class="text-sm">👤</span>
+                                <span v-else class="text-sm">💳</span>
                             </template>
                         </div>
 
                         <!-- Label -->
                         <div class="text-center">
-                            <div class="text-xs font-black tracking-wide transition-colors duration-300"
+                            <div class="text-[11px] font-black tracking-wide transition-colors duration-300"
                                 :class="step <= currentStep ? 'text-[#024329]' : 'text-slate-400'">
                                 {{ step === 1 ? 'Business' : step === 2 ? 'Setup' : step === 3 ? 'Admin' : 'Plan' }}
                             </div>
-                            <div class="text-[10px] font-medium text-slate-400 hidden sm:block mt-0.5 leading-tight">
-                                {{ step === 1 ? 'Business profile' : step === 2 ? 'Localization' : step === 3 ? 'Admin account' : 'Choose plan' }}
-                            </div>
-                            <!-- Active badge -->
-                            <div v-if="step === currentStep" class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full bg-[#00b67a]/10 border border-[#00b67a]/20">
-                                <span class="text-[9px] font-bold text-[#00b67a] uppercase tracking-wider">Active</span>
+                            <div class="text-[9px] font-medium text-slate-400 hidden sm:block leading-tight">
+                                {{ step === 1 ? 'Profile' : step === 2 ? 'Location' : step === 3 ? 'Account' : 'Choose' }}
                             </div>
                         </div>
                     </div>
@@ -354,13 +348,13 @@ const submit = () => {
             </div>
 
             <!-- Main Content Area -->
-            <div class="flex-1 max-w-5xl mx-auto w-full px-8 xl:px-12 pb-12 flex flex-col xl:flex-row gap-8 xl:gap-12">
+            <div class="max-w-5xl mx-auto w-full px-6 xl:px-12 pb-8 flex flex-col xl:flex-row gap-6 xl:gap-10">
                 
                 <!-- Left Form Side -->
                 <div class="flex-1 min-w-0">
-                    <form @submit.prevent="submit" class="flex flex-col h-full">
+                    <form @submit.prevent="submit" class="flex flex-col">
                         
-                        <div class="flex-1">
+                        <div>
                             <!-- STEP 1: Business Profile -->
                             <div v-if="currentStep === 1" class="space-y-8 animate-fade-in">
                                 <div>
@@ -536,21 +530,93 @@ const submit = () => {
                             </div>
 
                             <!-- STEP 4: Plan Checkout -->
-                            <div v-else-if="currentStep === 4" class="space-y-6 animate-fade-in">
+                            <div v-else-if="currentStep === 4" class="space-y-5 animate-fade-in">
                                 <div>
-                                    <h2 class="text-2xl font-black text-slate-800">Finalize Registration</h2>
-                                    <p class="text-sm font-medium text-slate-500 mt-1">Review your plan and submit.</p>
-                                </div>
-                                <div class="p-5 bg-[#F3FBF8] border border-[#00b67a] rounded-2xl flex items-center gap-4">
-                                    <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#00b67a]">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-black text-slate-800">You're all set!</h4>
-                                        <p class="text-sm font-medium text-slate-600 mt-0.5">Your 14-day free trial of the <span class="font-bold text-[#00b67a]">{{ recommendedPackageName }}</span> will begin immediately.</p>
-                                    </div>
+                                    <h2 class="text-2xl font-black text-slate-800">Choose Your Plan</h2>
+                                    <p class="text-sm font-medium text-slate-500 mt-1">Select the plan that fits your pharmacy. Start free for 14 days.</p>
                                 </div>
 
+                                <!-- Billing Cycle Toggle -->
+                                <div class="flex items-center justify-center gap-3">
+                                    <button type="button"
+                                        @click="form.billing_cycle = 'monthly'"
+                                        class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200"
+                                        :class="form.billing_cycle === 'monthly' ? 'bg-[#024329] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'">
+                                        Monthly
+                                    </button>
+                                    <button type="button"
+                                        @click="form.billing_cycle = 'yearly'"
+                                        class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2"
+                                        :class="form.billing_cycle === 'yearly' ? 'bg-[#024329] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'">
+                                        Yearly
+                                        <span class="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                                            :class="form.billing_cycle === 'yearly' ? 'bg-[#00b67a] text-white' : 'bg-emerald-100 text-emerald-700'">
+                                            Save ~17%
+                                        </span>
+                                    </button>
+                                </div>
+
+                                <!-- Package Cards -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label v-for="pkg in packages" :key="pkg.id"
+                                        class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
+                                        :class="form.plan_id == pkg.id
+                                            ? 'border-[#00b67a] bg-[#F3FBF8] shadow-sm'
+                                            : 'border-slate-100 hover:border-slate-200 bg-white'">
+                                        <input type="radio" v-model="form.plan_id" :value="pkg.id" class="sr-only">
+
+                                        <!-- Recommended Badge -->
+                                        <div v-if="pkg.id === recommendedPackage?.id"
+                                            class="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-[#00b67a] text-white text-[9px] font-black uppercase tracking-wider rounded-full">
+                                            ⭐ Recommended
+                                        </div>
+
+                                        <!-- Selected check -->
+                                        <div v-if="form.plan_id == pkg.id"
+                                            class="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#00b67a] text-white flex items-center justify-center">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+
+                                        <!-- Plan name & price -->
+                                        <div class="mb-3">
+                                            <div class="font-black text-slate-800 text-base">{{ pkg.name }}</div>
+                                            <div class="flex items-baseline gap-1 mt-1">
+                                                <template v-if="form.billing_cycle === 'monthly'">
+                                                    <span v-if="parseFloat(pkg.monthly_price) === 0" class="text-2xl font-black text-[#00b67a]">Free</span>
+                                                    <template v-else>
+                                                        <span class="text-2xl font-black text-slate-800">৳{{ Number(parseFloat(pkg.monthly_price)).toLocaleString() }}</span>
+                                                        <span class="text-xs font-medium text-slate-400">/mo</span>
+                                                    </template>
+                                                </template>
+                                                <template v-else>
+                                                    <span v-if="parseFloat(pkg.yearly_price) === 0" class="text-2xl font-black text-[#00b67a]">Free</span>
+                                                    <template v-else>
+                                                        <span class="text-2xl font-black text-slate-800">৳{{ Number(parseFloat(pkg.yearly_price)).toLocaleString() }}</span>
+                                                        <span class="text-xs font-medium text-slate-400">/yr</span>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                            <div v-if="form.billing_cycle === 'yearly' && parseFloat(pkg.yearly_price) > 0" class="text-[10px] text-emerald-600 font-bold mt-0.5">
+                                                ৳{{ Math.round(parseFloat(pkg.yearly_price) / 12).toLocaleString() }}/mo billed annually
+                                            </div>
+                                        </div>
+
+                                        <!-- Top features -->
+                                        <ul class="space-y-1.5">
+                                            <li v-for="feature in (pkg.features || []).filter(f => f.is_enabled || f.limit !== null).slice(0, 4)"
+                                                :key="feature.id"
+                                                class="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+                                                <svg class="w-3 h-3 text-[#00b67a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                <span class="capitalize">
+                                                    <template v-if="feature.limit !== null">{{ feature.limit }} </template>
+                                                    {{ feature.feature_code.replace(/_/g, ' ') }}
+                                                </span>
+                                            </li>
+                                        </ul>
+                                    </label>
+                                </div>
+
+                                <!-- Promo / Referral Code -->
                                 <div>
                                     <label class="block text-sm font-bold text-slate-800 mb-2">Promo / Referral Code</label>
                                     <div class="flex gap-2">
@@ -562,11 +628,17 @@ const submit = () => {
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Trial note -->
+                                <div class="p-4 bg-[#F3FBF8] border border-[#00b67a]/30 rounded-xl flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-[#00b67a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <p class="text-xs font-medium text-slate-600">Your <span class="font-bold text-[#00b67a]">14-day free trial</span> starts immediately. No credit card required. Cancel anytime.</p>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="mt-12 pt-6 flex justify-between items-center bg-white border-t border-slate-100">
+                        <div class="mt-6 pt-5 flex justify-between items-center bg-white border-t border-slate-100">
                             <button type="button" @click="prevStep" class="flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm" :class="currentStep === 1 ? 'invisible' : ''">
                                 ← Back
                             </button>

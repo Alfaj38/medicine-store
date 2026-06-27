@@ -1,14 +1,18 @@
 <script setup>
+import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 
 const props = defineProps({
-    plans: Array
+    plans: Array,
+    seo: Object
 });
+
+const billingCycle = ref('monthly');
 </script>
 
 <template>
-    <Head title="Pricing - SaaSMedi" />
+    <Head :title="seo?.title || 'Pricing - SaaSMedi'" />
     <PublicLayout>
         <!-- Header -->
         <div class="bg-slate-50 pt-20 pb-24 border-b border-slate-200">
@@ -16,11 +20,11 @@ const props = defineProps({
                 <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-6">Simple, Transparent Pricing</h1>
                 <p class="text-lg text-slate-600 max-w-2xl mx-auto">Choose the perfect plan for your pharmacy. Upgrade, downgrade, or cancel at any time.</p>
                 
-                <!-- Toggle (Mockup representation) -->
+                <!-- Toggle -->
                 <div class="mt-10 inline-flex items-center gap-2 bg-slate-200/50 p-1 rounded-full border border-slate-200">
-                    <button class="px-6 py-2 rounded-full text-sm font-bold bg-white text-slate-900 shadow-sm">Monthly</button>
-                    <button class="px-6 py-2 rounded-full text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2">
-                        Yearly <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs">Save 20%</span>
+                    <button @click="billingCycle = 'monthly'" :class="['px-6 py-2 rounded-full text-sm font-bold shadow-sm transition-colors', billingCycle === 'monthly' ? 'bg-white text-slate-900' : 'text-slate-600 hover:text-slate-900']">Monthly</button>
+                    <button @click="billingCycle = 'yearly'" :class="['px-6 py-2 rounded-full text-sm font-bold transition-colors flex items-center gap-2', billingCycle === 'yearly' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900']">
+                        Yearly <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs">Save ~17%</span>
                     </button>
                 </div>
             </div>
@@ -28,10 +32,10 @@ const props = defineProps({
 
         <!-- Pricing Cards -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 mb-24 relative z-10">
-            <div class="grid md:grid-cols-3 gap-8 items-start">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
                 
                 <div v-for="plan in plans" :key="plan.id" 
-                    :class="['bg-white rounded-3xl p-8 transition-transform hover:-translate-y-1', plan.is_popular ? 'border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20 relative' : 'border border-slate-200 shadow-xl shadow-slate-200/50 mt-4 md:mt-4']">
+                    :class="['bg-white rounded-3xl p-6 xl:p-8 transition-transform hover:-translate-y-1', plan.is_popular ? 'border-2 border-emerald-500 shadow-2xl shadow-emerald-500/20 relative' : 'border border-slate-200 shadow-xl shadow-slate-200/50 mt-4 lg:mt-4']">
                     
                     <div v-if="plan.is_popular" class="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
                         Most Popular
@@ -41,9 +45,25 @@ const props = defineProps({
                     <p class="text-slate-500 text-sm h-10 mb-6">{{ plan.description }}</p>
                     
                     <div class="mb-8">
-                        <span class="text-5xl font-black text-slate-900">${{ plan.prices.find(p => p.billing_cycle === 'monthly')?.price || '0' }}</span>
-                        <span class="text-slate-500 font-medium">/month</span>
-                        <div class="text-xs text-slate-400 mt-1">Billed monthly</div>
+                        <template v-if="billingCycle === 'monthly'">
+                            <span class="text-4xl xl:text-5xl font-black text-slate-900">
+                                <template v-if="parseFloat(plan.monthly_price) === 0">Free</template>
+                                <template v-else>৳{{ Number(parseFloat(plan.monthly_price)).toLocaleString() }}</template>
+                            </span>
+                            <span class="text-slate-500 font-medium" v-if="parseFloat(plan.monthly_price) !== 0">/mo</span>
+                            <div class="text-xs text-slate-400 mt-1">Billed monthly</div>
+                        </template>
+                        <template v-else>
+                            <span class="text-4xl xl:text-5xl font-black text-slate-900">
+                                <template v-if="parseFloat(plan.yearly_price) === 0">Free</template>
+                                <template v-else>৳{{ Number(parseFloat(plan.yearly_price)).toLocaleString() }}</template>
+                            </span>
+                            <span class="text-slate-500 font-medium" v-if="parseFloat(plan.yearly_price) !== 0">/yr</span>
+                            <div class="text-xs text-slate-400 mt-1">
+                                <template v-if="parseFloat(plan.yearly_price) > 0">৳{{ Math.round(parseFloat(plan.yearly_price) / 12).toLocaleString() }}/mo billed annually</template>
+                                <template v-else>Billed annually</template>
+                            </div>
+                        </template>
                     </div>
 
                     <Link :href="route('register', { plan: plan.slug })" 
@@ -51,10 +71,10 @@ const props = defineProps({
                         Start Free Trial
                     </Link>
 
-                    <ul class="space-y-4">
-                        <li v-for="(feature, idx) in plan.features" :key="idx" class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="text-slate-600 text-sm">{{ feature }}</span>
+                    <ul class="space-y-3.5">
+                        <li v-for="(feature, idx) in plan.features" :key="idx" class="flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-slate-600 text-[13px] leading-tight">{{ feature }}</span>
                         </li>
                     </ul>
                 </div>

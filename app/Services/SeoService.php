@@ -62,6 +62,7 @@ class SeoService
             'og:url' => $seo['url'],
             'og:type' => $seo['type'],
             'og:site_name' => $seo['site_name'],
+            'fb:app_id' => '966242223397117',
         ];
     }
 

@@ -12,7 +12,8 @@ const props = defineProps({
     filters: {
         type: Object,
         default: () => ({ search: '' })
-    }
+    },
+    seo: Object
 });
 
 const searchQuery = ref(props.filters?.search || '');
@@ -158,7 +159,7 @@ const scrollRight = () => {
 </script>
 
 <template>
-    <Head title="Pharmacy POS & ERP Software" />
+    <Head :title="seo?.title || 'Pharmacy POS & ERP Software'" />
     <PublicLayout>
         
         <!-- Page Top Header (Desktop/Tablet) -->
