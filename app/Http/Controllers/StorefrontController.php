@@ -137,7 +137,7 @@ class StorefrontController extends Controller
             '@context' => 'https://schema.org',
             '@type' => 'Pharmacy',
             'name' => $company->name,
-            'image' => asset('images/medicine_sample.jpg'), // Placeholder or company logo
+            'image' => asset('images/medicine_sample.png'), // Placeholder or company logo
             '@id' => route('storefront.show', $company->slug),
             'url' => route('storefront.show', $company->slug),
             'telephone' => $company->phone,
@@ -175,6 +175,7 @@ class StorefrontController extends Controller
             'title' => "Buy Medicines Online - {$company->name}",
             'description' => "Order from {$company->name} online. Fast delivery in your area. Serving {$deliveryAreas}.",
             'url' => route('storefront.show', $company->slug),
+            'image' => asset('images/medicine_sample.png'),
             'schema' => $localSchema,
             'tracking' => $this->getTrackingData($company)
         ]);
@@ -222,7 +223,7 @@ class StorefrontController extends Controller
             '@context' => 'https://schema.org',
             '@type' => 'Pharmacy',
             'name' => $company->name,
-            'image' => asset('images/medicine_sample.jpg'),
+            'image' => asset('images/medicine_sample.png'),
             '@id' => route('storefront.show', $company->slug),
             'url' => route('storefront.deliveryArea', ['company' => $company->slug, 'area' => $areaSlug]),
             'telephone' => $company->phone,
@@ -244,6 +245,7 @@ class StorefrontController extends Controller
             'title' => "Medicine Delivery in {$areaName} - {$company->name}",
             'description' => "Need medicine in {$areaName}? Order from {$company->name} online for fast local delivery.",
             'url' => route('storefront.deliveryArea', ['company' => $company->slug, 'area' => $areaSlug]),
+            'image' => asset('images/medicine_sample.png'),
             'schema' => $localSchema,
             'tracking' => $this->getTrackingData($company)
         ]);

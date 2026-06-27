@@ -42,6 +42,8 @@ class HandleInertiaRequests extends Middleware
             $permissions = [];
             
             if ($user instanceof \App\Models\User) {
+                $user->loadMissing(['roles', 'company.subscription.plan']);
+                
                 if ($user->roles && $user->roles->count() > 0) {
                     $roleId = $user->roles->first()->id;
                     $permissions = \App\Models\PagePermission::where('role_id', $roleId)

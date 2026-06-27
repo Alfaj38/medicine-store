@@ -13,7 +13,7 @@ class SeoAnalyticsController extends Controller
     public function index(Request $request)
     {
         $company = $request->user()->company;
-        
+
         // Fetch some basic analytics data (Mocked or DB driven)
         $totalMedicines = DB::table('items')->where('company_id', $company->id)->where('is_active', true)->count();
         $totalAreas = DB::table('areas')->where('company_id', $company->id)->count();

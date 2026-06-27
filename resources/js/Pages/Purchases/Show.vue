@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -76,8 +76,7 @@ const submitPayment = () => {
 <template>
     <Head :title="'Purchase ' + purchase.reference_no" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Credit Note Alert -->
@@ -315,5 +314,5 @@ const submitPayment = () => {
             </div>
         </div>
 
-    </div>
+    </AppLayout>
 </template>

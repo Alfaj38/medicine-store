@@ -3,7 +3,39 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @if(isset($page['props']['seo']))
+            <title inertia>{{ $page['props']['seo']['title'] ?? config('app.name', 'Laravel') }}</title>
+            @if(isset($page['props']['seo']['description']))
+                <meta name="description" content="{{ $page['props']['seo']['description'] }}">
+            @endif
+            @if(isset($page['props']['seo']['canonical']))
+                <link rel="canonical" href="{{ $page['props']['seo']['canonical'] }}">
+            @endif
+
+            @if(isset($page['props']['seo']['open_graph']))
+                @foreach($page['props']['seo']['open_graph'] as $key => $value)
+                    <meta property="{{ $key }}" content="{{ $value }}">
+                @endforeach
+            @endif
+
+            @if(isset($page['props']['seo']['twitter']))
+                @foreach($page['props']['seo']['twitter'] as $key => $value)
+                    <meta name="{{ $key }}" content="{{ $value }}">
+                @endforeach
+            @endif
+
+            @if(isset($page['props']['seo']['tracking']['gsc']))
+                <meta name="google-site-verification" content="{{ $page['props']['seo']['tracking']['gsc'] }}">
+            @endif
+            
+            @if(isset($page['props']['seo']['schema']))
+                <script type="application/ld+json">
+                    {!! is_string($page['props']['seo']['schema']) ? $page['props']['seo']['schema'] : json_encode($page['props']['seo']['schema'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+                </script>
+            @endif
+        @else
+            <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @endif
         <!-- Favicons -->
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">

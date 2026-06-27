@@ -106,11 +106,15 @@ class PurchaseController extends Controller
         if (empty($companies)) {
             return response()->json([]);
         }
+        
+        $baseNames = array_map(function($c) {
+            return trim(str_ireplace([' Ltd.', ' Ltd', ' Limited', ' PLC', ' Plc', ' PLC.', '.'], '', $c));
+        }, $companies);
 
-        // Get Manufacturer IDs that match the supplier's company names (using LIKE to handle 'Ltd.' mismatches)
-        $manufacturerIds = \App\Models\Manufacturer::where(function($q) use ($companies) {
-            foreach ($companies as $company) {
-                $q->orWhere('name', 'like', "%{$company}%");
+        // Get Manufacturer IDs that match the supplier's company names (using LIKE to handle mismatches)
+        $manufacturerIds = \App\Models\Manufacturer::where(function($q) use ($baseNames) {
+            foreach ($baseNames as $baseName) {
+                $q->orWhere('name', 'like', "%{$baseName}%");
             }
         })->pluck('id');
 

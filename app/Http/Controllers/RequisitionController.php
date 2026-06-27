@@ -36,6 +36,7 @@ class RequisitionController extends Controller
     public function searchMedicines(Request $request)
     {
         $queryText = $request->get('q');
+        $supplierId = $request->get('supplier_id');
         
         if (!$queryText) {
             return response()->json([]);
@@ -49,6 +50,28 @@ class RequisitionController extends Controller
                 $q->where(function($sub) use ($companyId) {
                     $sub->whereNull('company_id')
                         ->orWhere('company_id', $companyId);
+                });
+            })
+            ->when($supplierId, function($q) use ($supplierId) {
+                $supplier = \App\Models\Supplier::find($supplierId);
+                
+                $q->where(function($subQ) use ($supplier, $supplierId) {
+                    // Always fallback to exact preferred_supplier_id if set
+                    $subQ->where('preferred_supplier_id', $supplierId);
+
+                    if ($supplier && is_array($supplier->companies) && count($supplier->companies) > 0) {
+                        $baseNames = array_map(function($c) {
+                            return trim(str_ireplace([' Ltd.', ' Ltd', ' Limited', ' PLC', ' Plc', ' PLC.', '.'], '', $c));
+                        }, $supplier->companies);
+
+                        $subQ->orWhereHas('manufacturer', function($m) use ($baseNames) {
+                            $m->where(function($mq) use ($baseNames) {
+                                foreach ($baseNames as $bn) {
+                                    $mq->orWhere('name', 'like', "%{$bn}%");
+                                }
+                            });
+                        });
+                    }
                 });
             })
             ->where(function($q) use ($queryText) {

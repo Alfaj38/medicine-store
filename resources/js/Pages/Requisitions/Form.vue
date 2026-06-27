@@ -11,6 +11,7 @@ const props = defineProps({
 
 const form = useForm({
     type: 'Purchase',
+    supplier_id: '',
     priority: 'Normal',
     required_date: '',
     notes: '',
@@ -88,7 +89,10 @@ const searchMedicines = async () => {
     isSearching.value = true;
     try {
         const response = await axios.get(route('requisitions.search'), {
-            params: { q: searchQuery.value }
+            params: { 
+                q: searchQuery.value,
+                supplier_id: form.type === 'Purchase' ? form.supplier_id : ''
+            }
         });
         searchResults.value = response.data;
     } catch (error) {
@@ -165,6 +169,16 @@ const submit = () => {
                                         <option value="Transfer">Transfer (From another Branch)</option>
                                         <option value="Emergency">Emergency Purchase</option>
                                         <option value="Auto">Auto Generated</option>
+                                    </select>
+                                </div>
+                                
+                                <div v-if="form.type === 'Purchase'">
+                                    <label class="block text-sm font-medium text-slate-700">Supplier</label>
+                                    <select v-model="form.supplier_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                                        <option value="">Select Supplier...</option>
+                                        <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                                            {{ supplier.name }}{{ supplier.companies && supplier.companies.length ? ` (${supplier.companies.join(', ')})` : (supplier.company_name ? ` (${supplier.company_name})` : '') }}
+                                        </option>
                                     </select>
                                 </div>
                                 

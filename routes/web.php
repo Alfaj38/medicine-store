@@ -109,7 +109,7 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::get('subscriptions', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::get('invoices', [\App\Http\Controllers\Admin\InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('payments', [\App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'index'])->name('payments.index');
-        Route::get('coupons', [\App\Http\Controllers\Admin\CouponController::class, 'index'])->name('coupons.index');
+        Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
         
         // Users
         Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
@@ -182,7 +182,7 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::resource('requisitions', \App\Http\Controllers\RequisitionController::class);
         
         // Purchase Orders
-        Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class)->only(['index', 'show']);
+        Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class);
 
         // Purchases
         Route::get('/purchases/search-medicines', [App\Http\Controllers\PurchaseController::class, 'searchMedicines'])->name('purchases.search');

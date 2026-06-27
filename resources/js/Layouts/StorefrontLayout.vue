@@ -57,13 +57,18 @@ const checkout = () => {
                     </div>
 
                     <!-- Right Actions -->
-                    <div class="flex items-center gap-3 md:gap-6">
+                    <div class="flex items-center gap-3 md:gap-4 lg:gap-6">
+                        <a href="/" class="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-100 transition-colors">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                            Main Home
+                        </a>
+                        
                         <Link :href="route('storefront.prescription', company.slug)" class="hidden lg:flex items-center gap-2 text-sm font-semibold text-slate-700 bg-white border border-emerald-200 px-4 py-2 rounded-xl hover:bg-emerald-50 transition-colors">
                             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                             Upload Prescription
                         </Link>
                         
-                        <div class="hidden lg:flex items-center gap-1.5 text-sm font-medium text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors">
+                        <div class="hidden xl:flex items-center gap-1.5 text-sm font-medium text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors">
                             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             <span>{{ company.address || 'Mohammadpur, Dhaka' }}</span>
                             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>

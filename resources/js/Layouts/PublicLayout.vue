@@ -47,37 +47,62 @@ const mobileMenuOpen = ref(false);
 
             <!-- Bottom Cards in Sidebar -->
             <div class="px-6 py-6 space-y-4 border-t border-slate-100">
-                <!-- Sign In Card -->
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm">
-                    <p class="text-[13px] font-semibold text-slate-600 mb-3">Sign in to your account</p>
-                    <Link :href="route('login')" class="block w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors">
-                        Sign In
-                    </Link>
-                </div>
-                
-                <!-- Free Trial Card -->
-                <div class="bg-[#f0fdf4] border border-emerald-100 rounded-2xl p-5 relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-200 rounded-full opacity-50 blur-xl"></div>
-                    <p class="text-xs font-semibold text-slate-500 mb-1">Start your 7-day</p>
-                    <h4 class="text-[20px] font-extrabold text-slate-900 mb-3">Free Trial</h4>
-                    <ul class="text-[11px] text-slate-600 space-y-2 mb-5 font-medium">
-                        <li class="flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            No credit card required
-                        </li>
-                        <li class="flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            Setup in 5 minutes
-                        </li>
-                        <li class="flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            Trusted by 500+ pharmacies
-                        </li>
-                    </ul>
-                    <Link :href="route('register')" class="block w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl text-center transition-colors shadow-sm relative z-10">
-                        Start Free Trial
-                    </Link>
-                </div>
+                <template v-if="$page.props.auth?.user">
+                    <!-- User Profile & Package Card -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm">
+                        <p class="text-[13px] font-semibold text-slate-600 mb-1">Signed in as</p>
+                        <p class="text-[15px] font-bold text-slate-900 mb-3 truncate">{{ $page.props.auth.user.name }}</p>
+                        
+                        <div v-if="$page.props.auth.user.company?.subscription" class="mb-4 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                            <p class="text-xs text-slate-500 mb-0.5">Current Plan</p>
+                            <p class="text-sm font-bold text-emerald-600">
+                                {{ $page.props.auth.user.company.subscription.plan?.name || 'Trial' }}
+                            </p>
+                            <p v-if="$page.props.auth.user.company.subscription.status === 'trial'" class="text-[10px] text-orange-500 font-bold mt-1 uppercase tracking-wider">Trial Version</p>
+                        </div>
+                        
+                        <Link :href="route('dashboard')" class="block w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm mb-2">
+                            Go to Dashboard
+                        </Link>
+                        
+                        <Link v-if="$page.props.auth.user.company?.subscription?.status === 'trial' || $page.props.auth.user.company?.subscription?.plan?.code === 'free_trial'" :href="route('pricing')" class="block w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-bold rounded-xl transition-colors shadow-sm">
+                            Upgrade Package
+                        </Link>
+                    </div>
+                </template>
+                <template v-else>
+                    <!-- Sign In Card -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm">
+                        <p class="text-[13px] font-semibold text-slate-600 mb-3">Sign in to your account</p>
+                        <Link :href="route('login')" class="block w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors">
+                            Sign In
+                        </Link>
+                    </div>
+                    
+                    <!-- Free Trial Card -->
+                    <div class="bg-[#f0fdf4] border border-emerald-100 rounded-2xl p-5 relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-200 rounded-full opacity-50 blur-xl"></div>
+                        <p class="text-xs font-semibold text-slate-500 mb-1">Start your 15-day</p>
+                        <h4 class="text-[20px] font-extrabold text-slate-900 mb-3">Free Trial</h4>
+                        <ul class="text-[11px] text-slate-600 space-y-2 mb-5 font-medium">
+                            <li class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                No credit card required
+                            </li>
+                            <li class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                Setup in 5 minutes
+                            </li>
+                            <li class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                Trusted by 500+ pharmacies
+                            </li>
+                        </ul>
+                        <Link :href="route('register')" class="block w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-xl text-center transition-colors shadow-sm relative z-10">
+                            Start Free Trial
+                        </Link>
+                    </div>
+                </template>
 
                 <div class="text-[11px] text-slate-400 font-medium pt-2">
                     &copy; {{ new Date().getFullYear() }} SaaSMedi.<br>All rights reserved.
@@ -141,8 +166,21 @@ const mobileMenuOpen = ref(false);
             </div>
             
             <div class="p-5 border-t border-slate-100 space-y-3 bg-slate-50/50">
-                <Link :href="route('login')" class="block w-full py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Sign In</Link>
-                <Link :href="route('register')" class="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Start Free Trial</Link>
+                <template v-if="$page.props.auth?.user">
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-center mb-2 shadow-sm">
+                        <p class="text-xs text-slate-500">Signed in as <span class="font-bold text-slate-800">{{ $page.props.auth.user.name }}</span></p>
+                        <div v-if="$page.props.auth.user.company?.subscription" class="mt-1 flex flex-col items-center justify-center gap-1">
+                            <span class="text-xs font-bold text-emerald-600">{{ $page.props.auth.user.company.subscription.plan?.name || 'Trial' }} Plan</span>
+                            <span v-if="$page.props.auth.user.company.subscription.status === 'trial'" class="px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[9px] font-bold rounded uppercase">Trial</span>
+                        </div>
+                    </div>
+                    <Link :href="route('dashboard')" class="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Go to Dashboard</Link>
+                    <Link v-if="$page.props.auth.user.company?.subscription?.status === 'trial' || $page.props.auth.user.company?.subscription?.plan?.code === 'free_trial'" :href="route('pricing')" class="block w-full py-3 bg-orange-500 hover:bg-orange-600 text-white text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Upgrade Package</Link>
+                </template>
+                <template v-else>
+                    <Link :href="route('login')" class="block w-full py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Sign In</Link>
+                    <Link :href="route('register')" class="block w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-center text-[15px] font-bold rounded-xl transition-colors shadow-sm">Start Free Trial</Link>
+                </template>
             </div>
         </div>
 

@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -56,8 +56,7 @@ const submit = () => {
 <template>
     <Head :title="isEdit ? 'Edit Supplier' : 'Add Supplier'" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
@@ -184,6 +183,6 @@ const submit = () => {
                 </form>
             </div>
         </main>
-    </div>
+    </AppLayout>
 
 </template>

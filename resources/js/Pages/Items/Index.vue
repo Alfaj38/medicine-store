@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, watch, onMounted } from 'vue';
 import debounce from 'lodash/debounce';
@@ -50,8 +50,7 @@ watch(() => page.props.flash?.success, (newVal) => {
 <template>
     <Head title="Catalog - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center sm:justify-between mb-8">
@@ -183,5 +182,5 @@ watch(() => page.props.flash?.success, (newVal) => {
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>

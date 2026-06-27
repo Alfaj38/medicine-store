@@ -26,6 +26,12 @@ const getStatusColor = (status) => {
                 <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                     Purchase Orders (PO)
                 </h2>
+                <Link :href="route('purchase-orders.create')" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
+                    <svg class="mr-2 -ml-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    New Purchase Order
+                </Link>
             </div>
         </template>
 

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -50,8 +50,7 @@ const updatePassword = () => {
 <template>
     <Head title="My Profile" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <!-- Page Heading -->
         <header class="bg-white shadow border-b border-slate-200">
@@ -171,5 +170,5 @@ const updatePassword = () => {
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>

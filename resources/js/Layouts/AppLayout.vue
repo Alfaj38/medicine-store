@@ -1,18 +1,25 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
-        <TopNavbar />
+    <div class="flex h-screen bg-slate-50 font-sans overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <Sidebar />
 
-        <!-- Page Heading -->
-        <header class="bg-white shadow" v-if="$slots.header">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <slot name="header"></slot>
-            </div>
-        </header>
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <!-- Top Navigation -->
+            <TopNavbar />
 
-        <!-- Page Content -->
-        <main>
-            <slot></slot>
-        </main>
+            <!-- Page Heading -->
+            <header class="bg-white border-b border-slate-200" v-if="$slots.header">
+                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                    <slot name="header"></slot>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto">
+                <slot></slot>
+            </main>
+        </div>
     </div>
 </template>
 
@@ -20,6 +27,7 @@
 import { computed, ref } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import TopNavbar from '@/Components/TopNavbar.vue';
+import Sidebar from '@/Components/Sidebar.vue';
 
 const page = usePage();
 const dropdownOpen = ref(false);

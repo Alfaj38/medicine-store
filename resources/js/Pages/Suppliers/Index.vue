@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
@@ -22,8 +22,7 @@ watch(search, debounce((value) => {
 <template>
     <Head title="Suppliers - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center sm:justify-between mb-8">
@@ -158,5 +157,5 @@ watch(search, debounce((value) => {
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>

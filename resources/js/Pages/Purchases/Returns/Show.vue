@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -10,8 +10,7 @@ const props = defineProps({
 <template>
     <Head title="Return Details - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden mb-8">
@@ -126,5 +125,5 @@ const props = defineProps({
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>

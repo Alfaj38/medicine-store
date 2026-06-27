@@ -25,31 +25,66 @@ class ReferralLinkController extends Controller
     public function validateCode(Request $request)
     {
         $code = $request->query('code');
+        $packageId = $request->query('package_id');
         
         if (!$code) {
             return response()->json(['valid' => false, 'message' => 'No code provided.']);
         }
 
+        // Check for Referral Code first
         $referralCode = ReferralCode::where(function($q) use ($code) {
             $q->where('code', $code)->orWhere('label', $code);
         })->first();
 
-        if (!$referralCode) {
-            return response()->json(['valid' => false, 'message' => 'Invalid referral code.']);
+        if ($referralCode) {
+            if ($referralCode->status !== 'active' || !$referralCode->isValid()) {
+                return response()->json(['valid' => false, 'message' => 'This referral code is inactive or invalid.']);
+            }
+            return response()->json([
+                'valid' => true,
+                'message' => 'Referral Code applied successfully!',
+                'type' => 'referral',
+                'reseller_name' => $referralCode->reseller->name ?? 'Partner'
+            ]);
         }
 
-        if ($referralCode->status !== 'active') {
-            return response()->json(['valid' => false, 'message' => 'This referral code is inactive.']);
+        // If not a Referral Code, check for a Coupon
+        $couponService = app(\App\Services\CouponService::class);
+        
+        // Mock a company for validation if this is during registration
+        // We use an empty company as it doesn't have an ID yet, so per-company usage isn't fully validated until checkout if it relies on existing company
+        $dummyCompany = new \App\Models\Company(['id' => 0]); 
+        
+        $validationResult = $couponService->validateCoupon(
+            $code, 
+            $dummyCompany, 
+            $packageId ? (int)$packageId : null, 
+            0, // Cart total (during registration it's free trial, so 0)
+            'new_subscription'
+        );
+
+        if (!$validationResult['valid']) {
+            return response()->json([
+                'valid' => false,
+                'message' => $validationResult['message']
+            ]);
         }
 
-        if (!$referralCode->isValid()) {
-            return response()->json(['valid' => false, 'message' => 'This referral code is suspended or invalid.']);
+        $coupon = $validationResult['coupon'];
+        $discountMessage = '';
+        if ($coupon->discount_type === 'percentage') {
+            $discountMessage = "{$coupon->discount_value}% OFF on your first invoice!";
+        } elseif ($coupon->discount_type === 'fixed') {
+            $discountMessage = "৳{$coupon->discount_value} OFF on your first invoice!";
+        } elseif ($coupon->discount_type === 'free_trial') {
+            $discountMessage = "Enjoy an extended free trial!";
         }
 
         return response()->json([
             'valid' => true,
-            'message' => 'Code applied successfully!',
-            'reseller_name' => $referralCode->reseller->name ?? 'Partner'
+            'message' => 'Coupon applied: ' . $discountMessage,
+            'type' => 'coupon',
+            'coupon' => $coupon
         ]);
     }
 }

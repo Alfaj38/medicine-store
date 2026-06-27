@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -81,8 +81,7 @@ const submitPayment = () => {
 <template>
     <Head title="Purchases - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center sm:justify-between mb-8">
@@ -268,5 +267,5 @@ const submitPayment = () => {
                 </div>
             </div>
         </div>
-    </div>
+    </AppLayout>
 </template>

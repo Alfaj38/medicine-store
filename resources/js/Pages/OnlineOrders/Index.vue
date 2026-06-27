@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import debounce from 'lodash/debounce';
 
 const props = defineProps({
@@ -36,8 +36,7 @@ const formatStatus = (status) => {
 <template>
     <Head title="Online Orders - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="sm:flex sm:items-center sm:justify-between mb-8">
@@ -140,5 +139,5 @@ const formatStatus = (status) => {
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>

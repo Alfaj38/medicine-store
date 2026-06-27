@@ -37,19 +37,65 @@ class PublicController extends Controller
             ->limit(12) // show up to 12
             ->get();
 
+        $seoService = new \App\Services\SeoService();
+        $appName = config('app.name', 'SaaSMedi');
+        $seo = $seoService->generate([
+            'site_name' => $appName,
+            'title' => $appName . ' - Pharmacy POS & ERP Software',
+            'description' => 'The ultimate cloud-based Pharmacy POS & ERP software in Bangladesh. Manage inventory, billing, and online orders effortlessly.',
+            'url' => route('home'),
+            'image' => asset('images/medicine_sample.png'),
+            'schema' => [
+                [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Organization',
+                    'name' => $appName,
+                    'url' => route('home'),
+                    'logo' => asset('images/medicine_sample.png'),
+                    'description' => 'Comprehensive Pharmacy Management Software and Medicine Delivery Platform.',
+                    'contactPoint' => [
+                        '@type' => 'ContactPoint',
+                        'telephone' => '+880-1234-567890',
+                        'contactType' => 'customer service'
+                    ]
+                ],
+                [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'SoftwareApplication',
+                    'name' => $appName . ' POS & ERP',
+                    'applicationCategory' => 'BusinessApplication',
+                    'operatingSystem' => 'All',
+                    'offers' => [
+                        '@type' => 'Offer',
+                        'price' => '0',
+                        'priceCurrency' => 'BDT'
+                    ]
+                ]
+            ]
+        ]);
+
         return Inertia::render('Public/Home', [
             'pharmacies' => $pharmacies,
             'filters' => [
                 'search' => $request->search,
                 'location' => $request->location ?? 'all',
                 'top_rated' => $request->boolean('top_rated')
-            ]
+            ],
+            'seo' => $seo
         ]);
     }
 
     public function features()
     {
-        return Inertia::render('Public/Features');
+        $seoService = new \App\Services\SeoService();
+        $seo = $seoService->generate([
+            'site_name' => config('app.name', 'SaaSMedi'),
+            'title' => 'Features - ' . config('app.name', 'SaaSMedi'),
+            'description' => 'Explore the powerful features of our Pharmacy POS and ERP software including inventory tracking, billing, and reporting.',
+            'url' => route('features'),
+            'image' => asset('images/medicine_sample.png')
+        ]);
+        return Inertia::render('Public/Features', ['seo' => $seo]);
     }
 
     public function pricing()
@@ -79,19 +125,45 @@ class PublicController extends Controller
                 ];
             });
 
+        $seoService = new \App\Services\SeoService();
+        $seo = $seoService->generate([
+            'site_name' => config('app.name', 'SaaSMedi'),
+            'title' => 'Pricing - ' . config('app.name', 'SaaSMedi'),
+            'description' => 'Affordable and scalable pricing plans for pharmacies of all sizes. Start your free trial today.',
+            'url' => route('pricing'),
+            'image' => asset('images/medicine_sample.png')
+        ]);
+
         return Inertia::render('Public/Pricing', [
-            'plans' => $plans
+            'plans' => $plans,
+            'seo' => $seo
         ]);
     }
 
     public function contact()
     {
-        return Inertia::render('Public/Contact');
+        $seoService = new \App\Services\SeoService();
+        $seo = $seoService->generate([
+            'site_name' => config('app.name', 'SaaSMedi'),
+            'title' => 'Contact Us - ' . config('app.name', 'SaaSMedi'),
+            'description' => 'Get in touch with our team for support, sales, or partnership inquiries.',
+            'url' => route('contact'),
+            'image' => asset('images/medicine_sample.png')
+        ]);
+        return Inertia::render('Public/Contact', ['seo' => $seo]);
     }
 
     public function partner()
     {
-        return Inertia::render('Public/Partner');
+        $seoService = new \App\Services\SeoService();
+        $seo = $seoService->generate([
+            'site_name' => config('app.name', 'SaaSMedi'),
+            'title' => 'Partner Program - ' . config('app.name', 'SaaSMedi'),
+            'description' => 'Join our affiliate partner program and earn high commissions by referring pharmacies.',
+            'url' => route('partner'),
+            'image' => asset('images/medicine_sample.png')
+        ]);
+        return Inertia::render('Public/Partner', ['seo' => $seo]);
     }
 
     public function bookDemo()

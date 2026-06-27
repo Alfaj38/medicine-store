@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps({
     settings: Object,
@@ -40,7 +40,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthenticatedLayout>
+    <AppLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -177,5 +177,5 @@ const submit = () => {
 
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AppLayout>
 </template>

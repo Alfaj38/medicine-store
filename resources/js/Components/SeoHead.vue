@@ -46,11 +46,11 @@ const schemaData = computed(() => props.seo?.schema);
         <meta v-if="twitter['twitter:image']" name="twitter:image" :content="twitter['twitter:image']" />
         
         <!-- JSON-LD Schema -->
-        <script v-if="schemaData" type="application/ld+json" v-html="schemaData"></script>
+        <component :is="'script'" v-if="schemaData" type="application/ld+json" v-html="schemaData"></component>
 
         <!-- Tracking & Verification -->
         <meta v-if="seo?.tracking?.gsc" name="google-site-verification" :content="seo.tracking.gsc" />
-        <script v-if="seo?.tracking?.ga" async :src="`https://www.googletagmanager.com/gtag/js?id=${seo.tracking.ga}`"></script>
-        <script v-if="seo?.tracking?.ga" v-html="`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${seo.tracking.ga}');`"></script>
+        <component :is="'script'" v-if="seo?.tracking?.ga" async :src="`https://www.googletagmanager.com/gtag/js?id=${seo.tracking.ga}`"></component>
+        <component :is="'script'" v-if="seo?.tracking?.ga" v-html="`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${seo.tracking.ga}');`"></component>
     </Head>
 </template>

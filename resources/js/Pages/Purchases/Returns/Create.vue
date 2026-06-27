@@ -1,5 +1,5 @@
 <script setup>
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
@@ -97,8 +97,7 @@ const submit = () => {
 <template>
     <Head title="New Purchase Return - SaaSMedi" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-        <TopNavbar />
+    <AppLayout>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <form @submit.prevent="submit" class="space-y-6">
@@ -257,5 +256,5 @@ const submit = () => {
                 </div>
             </form>
         </main>
-    </div>
+    </AppLayout>
 </template>

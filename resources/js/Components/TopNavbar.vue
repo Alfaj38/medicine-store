@@ -11,9 +11,9 @@ const mobileMenuOpen = ref(false);
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 gap-4">
                 <div class="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
-                    <div class="flex items-center gap-3 flex-shrink-0">
+                    <div class="flex items-center gap-3 flex-shrink-0 sm:hidden">
                         <!-- Hamburger -->
-                        <div class="-mr-2 flex items-center sm:hidden">
+                        <div class="-mr-2 flex items-center">
                             <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 focus:text-slate-500 transition duration-150 ease-in-out">
                                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path :class="{'hidden': mobileMenuOpen, 'inline-flex': !mobileMenuOpen }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -21,50 +21,39 @@ const mobileMenuOpen = ref(false);
                                 </svg>
                             </button>
                         </div>
-                        
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-blue-500 shadow-sm flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                            </svg>
-                        </div>
-                        <span class="font-bold text-xl tracking-tight text-slate-800">SaaSMedi</span>
                     </div>
                     <div class="hidden sm:flex space-x-4 lg:space-x-8 h-full overflow-x-visible whitespace-nowrap flex-1">
                         <Link :href="route('dashboard')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url === '/dashboard' ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Dashboard
                         </Link>
-                        <Link :href="route('items.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/medicines') || $page.url.startsWith('/items') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        <Link :href="route('items.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/items') || $page.url.startsWith('/medicines') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Master Data
                         </Link>
                         
                         <!-- Procurement Dropdown -->
-                        <div class="relative group h-full flex items-center">
-                            <button class="inline-flex items-center px-1 pt-1 border-b-2 h-full text-sm font-medium transition-colors" :class="$page.url.startsWith('/suppliers') || $page.url.startsWith('/requisitions') || $page.url.startsWith('/purchase-orders') || $page.url.startsWith('/purchases') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        <div class="relative inline-flex items-center h-full group">
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full border-transparent text-slate-500 group-hover:text-slate-700 group-hover:border-slate-300" :class="$page.url.startsWith('/purchases') || $page.url.startsWith('/purchase-orders') || $page.url.startsWith('/requisitions') || $page.url.startsWith('/suppliers') ? 'border-emerald-500 text-slate-900' : ''">
                                 Procurement
-                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                <svg class="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div class="absolute top-full left-0 w-48 bg-white rounded-b-xl shadow-lg border border-slate-100 hidden group-hover:block z-50 pt-1">
-                                <div class="py-2 bg-white rounded-b-xl">
-                                    <Link :href="route('suppliers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Suppliers</Link>
-                                    <Link :href="route('requisitions.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Requisitions</Link>
-                                    <Link :href="route('purchase-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Purchase Orders</Link>
-                                    <Link :href="route('purchases.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Purchases (GRN)</Link>
-                                </div>
+                            <div class="absolute left-0 top-full mt-1 w-48 rounded-xl bg-white py-2 shadow-lg ring-1 ring-slate-900/5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                                <Link :href="route('suppliers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Suppliers</Link>
+                                <Link :href="route('requisitions.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Requisitions</Link>
+                                <Link :href="route('purchase-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Purchase Orders</Link>
+                                <Link :href="route('purchases.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Purchases (GRN)</Link>
                             </div>
                         </div>
 
                         <!-- Sales & CRM Dropdown -->
-                        <div class="relative group h-full flex items-center">
-                            <button class="inline-flex items-center px-1 pt-1 border-b-2 h-full text-sm font-medium transition-colors" :class="$page.url.startsWith('/sales') || $page.url.startsWith('/online-orders') || $page.url.startsWith('/customers') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        <div class="relative inline-flex items-center h-full group">
+                            <button class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full border-transparent text-slate-500 group-hover:text-slate-700 group-hover:border-slate-300" :class="$page.url.startsWith('/sales') || $page.url.startsWith('/online-orders') || $page.url.startsWith('/customers') ? 'border-emerald-500 text-slate-900' : ''">
                                 Sales & CRM
-                                <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                <svg class="ml-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div class="absolute top-full left-0 w-48 bg-white rounded-b-xl shadow-lg border border-slate-100 hidden group-hover:block z-50 pt-1">
-                                <div class="py-2 bg-white rounded-b-xl">
-                                    <Link :href="route('sales.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Sales Invoices</Link>
-                                    <Link :href="route('online-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Online Orders</Link>
-                                    <Link :href="route('customers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600">Customers</Link>
-                                </div>
+                            <div class="absolute left-0 top-full mt-1 w-48 rounded-xl bg-white py-2 shadow-lg ring-1 ring-slate-900/5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                                <Link :href="route('sales.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Sales Invoices</Link>
+                                <Link :href="route('online-orders.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Online Orders</Link>
+                                <Link :href="route('customers.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">Customers</Link>
                             </div>
                         </div>
 
@@ -73,88 +62,81 @@ const mobileMenuOpen = ref(false);
                         </Link>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 lg:gap-4 flex-shrink-0">
-                    <Link :href="route('pos.index')" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 lg:px-4 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        <svg class="h-4 w-4 lg:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        <span class="hidden xl:inline">Open POS Terminal</span>
-                        <span class="hidden lg:inline xl:hidden">POS</span>
+                
+                <div class="flex items-center gap-4 flex-shrink-0">
+                    <Link :href="route('pos.index')" class="hidden sm:inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98]">
+                        <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Open POS Terminal
                     </Link>
 
                     <!-- Settings Dropdown -->
-                    <div class="ml-3 relative">
-                        <div @click="dropdownOpen = !dropdownOpen" class="flex items-center space-x-2 cursor-pointer select-none">
-                            <img v-if="$page.props.auth.user?.avatar" :src="'/storage/' + $page.props.auth.user.avatar" class="h-9 w-9 rounded-full object-cover border border-slate-200" alt="Avatar">
-                            <div v-else class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
-                                {{ $page.props.auth.user?.name?.charAt(0) }}
+                    <div class="relative ml-3 h-full flex items-center">
+                        <button @click="dropdownOpen = !dropdownOpen" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-slate-300 transition-colors">
+                            <div class="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg border border-emerald-200">
+                                {{ $page.props.auth.user.name.charAt(0) }}
                             </div>
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </div>
+                        </button>
                         
-                        <!-- Invisible overlay to close dropdown -->
-                        <div v-if="dropdownOpen" @click="dropdownOpen = false" class="fixed inset-0 z-40"></div>
-
-                        <!-- Dropdown Menu -->
-                        <div v-show="dropdownOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-slate-200/50 py-1 border border-slate-100 z-50">
-                            <div class="px-4 py-2 border-b border-slate-100 mb-1">
-                                <p class="text-sm font-bold text-slate-900 truncate">{{ $page.props.auth.user?.name }}</p>
-                                <p class="text-xs text-slate-500 truncate">{{ $page.props.auth.user?.email }}</p>
+                        <div v-show="dropdownOpen" @click.away="dropdownOpen = false" class="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-lg ring-1 ring-slate-900/5 focus:outline-none z-50 overflow-hidden transform origin-top-right transition-all">
+                            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-sm font-medium text-slate-900 truncate">{{ $page.props.auth.user.name }}</p>
+                                <p class="text-xs text-slate-500 truncate">{{ $page.props.auth.user.email }}</p>
                             </div>
-                            <Link :href="route('profile.edit')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                My Profile
-                            </Link>
-                            <Link v-if="$page.props.auth.user?.is_company_owner" :href="route('company.settings.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                Settings
-                            </Link>
-                            <Link v-if="$page.props.auth.user?.is_company_owner" :href="route('company.subscription.index')" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                                Subscription & Billing
-                            </Link>
-                            <Link :href="route('logout')" method="post" as="button" class="block w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors border-t border-slate-100 mt-1 pt-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                Log Out
-                            </Link>
+                            <div class="py-1">
+                                <Link v-if="$page.props.auth.user.is_company_owner" :href="route('company.settings.index')" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                                    <svg class="mr-3 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                    Company Settings
+                                </Link>
+                                <Link :href="route('profile.edit')" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                                    <svg class="mr-3 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    Profile
+                                </Link>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <Link :href="route('logout')" method="post" as="button" class="flex w-full items-center px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors">
+                                    <svg class="mr-3 h-4 w-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                    Log Out
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Responsive Navigation Menu -->
-        <div :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" class="sm:hidden border-t border-slate-200">
+        <!-- Mobile menu -->
+        <div :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" class="sm:hidden border-t border-slate-200 bg-white">
             <div class="pt-2 pb-3 space-y-1">
-                <Link :href="route('dashboard')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url === '/dashboard' ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('dashboard')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url === '/dashboard' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Dashboard
                 </Link>
-                <Link :href="route('items.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/medicines') || $page.url.startsWith('/items') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('items.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/items') || $page.url.startsWith('/medicines') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Master Data
                 </Link>
                 <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Procurement</div>
-                <Link :href="route('suppliers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/suppliers') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('suppliers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/suppliers') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Suppliers
                 </Link>
-                <Link :href="route('requisitions.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/requisitions') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('requisitions.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/requisitions') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Requisitions
                 </Link>
-                <Link :href="route('purchase-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchase-orders') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('purchase-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchase-orders') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Purchase Orders
                 </Link>
-                <Link :href="route('purchases.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchases') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('purchases.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/purchases') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Purchases (GRN)
                 </Link>
                 <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Sales & CRM</div>
-                <Link :href="route('sales.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/sales') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('sales.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/sales') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Sales Invoices
                 </Link>
-                <Link :href="route('online-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/online-orders') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('online-orders.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/online-orders') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Online Orders
                 </Link>
-                <Link :href="route('customers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/customers') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('customers.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/customers') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Customers
                 </Link>
                 <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Other</div>
-                <Link :href="route('reports.expiry')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/reports') ? 'border-emerald-500 text-emerald-700 bg-emerald-50' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'">
+                <Link :href="route('reports.expiry')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/reports') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Reports
                 </Link>
             </div>

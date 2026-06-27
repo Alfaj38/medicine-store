@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import TopNavbar from '@/Components/TopNavbar.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
@@ -50,8 +50,7 @@ const printPackingSlip = () => {
 <template>
     <Head :title="`Order ${order.tracking_number} - SaaSMedi`" />
 
-    <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
-        <TopNavbar class="print:hidden" />
+    <AppLayout>
 
         <main class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8 print:py-0 print:px-0">
             <!-- Header -->
@@ -214,7 +213,7 @@ const printPackingSlip = () => {
                 </div>
             </div>
         </main>
-    </div>
+    </AppLayout>
 </template>
 
 <style>

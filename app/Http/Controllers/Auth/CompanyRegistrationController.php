@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Company;
 use App\Models\Branch;
 use App\Models\User;
-use App\Models\SubscriptionPlan;
-use App\Models\SubscriptionPlanPrice;
+use App\Models\Package;
 use App\Models\Subscription;
 use App\Models\ReferralCode;
 use App\Models\Referral;
@@ -20,12 +19,13 @@ class CompanyRegistrationController extends Controller
 {
     public function create()
     {
-        $plans = SubscriptionPlan::where('is_active', true)->with(['prices' => function($q) {
-            $q->where('is_active', true);
-        }])->get();
+        $packages = Package::where('is_active', true)
+            ->with('features')
+            ->orderBy('sort_order')
+            ->get();
 
         return Inertia::render('Auth/Register', [
-            'plans' => $plans,
+            'packages' => $packages,
             'referral_code' => session('referral_code')
         ]);
     }
@@ -49,21 +49,24 @@ class CompanyRegistrationController extends Controller
             'owner_phone' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             // Step 4: Subscription
-            'plan_id' => 'required|exists:subscription_plans,id',
+            'package_id' => 'required|exists:packages,id',
             'billing_cycle' => 'required|in:monthly,yearly',
             'referral_code' => 'nullable|string',
             'referral_source' => 'nullable|string',
         ]);
 
         $user = DB::transaction(function () use ($validated) {
-            $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
-            $price = SubscriptionPlanPrice::where('plan_id', $plan->id)
-                ->where('billing_cycle', $validated['billing_cycle'])
-                ->firstOrFail();
+            $package = Package::findOrFail($validated['package_id']);
 
             $referralCode = null;
+            $coupon = null;
+            $couponService = app(\App\Services\CouponService::class);
+            $extraTrialDays = 0;
+
             if (!empty($validated['referral_code'])) {
                 $codeToFind = $validated['referral_code'];
+                
+                // First check Referral
                 $referralCode = ReferralCode::where(function($q) use ($codeToFind) {
                         $q->where('code', $codeToFind)->orWhere('label', $codeToFind);
                     })
@@ -72,6 +75,18 @@ class CompanyRegistrationController extends Controller
                 
                 if ($referralCode && $referralCode->expires_at && $referralCode->expires_at->isPast()) {
                     $referralCode = null;
+                }
+
+                // If no referral code, check Coupon
+                if (!$referralCode) {
+                    $dummyCompany = new Company(['id' => 0]);
+                    $validation = $couponService->validateCoupon($codeToFind, $dummyCompany, $package->id, 0, 'new_subscription');
+                    if ($validation['valid']) {
+                        $coupon = $validation['coupon'];
+                        if ($coupon->discount_type === 'free_trial') {
+                            $extraTrialDays = (int)$coupon->discount_value;
+                        }
+                    }
                 }
             }
 
@@ -82,7 +97,6 @@ class CompanyRegistrationController extends Controller
                 'phone' => $validated['company_phone'],
                 'address' => $validated['company_address'],
                 'referral_code_id' => $referralCode ? $referralCode->id : null,
-                // Store additional setup context temporarily in address or add columns later if needed
                 'registration_status' => 'active',
                 'is_active' => true,
             ]);
@@ -109,15 +123,18 @@ class CompanyRegistrationController extends Controller
                 'is_active' => true,
             ]);
 
-            Subscription::create([
+            $totalTrialDays = $package->trial_days + $extraTrialDays;
+
+            $subscription = Subscription::create([
                 'company_id' => $company->id,
-                'plan_id' => $plan->id,
-                'plan_price_id' => $price->id,
+                'package_id' => $package->id,
                 'billing_cycle' => $validated['billing_cycle'],
-                'cycle_years' => $price->cycle_years,
+                'cycle_years' => 1,
                 'amount_paid' => 0, // Free Trial
                 'starts_at' => now(),
-                'expires_at' => now()->addDays(14), // 14-Day Free Trial
+                'expires_at' => now()->addDays($totalTrialDays),
+                'trial_ends_at' => now()->addDays($totalTrialDays),
+                'grace_period_days' => 5,
                 'status' => 'trial',
             ]);
 
@@ -126,15 +143,17 @@ class CompanyRegistrationController extends Controller
                     'reseller_id' => $referralCode->reseller_id,
                     'referral_code_id' => $referralCode->id,
                     'company_id' => $company->id,
-                    // If it was auto-filled from session vs manual
                     'source' => session()->has('referral_code') && session('referral_code') === $referralCode->code ? 'link' : 'code',
                 ]);
                 
                 $referralCode->increment('total_companies');
-                // Clear session if used
                 if (session()->has('referral_code')) {
                     session()->forget('referral_code');
                 }
+            }
+
+            if ($coupon) {
+                $couponService->applyCoupon($coupon, $company, 0, null, $subscription->id);
             }
 
             return $user;

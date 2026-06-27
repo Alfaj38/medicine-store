@@ -14,6 +14,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('data_scope', function ($app) {
             return new \App\Services\DataScopeService();
         });
+        
+        $this->app->singleton('feature_manager', function ($app) {
+            return new \App\Services\FeatureManager();
+        });
     }
 
     /**
