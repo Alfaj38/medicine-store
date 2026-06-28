@@ -35,6 +35,7 @@ const form = useForm({
     billing_cycle: 'monthly',
     referral_code: props.referral_code || '',
     referral_source: '',
+    coupon_code: '',
 });
 
 // Computed property for smart package recommendation
@@ -69,15 +70,41 @@ const recommendedFeatures = computed(() => {
         .slice(0, 6);
 });
 
+// Computed property for the sidebar display (shows recommended package in steps 1-3, selected package in step 4)
+const displayPackage = computed(() => {
+    if (currentStep.value === 4 && form.plan_id) {
+        return props.packages.find(p => p.id === form.plan_id) || recommendedPackage.value;
+    }
+    return recommendedPackage.value;
+});
+
+const displayPackageName = computed(() => {
+    return displayPackage.value ? `${displayPackage.value.name} Plan` : 'Starter Plan';
+});
+
+const displayFeatures = computed(() => {
+    if (!displayPackage.value || !displayPackage.value.features) return [];
+    return displayPackage.value.features
+        .filter(f => f.is_enabled || f.limit !== null)
+        .slice(0, 6);
+});
+
 const validatingCode = ref(false);
 const validCode = ref(!!props.referral_code);
 const invalidCodeMsg = ref('');
+const referralResellerName = ref('');
+
+const validatingCoupon = ref(false);
+const validCoupon = ref(false);
+const couponMessage = ref('');
+const invalidCouponMsg = ref('');
 
 let timeout = null;
 watch(() => form.referral_code, (val) => {
     if (props.referral_code) return; // Locked from link
     invalidCodeMsg.value = '';
     validCode.value = false;
+    referralResellerName.value = '';
     
     if (!val) return;
 
@@ -90,9 +117,12 @@ watch(() => form.referral_code, (val) => {
     timeout = setTimeout(async () => {
         validatingCode.value = true;
         try {
-            const res = await axios.get('/api/promo-code/validate', { params: { code: val } });
+            const res = await axios.get('/api/promo-code/validate', { params: { code: val, type: 'referral' } });
             if (res.data.valid) {
                 validCode.value = true;
+                if (res.data.reseller_name) {
+                    referralResellerName.value = res.data.reseller_name;
+                }
             } else {
                 invalidCodeMsg.value = res.data.message || 'Invalid code';
             }
@@ -100,6 +130,37 @@ watch(() => form.referral_code, (val) => {
             invalidCodeMsg.value = 'Invalid code';
         }
         validatingCode.value = false;
+    }, 500);
+});
+
+let couponTimeout = null;
+watch(() => form.coupon_code, (val) => {
+    invalidCouponMsg.value = '';
+    validCoupon.value = false;
+    couponMessage.value = '';
+    
+    if (!val) return;
+
+    if (val !== val.toUpperCase()) {
+        form.coupon_code = val.toUpperCase();
+        return;
+    }
+
+    clearTimeout(couponTimeout);
+    couponTimeout = setTimeout(async () => {
+        validatingCoupon.value = true;
+        try {
+            const res = await axios.get('/api/promo-code/validate', { params: { code: val, type: 'coupon', package_id: form.plan_id } });
+            if (res.data.valid) {
+                validCoupon.value = true;
+                couponMessage.value = res.data.message;
+            } else {
+                invalidCouponMsg.value = res.data.message || 'Invalid coupon';
+            }
+        } catch (e) {
+            invalidCouponMsg.value = 'Invalid coupon';
+        }
+        validatingCoupon.value = false;
     }, 500);
 });
 
@@ -124,7 +185,7 @@ const submit = () => {
                 if (errors.password) {
                     form.reset('password', 'password_confirmation');
                 }
-            } else if (errors.plan_id || errors.billing_cycle || errors.referral_code) {
+            } else if (errors.plan_id || errors.billing_cycle || errors.referral_code || errors.coupon_code) {
                 currentStep.value = 4;
             }
         },
@@ -149,15 +210,15 @@ const submit = () => {
             <div class="absolute bottom-40 -left-40 w-96 h-96 bg-[#00b67a] opacity-20 rounded-full blur-[100px] z-0"></div>
             
             <!-- Logo -->
-            <div class="relative z-10 flex items-center gap-3 mb-10">
+            <Link :href="route('public.home')" class="relative z-10 flex items-center gap-3 mb-10 hover:opacity-90 transition-opacity w-max">
                 <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#00b67a] font-black text-2xl shadow-lg">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight leading-none">SaaSMedi</h1>
-                    <p class="text-[11px] font-medium opacity-80 mt-1">Smart Pharmacy. Stronger Business.</p>
+                    <h1 class="text-3xl font-bold tracking-tight leading-none text-white">SaaSMedi</h1>
+                    <p class="text-[11px] font-medium text-white opacity-80 mt-1">Smart Pharmacy. Stronger Business.</p>
                 </div>
-            </div>
+            </Link>
 
             <!-- Content Area (Text + Hero) -->
             <div class="relative z-10 flex flex-col">
@@ -616,15 +677,35 @@ const submit = () => {
                                     </label>
                                 </div>
 
-                                <!-- Promo / Referral Code -->
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-800 mb-2">Promo / Referral Code</label>
-                                    <div class="flex gap-2">
-                                        <input v-model="form.referral_code" type="text" class="flex-1 rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-bold uppercase transition-shadow" placeholder="Got a code?">
-                                        <div class="flex-shrink-0 w-32 flex items-center">
-                                            <span v-if="validatingCode" class="text-xs font-bold text-slate-500">Checking...</span>
-                                            <span v-else-if="validCode" class="text-xs font-bold text-emerald-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Code Applied</span>
-                                            <span v-else-if="invalidCodeMsg" class="text-xs font-bold text-red-500">{{ invalidCodeMsg }}</span>
+                                <!-- Referral Code & Promo Code -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <!-- Partner Referral Code -->
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-800 mb-2">Partner Referral Code</label>
+                                        <div class="relative">
+                                            <input v-model="form.referral_code" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-bold uppercase transition-shadow pr-10" placeholder="Optional">
+                                            
+                                            <!-- Validation Status -->
+                                            <div class="mt-1 flex items-center min-h-[20px]">
+                                                <span v-if="validatingCode" class="text-xs font-bold text-slate-500 flex items-center gap-1"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Checking...</span>
+                                                <span v-else-if="validCode" class="text-xs font-bold text-emerald-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> {{ referralResellerName ? 'Partner: ' + referralResellerName : 'Applied' }}</span>
+                                                <span v-else-if="invalidCodeMsg" class="text-xs font-bold text-red-500">{{ invalidCodeMsg }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Promo / Discount Code -->
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-800 mb-2">Promo / Coupon Code</label>
+                                        <div class="relative">
+                                            <input v-model="form.coupon_code" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-bold uppercase transition-shadow pr-10" placeholder="Optional">
+                                            
+                                            <!-- Validation Status -->
+                                            <div class="mt-1 flex items-center min-h-[20px]">
+                                                <span v-if="validatingCoupon" class="text-xs font-bold text-slate-500 flex items-center gap-1"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Checking...</span>
+                                                <span v-else-if="validCoupon" class="text-xs font-bold text-emerald-600 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> {{ couponMessage }}</span>
+                                                <span v-else-if="invalidCouponMsg" class="text-xs font-bold text-red-500">{{ invalidCouponMsg }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -709,10 +790,10 @@ const submit = () => {
                                 <div class="w-5 h-5 flex-shrink-0 text-amber-500 mt-0.5"><svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></div>
                                 <div>
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 flex justify-between items-center">
-                                        Recommended Plan
+                                        {{ currentStep === 4 ? 'Selected Plan' : 'Recommended Plan' }}
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="text-sm font-bold text-slate-800">{{ recommendedPackageName }}</div>
+                                        <div class="text-sm font-bold text-slate-800">{{ displayPackageName }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -721,14 +802,14 @@ const submit = () => {
                         <div class="pt-5 border-t border-slate-100">
                             <h4 class="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-3">You'll Get</h4>
                             <ul class="space-y-2.5">
-                                <li v-for="feature in recommendedFeatures" :key="feature.id" class="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                <li v-for="feature in displayFeatures" :key="feature.id" class="flex items-center gap-2 text-xs font-bold text-slate-600">
                                     <svg class="w-3.5 h-3.5 text-[#00b67a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                     <span class="capitalize">
                                         <template v-if="feature.limit !== null">{{ feature.limit }} </template>
                                         {{ feature.feature_code.replace(/_/g, ' ') }}
                                     </span>
                                 </li>
-                                <li v-if="recommendedPackage?.features?.length > 6" class="flex items-center gap-2 text-[11px] font-bold text-slate-400 pl-5 pt-1">
+                                <li v-if="displayPackage?.features?.length > 6" class="flex items-center gap-2 text-[11px] font-bold text-slate-400 pl-5 pt-1">
                                     And much more...
                                 </li>
                             </ul>

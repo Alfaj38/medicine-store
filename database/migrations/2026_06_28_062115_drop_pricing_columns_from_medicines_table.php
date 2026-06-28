@@ -4,15 +4,22 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('medicines', function (Blueprint $table) {
-            $table->dropColumn(['buy_price', 'sell_price', 'vat_percent']);
+            if (Schema::hasColumn('medicines', 'buy_price')) {
+                $table->dropColumn('buy_price');
+            }
+            if (Schema::hasColumn('medicines', 'sell_price')) {
+                $table->dropColumn('sell_price');
+            }
+            if (Schema::hasColumn('medicines', 'vat_percent')) {
+                $table->dropColumn('vat_percent');
+            }
         });
     }
 

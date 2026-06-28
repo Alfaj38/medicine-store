@@ -53,6 +53,7 @@ class CompanyRegistrationController extends Controller
             'billing_cycle' => 'required|in:monthly,yearly',
             'referral_code' => 'nullable|string',
             'referral_source' => 'nullable|string',
+            'coupon_code' => 'nullable|string',
         ]);
 
         $user = DB::transaction(function () use ($validated) {
@@ -66,7 +67,6 @@ class CompanyRegistrationController extends Controller
             if (!empty($validated['referral_code'])) {
                 $codeToFind = $validated['referral_code'];
                 
-                // First check Referral
                 $referralCode = ReferralCode::where(function($q) use ($codeToFind) {
                         $q->where('code', $codeToFind)->orWhere('label', $codeToFind);
                     })
@@ -76,24 +76,33 @@ class CompanyRegistrationController extends Controller
                 if ($referralCode && $referralCode->expires_at && $referralCode->expires_at->isPast()) {
                     $referralCode = null;
                 }
+            }
 
-                // If no referral code, check Coupon
-                if (!$referralCode) {
-                    $dummyCompany = new Company(['id' => 0]);
-                    $validation = $couponService->validateCoupon($codeToFind, $dummyCompany, $package->id, 0, 'new_subscription');
-                    if ($validation['valid']) {
-                        $coupon = $validation['coupon'];
-                        if ($coupon->discount_type === 'free_trial') {
-                            $extraTrialDays = (int)$coupon->discount_value;
-                        }
+            if (!empty($validated['coupon_code'])) {
+                $codeToFind = $validated['coupon_code'];
+                $dummyCompany = new Company(['id' => 0]);
+                $validation = $couponService->validateCoupon($codeToFind, $dummyCompany, $package->id, 0, 'new_subscription');
+                if ($validation['valid']) {
+                    $coupon = $validation['coupon'];
+                    if ($coupon->discount_type === 'free_trial') {
+                        $extraTrialDays = (int)$coupon->discount_value;
                     }
                 }
+            }
+
+            // Generate a unique slug
+            $originalSlug = \Illuminate\Support\Str::slug($validated['company_name']);
+            $slug = $originalSlug;
+            $counter = 1;
+            while (Company::where('slug', $slug)->exists()) {
+                $slug = $originalSlug . '-' . $counter;
+                $counter++;
             }
 
             // We are creating a trial account.
             $company = Company::create([
                 'name' => $validated['company_name'],
-                'slug' => \Illuminate\Support\Str::slug($validated['company_name']),
+                'slug' => $slug,
                 'phone' => $validated['company_phone'],
                 'address' => $validated['company_address'],
                 'referral_code_id' => $referralCode ? $referralCode->id : null,

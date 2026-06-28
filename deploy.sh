@@ -61,8 +61,12 @@ ssh -p $PORT $USER@$HOST " \
     rm deploy.tar.gz && \
     rm -f bootstrap/cache/*.php && \
     \
-    # 4. Run Laravel Optimizations
+    # 3. Update Composer Dependencies (Comment this out after successful deployment if you don't need it every time)
+    composer install --no-dev --optimize-autoloader && \
+    \
+    # 4. Run Laravel Optimizations & Data Syncs
     php artisan migrate --force && \
+    php artisan sync:medicine-pricing && \
     php artisan db:seed --class=AdditionalCategoriesSeeder --force && \
     php artisan optimize:clear && \
     php artisan optimize && \

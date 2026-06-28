@@ -34,36 +34,42 @@ class SyncMedicinePricing extends Command
             $this->info("Loading data from CSV: $csvPath");
             $file = fopen(base_path($csvPath), 'r');
             $header = fgetcsv($file); // skip header: brand id,brand name,type,slug,dosage form,generic,strength,manufacturer,package container,Package Size
-            
+
             while (($row = fgetcsv($file)) !== false) {
                 if (count($row) >= 9) {
                     $name = trim($row[1]);
                     $dosage_form = trim($row[4]);
                     $strength = trim($row[6]);
                     $package_container = trim($row[8]);
-                    
+
                     $mrp = 0.0;
                     $secondary_unit = 'Piece';
                     $conversion_factor = 1;
-                    
+
                     // Determine primary unit from dosage form
                     $primary_unit = 'Piece';
-                    if (stripos($dosage_form, 'tablet') !== false) $primary_unit = 'Tablet';
-                    elseif (stripos($dosage_form, 'capsule') !== false) $primary_unit = 'Capsule';
-                    elseif (stripos($dosage_form, 'syrup') !== false || stripos($dosage_form, 'suspension') !== false || stripos($dosage_form, 'solution') !== false) $primary_unit = 'Bottle';
-                    elseif (stripos($dosage_form, 'injection') !== false || stripos($dosage_form, 'iv') !== false) $primary_unit = 'Vial';
-                    elseif (stripos($dosage_form, 'cream') !== false || stripos($dosage_form, 'ointment') !== false) $primary_unit = 'Tube';
-                    elseif (stripos($dosage_form, 'sachet') !== false) $primary_unit = 'Sachet';
+                    if (stripos($dosage_form, 'tablet') !== false)
+                        $primary_unit = 'Tablet';
+                    elseif (stripos($dosage_form, 'capsule') !== false)
+                        $primary_unit = 'Capsule';
+                    elseif (stripos($dosage_form, 'syrup') !== false || stripos($dosage_form, 'suspension') !== false || stripos($dosage_form, 'solution') !== false)
+                        $primary_unit = 'Bottle';
+                    elseif (stripos($dosage_form, 'injection') !== false || stripos($dosage_form, 'iv') !== false)
+                        $primary_unit = 'Vial';
+                    elseif (stripos($dosage_form, 'cream') !== false || stripos($dosage_form, 'ointment') !== false)
+                        $primary_unit = 'Tube';
+                    elseif (stripos($dosage_form, 'sachet') !== false)
+                        $primary_unit = 'Sachet';
 
                     // Parse package container string
                     if (preg_match('/Unit Price:\s*৳\s*([\d\.]+)/i', $package_container, $matches)) {
-                        $mrp = (float)$matches[1];
+                        $mrp = (float) $matches[1];
                     } elseif (preg_match('/৳\s*([\d\.]+)/', $package_container, $matches)) {
-                        $mrp = (float)$matches[1];
+                        $mrp = (float) $matches[1];
                     }
 
                     if (preg_match('/\((\d+)\'s\s+([a-zA-Z]+)/i', $package_container, $matches)) {
-                        $conversion_factor = (int)$matches[1];
+                        $conversion_factor = (int) $matches[1];
                         $secondary_unit = ucfirst(strtolower($matches[2])); // e.g. Pack, Box
                     } elseif (preg_match('/bottle/i', $package_container)) {
                         $secondary_unit = 'Bottle';
@@ -100,7 +106,7 @@ class SyncMedicinePricing extends Command
 
         foreach ($medicines as $med) {
             $nameLower = strtolower($med->name);
-            
+
             if (isset($datasetLookup[$nameLower])) {
                 $matchedData = $datasetLookup[$nameLower];
 
@@ -132,15 +138,15 @@ class SyncMedicinePricing extends Command
     private function getFallbackDataset()
     {
         return [
-            ['name' => 'Napa', 'strength' => '500mg', 'mrp' => 1.20, 'secondary_unit' => 'Box', 'conversion_factor' => 500],
-            ['name' => 'Napa Extra', 'strength' => '500mg+65mg', 'mrp' => 2.50, 'secondary_unit' => 'Box', 'conversion_factor' => 200],
-            ['name' => 'Seclo', 'strength' => '20mg', 'mrp' => 5.00, 'secondary_unit' => 'Box', 'conversion_factor' => 120],
-            ['name' => 'Maxpro', 'strength' => '20mg', 'mrp' => 5.00, 'secondary_unit' => 'Box', 'conversion_factor' => 120],
-            ['name' => 'Sergel', 'strength' => '20mg', 'mrp' => 7.00, 'secondary_unit' => 'Box', 'conversion_factor' => 60],
-            ['name' => 'Fexo', 'strength' => '120mg', 'mrp' => 8.00, 'secondary_unit' => 'Box', 'conversion_factor' => 50],
-            ['name' => 'Alatrol', 'strength' => '10mg', 'mrp' => 3.00, 'secondary_unit' => 'Box', 'conversion_factor' => 100],
-            ['name' => 'Monas', 'strength' => '10mg', 'mrp' => 15.00, 'secondary_unit' => 'Box', 'conversion_factor' => 30],
-            ['name' => 'Preservin', 'strength' => '', 'mrp' => 200.00, 'secondary_unit' => 'Piece', 'conversion_factor' => 1],
+            ['name' => 'Napa', 'strength' => '500mg', 'mrp' => 1.20, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 500],
+            ['name' => 'Napa Extra', 'strength' => '500mg+65mg', 'mrp' => 2.50, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 200],
+            ['name' => 'Seclo', 'strength' => '20mg', 'mrp' => 5.00, 'primary_unit' => 'Capsule', 'secondary_unit' => 'Box', 'conversion_factor' => 120],
+            ['name' => 'Maxpro', 'strength' => '20mg', 'mrp' => 5.00, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 120],
+            ['name' => 'Sergel', 'strength' => '20mg', 'mrp' => 7.00, 'primary_unit' => 'Capsule', 'secondary_unit' => 'Box', 'conversion_factor' => 60],
+            ['name' => 'Fexo', 'strength' => '120mg', 'mrp' => 8.00, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 50],
+            ['name' => 'Alatrol', 'strength' => '10mg', 'mrp' => 3.00, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 100],
+            ['name' => 'Monas', 'strength' => '10mg', 'mrp' => 15.00, 'primary_unit' => 'Tablet', 'secondary_unit' => 'Box', 'conversion_factor' => 30],
+            ['name' => 'Preservin', 'strength' => '', 'mrp' => 200.00, 'primary_unit' => 'Piece', 'secondary_unit' => 'Piece', 'conversion_factor' => 1],
         ];
     }
 }

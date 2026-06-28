@@ -26,42 +26,47 @@ class ReferralLinkController extends Controller
     {
         $code = $request->query('code');
         $packageId = $request->query('package_id');
+        $type = $request->query('type', 'referral'); // default to referral for backwards compatibility
         
         if (!$code) {
             return response()->json(['valid' => false, 'message' => 'No code provided.']);
         }
 
-        // Check for Referral Code first
-        $referralCode = ReferralCode::where(function($q) use ($code) {
-            $q->where('code', $code)->orWhere('label', $code);
-        })->first();
+        if ($type === 'referral') {
+            // Check for Referral Code
+            $referralCode = ReferralCode::where(function($q) use ($code) {
+                $q->where('code', $code)->orWhere('label', $code);
+            })->first();
 
-        if ($referralCode) {
-            if ($referralCode->status !== 'active' || !$referralCode->isValid()) {
-                return response()->json(['valid' => false, 'message' => 'This referral code is inactive or invalid.']);
+            if ($referralCode) {
+                if ($referralCode->status !== 'active' || !$referralCode->isValid()) {
+                    return response()->json(['valid' => false, 'message' => 'This referral code is inactive or invalid.']);
+                }
+                return response()->json([
+                    'valid' => true,
+                    'message' => 'Referral Code applied successfully!',
+                    'type' => 'referral',
+                    'reseller_name' => $referralCode->reseller->name ?? 'Partner'
+                ]);
             }
-            return response()->json([
-                'valid' => true,
-                'message' => 'Referral Code applied successfully!',
-                'type' => 'referral',
-                'reseller_name' => $referralCode->reseller->name ?? 'Partner'
-            ]);
+            
+            return response()->json(['valid' => false, 'message' => 'Invalid referral code.']);
         }
 
-        // If not a Referral Code, check for a Coupon
-        $couponService = app(\App\Services\CouponService::class);
-        
-        // Mock a company for validation if this is during registration
-        // We use an empty company as it doesn't have an ID yet, so per-company usage isn't fully validated until checkout if it relies on existing company
-        $dummyCompany = new \App\Models\Company(['id' => 0]); 
-        
-        $validationResult = $couponService->validateCoupon(
-            $code, 
-            $dummyCompany, 
-            $packageId ? (int)$packageId : null, 
-            0, // Cart total (during registration it's free trial, so 0)
-            'new_subscription'
-        );
+        if ($type === 'coupon') {
+            // Check for a Coupon
+            $couponService = app(\App\Services\CouponService::class);
+            
+            // Mock a company for validation if this is during registration
+            $dummyCompany = new \App\Models\Company(['id' => 0]); 
+            
+            $validationResult = $couponService->validateCoupon(
+                $code, 
+                $dummyCompany, 
+                $packageId ? (int)$packageId : null, 
+                0, // Cart total (during registration it's free trial, so 0)
+                'new_subscription'
+            );
 
         if (!$validationResult['valid']) {
             return response()->json([
@@ -86,5 +91,8 @@ class ReferralLinkController extends Controller
             'type' => 'coupon',
             'coupon' => $coupon
         ]);
+        }
+
+        return response()->json(['valid' => false, 'message' => 'Invalid validation type.']);
     }
 }

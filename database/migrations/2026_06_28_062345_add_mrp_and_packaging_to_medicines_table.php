@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('medicines', function (Blueprint $table) {
-            $table->decimal('mrp', 10, 2)->default(0)->after('company_name');
-            $table->foreignId('secondary_unit_id')->nullable()->after('unit_id')->constrained('units')->nullOnDelete();
-            $table->integer('conversion_factor')->default(1)->after('secondary_unit_id');
+            if (!Schema::hasColumn('medicines', 'mrp')) {
+                $table->decimal('mrp', 10, 2)->default(0)->after('company_name');
+            }
+            if (!Schema::hasColumn('medicines', 'secondary_unit_id')) {
+                $table->foreignId('secondary_unit_id')->nullable()->after('unit_id')->constrained('units')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('medicines', 'conversion_factor')) {
+                $table->integer('conversion_factor')->default(1)->after('secondary_unit_id');
+            }
         });
     }
 
