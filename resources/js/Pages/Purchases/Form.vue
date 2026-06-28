@@ -68,15 +68,17 @@ watch(searchQuery, async (newVal) => {
 });
 
 const addMedicineToCart = (medicine) => {
-    let buyPrice = medicine.buy_price || 0;
+    let mrp = parseFloat(medicine.mrp) || parseFloat(medicine.sell_price) || 0;
+    
+    // In BD standard trade discount is usually 12% off MRP
+    let buyPrice = parseFloat((mrp * 0.88).toFixed(2));
     
     let defaultUnit = medicine.default_unit || null;
     if (defaultUnit && defaultUnit.factor > 0) {
         buyPrice = buyPrice * defaultUnit.factor;
+        mrp = mrp * defaultUnit.factor;
     }
 
-    let mrp = parseFloat((buyPrice * 1.12).toFixed(2));
-    
     form.items.push({ 
         medicine_id: medicine.id, 
         name: medicine.name,
@@ -90,7 +92,7 @@ const addMedicineToCart = (medicine) => {
         bonus_quantity: 0,
         unit_price: buyPrice, // TP
         mrp: mrp,
-        trade_discount_percent: 0
+        trade_discount_percent: 12
     });
     searchQuery.value = '';
     searchResults.value = [];

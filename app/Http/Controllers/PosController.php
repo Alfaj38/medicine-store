@@ -60,18 +60,15 @@ class PosController extends Controller
             ->where('quantity', '>', 0)
             ->pluck('medicine_id');
 
-        // Build the item query (bypass TenantScope since central catalog has company_id = null)
-        $query = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
+        // Build the item query
+        $query = \App\Models\Medicine::where('is_active', true)
             ->when($companyId, function($q) use ($companyId) {
                 $q->where(function($sub) use ($companyId) {
                     $sub->whereNull('company_id')
                         ->orWhere('company_id', $companyId);
                 });
             })
-            ->with(['medicineDetails', 'prices' => function($q) {
-                $q->where('price_type', 'Retail');
-            }, 'category', 'units', 'uom']);
+            ->with(['category', 'secondaryUnit']);
 
         if ($categoryId) {
             $query->where('category_id', $categoryId);
@@ -90,61 +87,74 @@ class PosController extends Controller
                 ->pluck('medicine_id');
             $query->whereIn('id', $expiringItemIds);
         } else {
-            // All: show non-stock items (services) OR items that have stock
-            $query->where(function($q) use ($itemIdsWithStock) {
-                $q->where('inventory_type', '!=', 'Stock Item')
-                  ->orWhereIn('id', $itemIdsWithStock);
-            });
+            // All: show items that have stock, plus fallback
+            $query->whereIn('id', $itemIdsWithStock);
         }
+
+        $query->with([
+            'category:id,name', 
+            'secondaryUnit:id,name',
+            'unit:id,name',
+            'inventory' => function($q) use ($companyId) {
+                if ($companyId) {
+                    $q->where('company_id', $companyId);
+                }
+            }
+        ])->select(['id', 'name', 'generic_name', 'barcode', 'type', 'strength', 'mrp', 'unit_id', 'secondary_unit_id', 'conversion_factor', 'category_id']);
 
         $itemIds = $query->pluck('id')->toArray();
 
-        $items = $query->take(32)->get()->map(function($item) use ($companyId) {
-            // Get stock details for frontend format
-            $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
-            if ($companyId) {
-                $inventoryQuery->where('company_id', $companyId);
-            }
-            $inventory = $inventoryQuery->get();
+        $items = $query->take(32)->get()->map(function($item) {
+            $inventory = $item->inventory;
                 
             $stockQty = $inventory->sum('quantity');
 
-            $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
+            $sellPrice = $item->mrp ?: 0;
             if ($sellPrice <= 0 && $inventory->count() > 0) {
                 $sellPrice = $inventory->max('mrp');
             }
 
-            // Fallback inventory mrp to sell_price if it's 0 so frontend shows correct price
-            $inventory->transform(function ($inv) use ($sellPrice) {
-                if ($inv->mrp <= 0) {
-                    $inv->mrp = $sellPrice;
-                }
-                return $inv;
-            });
-
-            $units = $item->units;
-            if ($units->isEmpty()) {
-                $uomName = $item->uom ? $item->uom->name : 'Unit';
-                $fallbackUnit = [
-                    'id' => 'fallback',
-                    'unit_name' => $uomName,
+            // Create units array dynamically from Medicine schema
+            $units = collect();
+            if ($item->unit) {
+                $units->push((object)[
+                    'id' => $item->unit_id,
+                    'unit_name' => $item->unit->name,
                     'factor' => 1,
                     'is_base_unit' => true,
-                    'is_purchase_unit' => true,
                     'is_sales_unit' => true
-                ];
-                $units = collect([(object) $fallbackUnit]);
+                ]);
+            } else {
+                $units->push((object)[
+                    'id' => 'fallback',
+                    'unit_name' => 'Unit',
+                    'factor' => 1,
+                    'is_base_unit' => true,
+                    'is_sales_unit' => true
+                ]);
+            }
+            if ($item->secondaryUnit && $item->conversion_factor > 1) {
+                $units->push((object)[
+                    'id' => $item->secondary_unit_id,
+                    'unit_name' => $item->secondaryUnit->name,
+                    'factor' => $item->conversion_factor,
+                    'is_base_unit' => false,
+                    'is_sales_unit' => true
+                ]);
             }
 
-            $salesUnit = $units->firstWhere('is_sales_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
-            $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+            $salesUnit = $units->first();
+            $baseUnit = $units->first();
 
             return [
                 'id'           => $item->id,
                 'name'         => $item->name,
-                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                'generic_name' => $item->generic_name,
                 'barcode'      => $item->barcode,
-                'sell_price'   => $sellPrice, // Base selling price
+                'type'         => $item->type,
+                'strength'     => $item->strength,
+                'sell_price'   => $sellPrice, // Frontend still uses sell_price in cart mapping occasionally, but we map it here
+                'mrp'          => $item->mrp,
                 'category'     => $item->category,
                 'stock_qty'    => (int) $stockQty, // Base stock quantity
                 'inventory'    => $inventory,
@@ -197,8 +207,7 @@ class PosController extends Controller
             ->where('quantity', '>', 0)
             ->pluck('medicine_id');
 
-        $query = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
+        $query = \App\Models\Medicine::where('is_active', true)
             ->when($companyId, function($q) use ($companyId) {
                 $q->where(function($sub) use ($companyId) {
                     $sub->whereNull('company_id')
@@ -208,69 +217,78 @@ class PosController extends Controller
             ->where(function($q) use ($queryText) {
                 $q->where('name', 'like', "%{$queryText}%")
                   ->orWhere('barcode', 'like', "%{$queryText}%")
-                  ->orWhere('sku', 'like', "%{$queryText}%")
-                  ->orWhereHas('medicineDetails', function($m) use ($queryText) {
-                      $m->where('generic_name', 'like', "%{$queryText}%");
-                  });
+                  ->orWhere('generic_name', 'like', "%{$queryText}%");
             })
-            ->where(function($q) use ($itemIdsWithStock) {
-                $q->where('inventory_type', '!=', 'Stock Item')
-                  ->orWhereIn('id', $itemIdsWithStock);
-            });
+            ->whereIn('id', $itemIdsWithStock);
 
         $itemIds = $query->pluck('id')->toArray();
 
-        $items = $query->with(['medicineDetails', 'prices' => function($q) {
-                $q->where('price_type', 'Retail');
-            }, 'units', 'uom'])
-            ->take(15)
-            ->get()->map(function($item) use ($companyId) {
-                // Get stock details for frontend format
-                $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
+        $items = $query->with([
+            'category:id,name', 
+            'secondaryUnit:id,name', 
+            'unit:id,name',
+            'inventory' => function($q) use ($companyId) {
                 if ($companyId) {
-                    $inventoryQuery->where('company_id', $companyId);
+                    $q->where('company_id', $companyId);
                 }
-                $inventory = $inventoryQuery->get();
+            }
+        ])
+            ->select(['id', 'name', 'generic_name', 'barcode', 'type', 'strength', 'mrp', 'unit_id', 'secondary_unit_id', 'conversion_factor', 'category_id'])
+            ->take(15)
+            ->get()->map(function($item) {
+                $inventory = $item->inventory;
 
-                $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
+                $sellPrice = $item->mrp ?: 0;
                 if ($sellPrice <= 0 && $inventory->count() > 0) {
                     $sellPrice = $inventory->max('mrp');
                 }
 
-                $inventory->transform(function ($inv) use ($sellPrice) {
-                    if ($inv->mrp <= 0) {
-                        $inv->mrp = $sellPrice;
-                    }
-                    return $inv;
-                });
-                    
-                $units = $item->units;
-                if ($units->isEmpty()) {
-                    $uomName = $item->uom ? $item->uom->name : 'Unit';
-                    $fallbackUnit = [
-                        'id' => 'fallback',
-                        'unit_name' => $uomName,
+                // Create units array dynamically from Medicine schema
+                $units = collect();
+                if ($item->unit) {
+                    $units->push((object)[
+                        'id' => $item->unit_id,
+                        'unit_name' => $item->unit->name,
                         'factor' => 1,
                         'is_base_unit' => true,
-                        'is_purchase_unit' => true,
                         'is_sales_unit' => true
-                    ];
-                    $units = collect([(object) $fallbackUnit]);
+                    ]);
+                } else {
+                    $units->push((object)[
+                        'id' => 'fallback',
+                        'unit_name' => 'Unit',
+                        'factor' => 1,
+                        'is_base_unit' => true,
+                        'is_sales_unit' => true
+                    ]);
+                }
+                if ($item->secondaryUnit && $item->conversion_factor > 1) {
+                    $units->push((object)[
+                        'id' => $item->secondary_unit_id,
+                        'unit_name' => $item->secondaryUnit->name,
+                        'factor' => $item->conversion_factor,
+                        'is_base_unit' => false,
+                        'is_sales_unit' => true
+                    ]);
                 }
 
-                $salesUnit = $units->firstWhere('is_sales_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
-                $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+                $salesUnit = $units->first();
+                $baseUnit = $units->first();
 
                 return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
-                    'barcode' => $item->barcode,
-                    'sell_price' => $sellPrice,
-                    'inventory' => $inventory,
-                    'units' => $units,
+                    'id'           => $item->id,
+                    'name'         => $item->name,
+                    'generic_name' => $item->generic_name,
+                    'barcode'      => $item->barcode,
+                    'type'         => $item->type,
+                    'strength'     => $item->strength,
+                    'sell_price'   => $sellPrice,
+                    'mrp'          => $item->mrp,
+                    'category'     => $item->category,
+                    'inventory'    => $inventory,
+                    'units'        => $units,
                     'default_unit' => $salesUnit,
-                    'base_unit' => $baseUnit,
+                    'base_unit'    => $baseUnit,
                 ];
             });
 

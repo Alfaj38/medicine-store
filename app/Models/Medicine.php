@@ -41,4 +41,14 @@ class Medicine extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    public function secondaryUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'secondary_unit_id');
+    }
 }

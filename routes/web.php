@@ -167,8 +167,14 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
     Route::middleware(['company', 'verified'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
-        Route::resource('items', \App\Http\Controllers\ItemController::class);
+        // Catalog & Inventory
+        Route::get('/inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.index');
         Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+        
+        // Inventory Opening Stock
+        Route::get('/inventory/opening-stock', [\App\Http\Controllers\OpeningStockController::class, 'index'])->name('inventory.opening-stock');
+        Route::get('/inventory/opening-stock/search', [\App\Http\Controllers\OpeningStockController::class, 'search'])->name('inventory.opening-stock.search');
+        Route::post('/inventory/opening-stock', [\App\Http\Controllers\OpeningStockController::class, 'store'])->name('inventory.opening-stock.store');
         
         // Purchase Returns
         Route::get('/purchase-returns/get-medicines', [App\Http\Controllers\PurchaseReturnController::class, 'getMedicines'])->name('purchase-returns.medicines');

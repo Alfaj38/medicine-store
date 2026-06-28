@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Traits\BelongsToTenant;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Item extends Model
+class Item extends Model implements HasMedia
 {
-    use BelongsToTenant;
+    use BelongsToTenant, InteractsWithMedia;
 
     protected $guarded = [];
 
@@ -46,9 +49,14 @@ class Item extends Model
         return $this->belongsTo(Manufacturer::class);
     }
 
-    public function uom(): BelongsTo
+    public function uom()
     {
-        return $this->belongsTo(Uom::class);
+        return $this->belongsTo(Uom::class, 'uom_id');
+    }
+
+    public function secondaryUnit()
+    {
+        return $this->belongsTo(Uom::class, 'secondary_unit_id');
     }
 
     public function taxCategory(): BelongsTo
@@ -94,5 +102,12 @@ class Item extends Model
     public function units(): HasMany
     {
         return $this->hasMany(ItemUnit::class);
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('optimized')
+              ->format('webp')
+              ->quality(80);
     }
 }

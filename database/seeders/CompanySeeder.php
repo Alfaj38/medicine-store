@@ -12,6 +12,10 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
+        if (\App\Models\SubscriptionPlan::where('slug', 'starter')->exists()) {
+            return;
+        }
+
         // Create Plans
         $plan = \App\Models\SubscriptionPlan::create([
             'name' => 'Starter',

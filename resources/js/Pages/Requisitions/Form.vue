@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import debounce from 'lodash/debounce';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -80,7 +81,7 @@ const generateAutoRequisition = async () => {
     }
 };
 
-const searchMedicines = async () => {
+const searchMedicines = debounce(async () => {
     if (searchQuery.value.length < 2) {
         searchResults.value = [];
         return;
@@ -100,7 +101,7 @@ const searchMedicines = async () => {
     } finally {
         isSearching.value = false;
     }
-};
+}, 300);
 
 const addItem = (item) => {
     const exists = form.items.find(i => i.item_id === item.id);

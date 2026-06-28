@@ -1,11 +1,15 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, Deferred } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import VueApexCharts from 'vue3-apexcharts';
+import { defineAsyncComponent } from 'vue';
+
+const VueApexCharts = defineAsyncComponent(() => import('vue3-apexcharts'));
 
 const props = defineProps({
     stats: Object,
+    procurement: Object,
     recent_sales: Array,
+    charts: Object,
 });
 
 // Mock data to match the user's dashboard image perfectly
@@ -92,7 +96,10 @@ const seriesPayment = [4215.30, 2856.40, 1682.50];
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-sm font-medium text-slate-500 flex items-center gap-1">Today's Sales <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></p>
-                            <h3 class="text-2xl font-bold text-emerald-600 mt-1">$1,245.75</h3>
+                            <Deferred data="stats">
+                                <template #fallback><div class="h-8 w-24 bg-slate-200 animate-pulse rounded mt-1"></div></template>
+                                <h3 class="text-2xl font-bold text-emerald-600 mt-1">${{ props.stats?.today_sales?.toFixed(2) || '0.00' }}</h3>
+                            </Deferred>
                             <p class="text-xs font-medium text-emerald-500 mt-1 flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
                                 18.6% vs yesterday
@@ -112,7 +119,10 @@ const seriesPayment = [4215.30, 2856.40, 1682.50];
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-sm font-medium text-slate-500 flex items-center gap-1">Today's Collections <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></p>
-                            <h3 class="text-2xl font-bold text-blue-600 mt-1">$1,085.40</h3>
+                            <Deferred data="stats">
+                                <template #fallback><div class="h-8 w-24 bg-slate-200 animate-pulse rounded mt-1"></div></template>
+                                <h3 class="text-2xl font-bold text-blue-600 mt-1">${{ props.stats?.today_collections?.toFixed(2) || '0.00' }}</h3>
+                            </Deferred>
                             <p class="text-xs font-medium text-blue-500 mt-1 flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
                                 12.4% vs yesterday
@@ -132,7 +142,10 @@ const seriesPayment = [4215.30, 2856.40, 1682.50];
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-sm font-medium text-slate-500 flex items-center gap-1">Today's Purchases <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></p>
-                            <h3 class="text-2xl font-bold text-orange-500 mt-1">$856.30</h3>
+                            <Deferred data="stats">
+                                <template #fallback><div class="h-8 w-24 bg-slate-200 animate-pulse rounded mt-1"></div></template>
+                                <h3 class="text-2xl font-bold text-orange-500 mt-1">${{ props.stats?.today_purchases?.toFixed(2) || '0.00' }}</h3>
+                            </Deferred>
                             <p class="text-xs font-medium text-orange-500 mt-1 flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
                                 8.7% vs yesterday
@@ -152,7 +165,10 @@ const seriesPayment = [4215.30, 2856.40, 1682.50];
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <p class="text-sm font-medium text-slate-500 flex items-center gap-1">Total Stock Valuation <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></p>
-                            <h3 class="text-2xl font-bold text-indigo-600 mt-1">$45,231.60</h3>
+                            <Deferred data="stats">
+                                <template #fallback><div class="h-8 w-24 bg-slate-200 animate-pulse rounded mt-1"></div></template>
+                                <h3 class="text-2xl font-bold text-indigo-600 mt-1">${{ props.stats?.stock_value?.toFixed(2) || '0.00' }}</h3>
+                            </Deferred>
                             <p class="text-xs font-medium text-emerald-500 mt-1 flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
                                 5.3% vs last week

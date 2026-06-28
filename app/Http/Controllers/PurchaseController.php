@@ -111,59 +111,65 @@ class PurchaseController extends Controller
             return trim(str_ireplace([' Ltd.', ' Ltd', ' Limited', ' PLC', ' Plc', ' PLC.', '.'], '', $c));
         }, $companies);
 
-        // Get Manufacturer IDs that match the supplier's company names (using LIKE to handle mismatches)
-        $manufacturerIds = \App\Models\Manufacturer::where(function($q) use ($baseNames) {
-            foreach ($baseNames as $baseName) {
-                $q->orWhere('name', 'like', "%{$baseName}%");
-            }
-        })->pluck('id');
-
-        $items = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->with(['medicineDetails', 'prices' => function($q) {
-                $q->where('price_type', 'Purchase');
-            }, 'units', 'uom'])
-            ->where('is_active', true)
-            ->whereIn('manufacturer_id', $manufacturerIds)
-            ->where(function($q) {
-                $q->whereNull('company_id')
-                  ->orWhere('company_id', auth()->user()->company_id);
+        $items = \App\Models\Medicine::where('is_active', true)
+            ->where(function($q) use ($baseNames) {
+                foreach ($baseNames as $baseName) {
+                    $q->orWhere('company_name', 'like', "%{$baseName}%");
+                }
             })
             ->where(function($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('barcode', 'like', "%{$query}%")
-                  ->orWhere('sku', 'like', "%{$query}%")
-                  ->orWhereHas('medicineDetails', function($m) use ($query) {
-                      $m->where('generic_name', 'like', "%{$query}%");
-                  });
+                  ->orWhere('generic_name', 'like', "%{$query}%");
             })
+            ->with(['category:id,name', 'secondaryUnit:id,name', 'unit:id,name'])
+            ->select(['id', 'name', 'generic_name', 'mrp', 'unit_id', 'secondary_unit_id', 'conversion_factor', 'category_id'])
             ->take(15)
             ->get();
 
         // Map to expected format for the frontend
         $mapped = $items->map(function ($item) {
-            $units = $item->units;
-            if ($units->isEmpty()) {
-                // Fallback unit if no multi-level units configured
-                $uomName = $item->uom ? $item->uom->name : 'Unit';
-                $fallbackUnit = [
-                    'id' => 'fallback',
-                    'unit_name' => $uomName,
+            // Create units array dynamically from Medicine schema
+            $units = collect();
+            if ($item->unit) {
+                $units->push((object)[
+                    'id' => $item->unit_id,
+                    'unit_name' => $item->unit->name,
                     'factor' => 1,
                     'is_base_unit' => true,
                     'is_purchase_unit' => true,
                     'is_sales_unit' => true
-                ];
-                $units = collect([(object) $fallbackUnit]);
+                ]);
+            } else {
+                $units->push((object)[
+                    'id' => 'fallback',
+                    'unit_name' => 'Unit',
+                    'factor' => 1,
+                    'is_base_unit' => true,
+                    'is_purchase_unit' => true,
+                    'is_sales_unit' => true
+                ]);
+            }
+            if ($item->secondaryUnit && $item->conversion_factor > 1) {
+                $units->push((object)[
+                    'id' => $item->secondary_unit_id,
+                    'unit_name' => $item->secondaryUnit->name,
+                    'factor' => $item->conversion_factor,
+                    'is_base_unit' => false,
+                    'is_purchase_unit' => true,
+                    'is_sales_unit' => true
+                ]);
             }
 
-            $purchaseUnit = $units->firstWhere('is_purchase_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
-            $baseUnit = $units->firstWhere('is_base_unit', true) ?? $units->first();
+            $purchaseUnit = $units->first();
+            $baseUnit = $units->first();
             
             return [
                 'id' => $item->id,
                 'name' => $item->name,
-                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
-                'buy_price' => $item->prices->first() ? $item->prices->first()->price : 0,
+                'generic_name' => $item->generic_name,
+                'mrp' => $item->mrp,
+                'sell_price' => $item->mrp, // Map sell_price to mrp for any trailing frontend logic
                 'units' => $units,
                 'default_unit' => $purchaseUnit,
                 'base_unit' => $baseUnit,

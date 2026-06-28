@@ -25,7 +25,7 @@ export function useCart() {
     };
 
     const cartTotal = computed(() => {
-        return Object.values(cart.value).reduce((total, item) => total + ((parseFloat(item.sell_price) || 0) * item.quantity), 0);
+        return Object.values(cart.value).reduce((total, item) => total + ((parseFloat(item.mrp || item.sell_price) || 0) * item.quantity), 0);
     });
 
     const cartCount = computed(() => {

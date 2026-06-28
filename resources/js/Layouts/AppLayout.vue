@@ -4,7 +4,7 @@
         <Sidebar />
 
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
             <!-- Top Navigation -->
             <TopNavbar />
 

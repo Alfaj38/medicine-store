@@ -29,8 +29,10 @@ const form = useForm({
     category_id: props.item?.category_id || '',
     uom_id: props.item?.uom_id || (props.uoms.length > 0 ? props.uoms[0].id : ''),
     manufacturer_name: props.item?.manufacturer?.name || '',
-    buy_price: getPrice('Purchase'),
-    sell_price: getPrice('Retail'),
+    buy_price: props.item?.trade_price || getPrice('Purchase'),
+    sell_price: props.item?.mrp || getPrice('Retail'),
+    secondary_unit_id: props.item?.secondary_unit_id || '',
+    conversion_factor: props.item?.conversion_factor || 1,
     
     // Inventory
     inventory_type: props.item?.inventory_type || 'Stock Item',
@@ -251,14 +253,14 @@ const submit = () => {
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Purchase Price</label>
+                            <label class="block text-sm font-medium text-slate-700">Trade Price / Buy Price (TP)</label>
                             <div class="relative mt-1 rounded-xl shadow-sm">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-slate-500 sm:text-sm">$</span></div>
                                 <input v-model="form.buy_price" type="number" step="0.01" class="block w-full rounded-xl border-slate-300 pl-7 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="0.00">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Retail Price (Selling)</label>
+                            <label class="block text-sm font-medium text-slate-700">Maximum Retail Price (MRP)</label>
                             <div class="relative mt-1 rounded-xl shadow-sm">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-slate-500 sm:text-sm">$</span></div>
                                 <input v-model="form.sell_price" type="number" step="0.01" class="block w-full rounded-xl border-slate-300 pl-7 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" placeholder="0.00">
@@ -270,6 +272,21 @@ const submit = () => {
                             <select v-model="form.uom_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
                                 <option v-for="u in uoms" :key="u.id" :value="u.id">{{ u.name }}</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Secondary Packaging (e.g. Box, Strip)</label>
+                            <select v-model="form.secondary_unit_id" class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
+                                <option value="">No Secondary Unit</option>
+                                <option v-for="u in uoms" :key="u.id" :value="u.id">{{ u.name }}</option>
+                            </select>
+                        </div>
+                        <div v-if="form.secondary_unit_id">
+                            <label class="block text-sm font-medium text-slate-700">Conversion Factor</label>
+                            <div class="mt-1 flex rounded-xl shadow-sm">
+                                <span class="inline-flex items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 px-3 text-slate-500 sm:text-sm text-xs font-semibold">1 Sec = </span>
+                                <input v-model="form.conversion_factor" type="number" min="1" class="block w-full min-w-0 flex-1 rounded-none rounded-r-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm font-bold text-center">
+                                <span class="inline-flex items-center border border-l-0 border-slate-300 bg-slate-50 px-3 text-slate-500 sm:text-sm text-xs font-semibold">Base Units</span>
+                            </div>
                         </div>
 
                         <!-- Multi-Level Units Configurator -->

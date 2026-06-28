@@ -7,7 +7,7 @@ const mobileMenuOpen = ref(false);
 </script>
 
 <template>
-    <nav class="bg-white border-b border-slate-200">
+    <nav class="bg-white border-b border-slate-200 flex-shrink-0 z-50 sticky top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 gap-4">
                 <div class="flex items-center gap-4 lg:gap-8 flex-1 min-w-0">
@@ -26,7 +26,7 @@ const mobileMenuOpen = ref(false);
                         <Link :href="route('dashboard')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url === '/dashboard' ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Dashboard
                         </Link>
-                        <Link :href="route('items.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/items') || $page.url.startsWith('/medicines') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
+                        <Link :href="route('inventory.index')" class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors h-full" :class="$page.url.startsWith('/inventory') || $page.url.startsWith('/medicines') ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'">
                             Master Data
                         </Link>
                         
@@ -63,10 +63,11 @@ const mobileMenuOpen = ref(false);
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-4 flex-shrink-0">
-                    <Link :href="route('pos.index')" class="hidden sm:inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98]">
-                        <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        Open POS Terminal
+                <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                    <Link :href="route('pos.index')" class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 sm:px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98]">
+                        <svg class="-ml-0.5 sm:mr-1.5 h-4 w-4" :class="{'mr-1.5': false, 'mr-1': true}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="hidden sm:inline">Open POS Terminal</span>
+                        <span class="sm:hidden ml-1">POS</span>
                     </Link>
 
                     <!-- Settings Dropdown -->
@@ -77,7 +78,7 @@ const mobileMenuOpen = ref(false);
                             </div>
                         </button>
                         
-                        <div v-show="dropdownOpen" @click.away="dropdownOpen = false" class="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-lg ring-1 ring-slate-900/5 focus:outline-none z-50 overflow-hidden transform origin-top-right transition-all">
+                        <div v-show="dropdownOpen" class="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-lg ring-1 ring-slate-900/5 focus:outline-none z-50 overflow-hidden transform origin-top-right transition-all">
                             <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
                                 <p class="text-sm font-medium text-slate-900 truncate">{{ $page.props.auth.user.name }}</p>
                                 <p class="text-xs text-slate-500 truncate">{{ $page.props.auth.user.email }}</p>
@@ -105,11 +106,17 @@ const mobileMenuOpen = ref(false);
 
         <!-- Mobile menu -->
         <div :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" class="sm:hidden border-t border-slate-200 bg-white">
+            <div class="px-4 py-3 border-b border-slate-100">
+                <Link :href="route('pos.index')" class="flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98]">
+                    <svg class="-ml-0.5 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Open POS Terminal
+                </Link>
+            </div>
             <div class="pt-2 pb-3 space-y-1">
                 <Link :href="route('dashboard')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url === '/dashboard' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Dashboard
                 </Link>
-                <Link :href="route('items.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/items') || $page.url.startsWith('/medicines') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
+                <Link :href="route('inventory.index')" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors" :class="$page.url.startsWith('/inventory') || $page.url.startsWith('/medicines') ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800'">
                     Master Data
                 </Link>
                 <div class="block pl-3 pr-4 py-2 font-bold text-slate-400 uppercase text-xs tracking-wider mt-4">Procurement</div>

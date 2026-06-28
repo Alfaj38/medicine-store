@@ -165,7 +165,7 @@ class FetchBangladeshPharma extends Command
         $names = [];
         do {
             $params['page'] = $page;
-            $response = Http::get($baseUrl, $params);
+            $response = Http::withoutVerifying()->get($baseUrl, $params);
             if (! $response->ok()) {
                 $this->error('OpenCorporates request failed ('.$response->status().')');
                 break;

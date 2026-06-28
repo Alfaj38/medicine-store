@@ -44,8 +44,7 @@ class RequisitionController extends Controller
 
         $companyId = auth()->user()->company_id;
 
-        $items = \App\Models\Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
+        $items = \App\Models\Medicine::where('is_active', true)
             ->when($companyId, function($q) use ($companyId) {
                 $q->where(function($sub) use ($companyId) {
                     $sub->whereNull('company_id')
@@ -56,20 +55,15 @@ class RequisitionController extends Controller
                 $supplier = \App\Models\Supplier::find($supplierId);
                 
                 $q->where(function($subQ) use ($supplier, $supplierId) {
-                    // Always fallback to exact preferred_supplier_id if set
-                    $subQ->where('preferred_supplier_id', $supplierId);
-
                     if ($supplier && is_array($supplier->companies) && count($supplier->companies) > 0) {
                         $baseNames = array_map(function($c) {
                             return trim(str_ireplace([' Ltd.', ' Ltd', ' Limited', ' PLC', ' Plc', ' PLC.', '.'], '', $c));
                         }, $supplier->companies);
 
-                        $subQ->orWhereHas('manufacturer', function($m) use ($baseNames) {
-                            $m->where(function($mq) use ($baseNames) {
-                                foreach ($baseNames as $bn) {
-                                    $mq->orWhere('name', 'like', "%{$bn}%");
-                                }
-                            });
+                        $subQ->where(function($mq) use ($baseNames) {
+                            foreach ($baseNames as $bn) {
+                                $mq->orWhere('company_name', 'like', "%{$bn}%");
+                            }
                         });
                     }
                 });
@@ -77,43 +71,38 @@ class RequisitionController extends Controller
             ->where(function($q) use ($queryText) {
                 $q->where('name', 'like', "%{$queryText}%")
                   ->orWhere('barcode', 'like', "%{$queryText}%")
-                  ->orWhere('sku', 'like', "%{$queryText}%")
-                  ->orWhereHas('medicineDetails', function($m) use ($queryText) {
-                      $m->where('generic_name', 'like', "%{$queryText}%");
-                  });
+                  ->orWhere('generic_name', 'like', "%{$queryText}%");
             })
-            ->with(['medicineDetails', 'units', 'uom'])
+            ->with([
+                'category:id,name', 
+                'unit:id,name', 
+                'secondaryUnit:id,name',
+                'inventory' => function($q) use ($companyId) {
+                    if ($companyId) {
+                        $q->where('company_id', $companyId);
+                    }
+                }
+            ])
+            ->select(['id', 'name', 'generic_name', 'barcode', 'mrp', 'unit_id', 'secondary_unit_id', 'category_id'])
             ->take(15)
-            ->get()->map(function($item) use ($companyId) {
-                // Get stock details for frontend format
-                $inventoryQuery = \App\Models\Inventory::where('medicine_id', $item->id);
-                if ($companyId) {
-                    $inventoryQuery->where('company_id', $companyId);
-                }
-                $inventory = $inventoryQuery->get();
+            ->get()->map(function($item) {
+                $inventory = $item->inventory;
                 
-                $units = $item->units;
-                if ($units->isEmpty()) {
-                    $uomName = $item->uom ? $item->uom->name : 'Unit';
-                    $fallbackUnit = [
-                        'id' => 'fallback',
-                        'unit_name' => $uomName,
-                        'factor' => 1,
-                        'is_base_unit' => true,
-                        'is_purchase_unit' => true,
-                        'is_sales_unit' => true
-                    ];
-                    $units = collect([(object) $fallbackUnit]);
+                $uomName = $item->unit ? $item->unit->name : 'Unit';
+                
+                $sellPrice = $item->mrp ?: 0;
+                if ($sellPrice <= 0 && $inventory->count() > 0) {
+                    $sellPrice = $inventory->max('mrp');
                 }
-
-                $purchaseUnit = $units->firstWhere('is_purchase_unit', true) ?? $units->firstWhere('is_base_unit', true) ?? $units->first();
 
                 return [
                     'id'           => $item->id,
                     'name'         => $item->name,
-                    'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                    'generic_name' => $item->generic_name,
                     'inventory'    => $inventory,
-                    'default_unit' => $purchaseUnit,
+                    'uom'          => ['name' => $uomName],
+                    'mrp'          => $sellPrice,
+                    'sell_price'   => $sellPrice
                 ];
             });
 

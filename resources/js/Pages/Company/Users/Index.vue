@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
 import Layout from '../Settings/Layout.vue';
 
 const props = defineProps({
@@ -66,9 +67,9 @@ const deleteUser = (user) => {
     }
 };
 
-const performSearch = () => {
+const performSearch = debounce(() => {
     router.get(route('company.users.index'), { search: search.value }, { preserveState: true, replace: true });
-};
+}, 300);
 </script>
 
 <template>

@@ -41,7 +41,7 @@ class PurchaseOrderController extends Controller
 
         $requisitions = \App\Models\Requisition::where('company_id', auth()->user()->company_id)
             ->whereIn('status', ['Draft', 'Owner Approved', 'Accounts Approved'])
-            ->with(['items.item.uom', 'items.item.manufacturer'])
+            ->with(['items.item.unit'])
             ->orderBy('id', 'desc')
             ->get();
 

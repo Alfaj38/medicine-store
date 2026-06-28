@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             DiaperCompaniesSeeder::class,
             IndustryComprehensiveSeeder::class,
             ReturnReasonSeeder::class,
+            UomSeeder::class,
         ]);
     }
 }

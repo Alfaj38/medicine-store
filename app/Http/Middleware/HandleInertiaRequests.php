@@ -44,19 +44,26 @@ class HandleInertiaRequests extends Middleware
             if ($user instanceof \App\Models\User) {
                 $user->loadMissing(['roles', 'company.subscription.plan']);
                 
-                if ($user->roles && $user->roles->count() > 0) {
-                    $roleId = $user->roles->first()->id;
-                    $permissions = \App\Models\PagePermission::where('role_id', $roleId)
-                        ->get()
-                        ->keyBy('page')
-                        ->toArray();
-                }
+                // Phase 10: Permission Optimization - Cache DB checks for 1 hour
+                $cacheKey = "user_{$user->id}_auth_data";
+                $cachedAuth = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHour(), function () use ($user) {
+                    $permissions = [];
+                    if (method_exists($user, 'getAllPermissions')) {
+                        $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+                    }
+
+                    return [
+                        'permissions' => $permissions,
+                        'branches' => $user->getAllowedBranchIds(),
+                        'scope' => $user->data_scope,
+                    ];
+                });
 
                 $authData = [
                     'user' => collect($user)->except(['password', 'remember_token']),
-                    'scope' => $user->data_scope,
-                    'permissions' => $permissions,
-                    'branches' => $user->getAllowedBranchIds(),
+                    'scope' => $cachedAuth['scope'],
+                    'permissions' => $cachedAuth['permissions'],
+                    'branches' => $cachedAuth['branches'],
                 ];
             } else {
                 // For Resellers or other models

@@ -15,7 +15,7 @@ class PurchaseOrderItem extends Model
 
     public function item()
     {
-        return $this->belongsTo(Item::class)->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
+        return $this->belongsTo(Medicine::class, 'item_id');
     }
 
     public function unit()

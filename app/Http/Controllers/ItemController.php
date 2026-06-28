@@ -65,6 +65,9 @@ class ItemController extends Controller
             'manufacturer_name' => 'nullable|string|max:191',
             'buy_price' => 'required|numeric|min:0',
             'sell_price' => 'required|numeric|min:0',
+            'secondary_unit_id' => 'nullable|exists:uoms,id',
+            'conversion_factor' => 'nullable|integer|min:1',
+
             
             // Inventory behavior
             'inventory_type' => 'required|string|in:Stock Item,Non-Stock Item,Service,Asset',
@@ -125,6 +128,10 @@ class ItemController extends Controller
                 'reorder_qty' => $validated['reorder_qty'] ?? 0,
                 'safety_stock' => $validated['safety_stock'] ?? 0,
                 'lead_time_days' => $validated['lead_time_days'] ?? 0,
+                'mrp' => $validated['sell_price'],
+                'trade_price' => $validated['buy_price'],
+                'secondary_unit_id' => $validated['secondary_unit_id'] ?? null,
+                'conversion_factor' => $validated['conversion_factor'] ?? 1,
             ]);
 
             // Save Prices
@@ -202,6 +209,8 @@ class ItemController extends Controller
             'manufacturer_name' => 'nullable|string|max:191',
             'buy_price' => 'required|numeric|min:0',
             'sell_price' => 'required|numeric|min:0',
+            'secondary_unit_id' => 'nullable|exists:uoms,id',
+            'conversion_factor' => 'nullable|integer|min:1',
             
             'inventory_type' => 'required|string|in:Stock Item,Non-Stock Item,Service,Asset',
             'track_batch' => 'boolean',
@@ -259,6 +268,10 @@ class ItemController extends Controller
                 'reorder_qty' => $validated['reorder_qty'] ?? 0,
                 'safety_stock' => $validated['safety_stock'] ?? 0,
                 'lead_time_days' => $validated['lead_time_days'] ?? 0,
+                'mrp' => $validated['sell_price'],
+                'trade_price' => $validated['buy_price'],
+                'secondary_unit_id' => $validated['secondary_unit_id'] ?? null,
+                'conversion_factor' => $validated['conversion_factor'] ?? 1,
             ]);
 
             // Update Prices (simplified)

@@ -16,8 +16,8 @@ class OnlineOrderItem extends Model
         return $this->belongsTo(OnlineOrder::class, 'online_order_id');
     }
 
-    public function item()
+    public function medicine()
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Medicine::class, 'item_id');
     }
 }

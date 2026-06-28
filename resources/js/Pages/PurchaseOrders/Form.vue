@@ -23,12 +23,14 @@ watch(() => form.requisition_id, (newReqId) => {
             // Populate form items
             form.items = req.items.map(ri => {
                 const item = ri.item;
+                let mrp = parseFloat(item.mrp) || parseFloat(item.sell_price) || 0;
+                let tp = parseFloat((mrp * 0.88).toFixed(2));
                 return {
                     item_id: item.id,
                     name: item.name,
-                    uom: item.uom?.name || 'Unit',
+                    uom: item.unit?.name || 'Unit',
                     ordered_qty: ri.approved_qty > 0 ? ri.approved_qty : ri.requested_qty,
-                    unit_price: item.buy_price || 0
+                    unit_price: tp
                 };
             });
             // Try to set expected delivery date if available
@@ -42,7 +44,7 @@ watch(() => form.requisition_id, (newReqId) => {
                 
                 if (!targetSupplierId && props.suppliers && props.suppliers.length > 0) {
                     for (const ri of req.items) {
-                        const mfgName = ri.item.manufacturer?.name;
+                        const mfgName = ri.item.company_name;
                         if (mfgName) {
                             const cleanMfg = mfgName.replace(/ Ltd\.| Ltd| Limited| PLC| Plc| PLC\.|\./gi, '').trim().toLowerCase();
                             const matchedSupplier = props.suppliers.find(sup => {
@@ -102,12 +104,14 @@ const addItem = (item) => {
     // Check if item already exists
     const exists = form.items.find(i => i.item_id === item.id);
     if (!exists) {
+        let mrp = parseFloat(item.mrp) || parseFloat(item.sell_price) || 0;
+        let tp = parseFloat((mrp * 0.88).toFixed(2));
         form.items.push({
             item_id: item.id,
             name: item.name,
             uom: item.uom?.name || 'Unit',
             ordered_qty: 1,
-            unit_price: item.buy_price || 0
+            unit_price: tp
         });
     }
     

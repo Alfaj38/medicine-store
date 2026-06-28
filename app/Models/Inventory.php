@@ -24,6 +24,11 @@ class Inventory extends Model
 
     public function medicine(): BelongsTo
     {
+        return $this->belongsTo(Medicine::class, 'medicine_id');
+    }
+
+    public function customItem(): BelongsTo
+    {
         return $this->belongsTo(Item::class, 'medicine_id')->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
     }
 }

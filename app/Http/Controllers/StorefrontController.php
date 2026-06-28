@@ -50,15 +50,8 @@ class StorefrontController extends Controller
             ->where('quantity', '>', 0)
             ->pluck('medicine_id');
 
-        $query = Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
-            ->where(function($q) use ($companyId) {
-                $q->whereNull('company_id')
-                  ->orWhere('company_id', $companyId);
-            })
-            ->with(['medicineDetails', 'prices' => function($q) {
-                $q->where('price_type', 'Retail');
-            }, 'category']);
+        $query = \App\Models\Medicine::where('is_active', true)
+            ->with(['category']);
 
         if ($categoryId) {
             // Find category by slug
@@ -72,18 +65,12 @@ class StorefrontController extends Controller
             $query->where(function($q) use ($queryText) {
                 $q->where('name', 'like', "%{$queryText}%")
                   ->orWhere('barcode', 'like', "%{$queryText}%")
-                  ->orWhere('sku', 'like', "%{$queryText}%")
-                  ->orWhereHas('medicineDetails', function($m) use ($queryText) {
-                      $m->where('generic_name', 'like', "%{$queryText}%");
-                  });
+                  ->orWhere('generic_name', 'like', "%{$queryText}%");
             });
         }
 
-        // Only show items with stock or non-stock items
-        $query->where(function($q) use ($itemIdsWithStock) {
-            $q->where('inventory_type', '!=', 'Stock Item')
-              ->orWhereIn('id', $itemIdsWithStock);
-        });
+        // Only show items with stock
+        $query->whereIn('id', $itemIdsWithStock);
 
         // Get paginated items
         $paginator = $query->paginate(24)->withQueryString();
@@ -99,15 +86,15 @@ class StorefrontController extends Controller
                 ->toArray();
         }
 
-        $items = collect($paginator->items())->map(function($item) use ($companyId, $fallbackPrices) {
+        $items = collect($paginator->items())->map(function($item) use ($companyId) {
             // Get stock details for frontend format
             $inventory = \App\Models\Inventory::where('medicine_id', $item->id)
                 ->where('company_id', $companyId)
                 ->get();
 
-            $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
-            if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
-                $sellPrice = $fallbackPrices[$item->id];
+            $sellPrice = $item->mrp ?: 0;
+            if ($sellPrice <= 0 && $inventory->count() > 0) {
+                $sellPrice = $inventory->max('mrp');
             }
 
             $inventory->transform(function ($inv) use ($sellPrice) {
@@ -120,11 +107,11 @@ class StorefrontController extends Controller
             return [
                 'id' => $item->id,
                 'name' => $item->name,
-                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                'generic_name' => $item->generic_name,
                 'barcode' => $item->barcode,
                 'sell_price' => $sellPrice,
                 'inventory' => $inventory,
-                'image' => $item->image,
+                'image' => $item->image ?? null,
                 'category' => $item->category ? $item->category->name : null,
             ];
         });
@@ -280,15 +267,8 @@ class StorefrontController extends Controller
             ->where('quantity', '>', 0)
             ->pluck('medicine_id');
 
-        $query = Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
-            ->where(function($q) use ($companyId) {
-                $q->whereNull('company_id')
-                  ->orWhere('company_id', $companyId);
-            })
-            ->with(['medicineDetails', 'prices' => function($q) {
-                $q->where('price_type', 'Retail');
-            }, 'category']);
+        $query = \App\Models\Medicine::where('is_active', true)
+            ->with(['category']);
 
         if ($categoryId) {
             $cat = ItemCategory::where('slug', $categoryId)->first();
@@ -301,17 +281,11 @@ class StorefrontController extends Controller
             $query->where(function($q) use ($queryText) {
                 $q->where('name', 'like', "%{$queryText}%")
                   ->orWhere('barcode', 'like', "%{$queryText}%")
-                  ->orWhere('sku', 'like', "%{$queryText}%")
-                  ->orWhereHas('medicineDetails', function($m) use ($queryText) {
-                      $m->where('generic_name', 'like', "%{$queryText}%");
-                  });
+                  ->orWhere('generic_name', 'like', "%{$queryText}%");
             });
         }
 
-        $query->where(function($q) use ($itemIdsWithStock) {
-            $q->where('inventory_type', '!=', 'Stock Item')
-              ->orWhereIn('id', $itemIdsWithStock);
-        });
+        $query->whereIn('id', $itemIdsWithStock);
 
         $paginator = $query->paginate(24)->withQueryString();
         
@@ -326,14 +300,14 @@ class StorefrontController extends Controller
                 ->toArray();
         }
 
-        $items = collect($paginator->items())->map(function($item) use ($companyId, $fallbackPrices) {
+        $items = collect($paginator->items())->map(function($item) use ($companyId) {
             $inventory = \App\Models\Inventory::where('medicine_id', $item->id)
                 ->where('company_id', $companyId)
                 ->get();
 
-            $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
-            if ($sellPrice <= 0 && isset($fallbackPrices[$item->id])) {
-                $sellPrice = $fallbackPrices[$item->id];
+            $sellPrice = $item->mrp ?: 0;
+            if ($sellPrice <= 0 && $inventory->count() > 0) {
+                $sellPrice = $inventory->max('mrp');
             }
 
             $inventory->transform(function ($inv) use ($sellPrice) {
@@ -346,11 +320,11 @@ class StorefrontController extends Controller
             return [
                 'id' => $item->id,
                 'name' => $item->name,
-                'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+                'generic_name' => $item->generic_name,
                 'barcode' => $item->barcode,
                 'sell_price' => $sellPrice,
                 'inventory' => $inventory,
-                'image' => $item->image,
+                'image' => $item->image ?? null,
                 'category' => $item->category ? $item->category->name : null,
             ];
         });
@@ -391,19 +365,12 @@ class StorefrontController extends Controller
         $company->load(['branches']);
 
         // Find medicine by slug or ID
-        $item = Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-            ->where('is_active', true)
+        $item = \App\Models\Medicine::where('is_active', true)
             ->where(function($q) use ($medicineSlug) {
-                $q->where('slug', $medicineSlug)
-                  ->orWhere('id', $medicineSlug);
+                $q->where('id', $medicineSlug)
+                  ->orWhere('name', $medicineSlug);
             })
-            ->where(function($q) use ($company) {
-                $q->whereNull('company_id')
-                  ->orWhere('company_id', $company->id);
-            })
-            ->with(['medicineDetails', 'category', 'brand', 'manufacturer', 'prices' => function($q) {
-                $q->where('price_type', 'Retail');
-            }])
+            ->with(['category'])
             ->firstOrFail();
 
         // Get inventory for this specific branch/company
@@ -411,14 +378,9 @@ class StorefrontController extends Controller
             ->where('company_id', $company->id)
             ->get();
             
-        $sellPrice = $item->prices->first() ? $item->prices->first()->price : 0;
-        if ($sellPrice <= 0) {
-            $maxPurchasePrice = \Illuminate\Support\Facades\DB::table('purchase_items')
-                ->where('medicine_id', $item->id)
-                ->max('unit_price');
-            if ($maxPurchasePrice) {
-                $sellPrice = $maxPurchasePrice;
-            }
+        $sellPrice = $item->mrp ?: 0;
+        if ($sellPrice <= 0 && $inventory->count() > 0) {
+            $sellPrice = $inventory->max('mrp');
         }
 
         $inventory->transform(function ($inv) use ($sellPrice) {
@@ -430,32 +392,21 @@ class StorefrontController extends Controller
 
         // GEO: Relational Extractor - Find alternatives with same generic name
         $alternatives = collect();
-        if ($item->medicineDetails && $item->medicineDetails->generic_name) {
-            $genericName = $item->medicineDetails->generic_name;
-            $alternatives = Item::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
-                ->where('is_active', true)
+        if ($item->generic_name) {
+            $genericName = $item->generic_name;
+            $alternatives = \App\Models\Medicine::where('is_active', true)
                 ->where('id', '!=', $item->id)
-                ->where(function($q) use ($company) {
-                    $q->whereNull('company_id')
-                      ->orWhere('company_id', $company->id);
-                })
-                ->whereHas('medicineDetails', function($q) use ($genericName) {
-                    $q->where('generic_name', $genericName);
-                })
-                ->with(['medicineDetails', 'manufacturer', 'prices' => function($q) {
-                    $q->where('price_type', 'Retail');
-                }])
+                ->where('generic_name', $genericName)
                 ->limit(5)
                 ->get()
                 ->map(function($altItem) {
-                    $altPrice = $altItem->prices->first() ? $altItem->prices->first()->price : 0;
                     return [
                         'id' => $altItem->id,
                         'name' => $altItem->name,
-                        'slug' => $altItem->slug,
-                        'sell_price' => $altPrice,
-                        'manufacturer' => $altItem->manufacturer ? $altItem->manufacturer->name : null,
-                        'image' => $altItem->image,
+                        'slug' => $altItem->id,
+                        'sell_price' => $altItem->mrp,
+                        'manufacturer' => $altItem->company_name,
+                        'image' => $altItem->image ?? null,
                     ];
                 });
         }
@@ -463,17 +414,17 @@ class StorefrontController extends Controller
         $medicineData = [
             'id' => $item->id,
             'name' => $item->name,
-            'slug' => $item->slug,
-            'generic_name' => $item->medicineDetails ? $item->medicineDetails->generic_name : '',
+            'slug' => $item->id,
+            'generic_name' => $item->generic_name,
             'barcode' => $item->barcode,
             'sell_price' => $sellPrice,
             'inventory' => $inventory,
-            'image' => $item->image,
+            'image' => $item->image ?? null,
             'category' => $item->category ? $item->category->name : null,
-            'manufacturer' => $item->manufacturer ? $item->manufacturer->name : null,
-            'strength' => $item->medicineDetails ? $item->medicineDetails->strength : null,
-            'dosage_form' => $item->medicineDetails ? $item->medicineDetails->dosage_form : null,
-            'description' => $item->description,
+            'manufacturer' => $item->company_name,
+            'strength' => $item->strength,
+            'dosage_form' => $item->type,
+            'description' => null,
         ];
 
         $productSchema = [
@@ -597,11 +548,11 @@ class StorefrontController extends Controller
             'email' => 'nullable|email|max:255',
             'delivery_method' => 'required|in:home,pickup',
             'city' => 'nullable|string|max:255',
-            'address' => 'required|string',
+            'address' => 'required_if:delivery_method,home|nullable|string',
             'payment_method' => 'required|string',
             'prescription' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'cart' => 'required|array',
-            'cart.*.id' => 'required|exists:items,id',
+            'cart.*.id' => 'required',
             'cart.*.quantity' => 'required|integer|min:1',
             'cart.*.sell_price' => 'required|numeric|min:0',
             'cart.*.name' => 'required|string',
@@ -632,7 +583,7 @@ class StorefrontController extends Controller
             'customer_email' => $validated['email'],
             'delivery_method' => $validated['delivery_method'],
             'city' => $validated['city'] ?? null,
-            'delivery_address' => $validated['address'],
+            'delivery_address' => $validated['address'] ?? 'Store Pickup',
             'subtotal' => $subtotal,
             'delivery_fee' => $deliveryFee,
             'total_amount' => $totalAmount,

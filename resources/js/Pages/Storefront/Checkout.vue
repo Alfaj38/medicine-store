@@ -36,11 +36,11 @@ const handlePrescriptionUpload = (e) => {
 };
 
 const submitOrder = () => {
-    if (!form.name || !form.phone || !form.address) {
+    if (!form.name || !form.phone || (form.delivery_method === 'home' && !form.address)) {
         Swal.fire({
             icon: 'error',
             title: 'Missing Information',
-            text: 'Please fill in all required customer details (Name, Phone, Address).',
+            text: 'Please fill in all required customer details.',
             confirmButtonColor: '#00a669',
             customClass: { popup: 'rounded-2xl' }
         });
