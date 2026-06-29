@@ -265,6 +265,14 @@ const completeSale = () => {
 
     router.post(route('pos.store'), payload, {
         onFinish: () => { isSubmitting.value = false; },
+        onError: (errors) => {
+            console.error('Validation errors:', errors);
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: Object.values(errors).join('\n')
+            });
+        }
     });
 };
 

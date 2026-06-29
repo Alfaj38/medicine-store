@@ -27,12 +27,13 @@ export default defineConfig({
         }),
         VitePWA({
             registerType: 'autoUpdate',
-            outDir: 'public/build',
-            buildBase: '/build/',
+            outDir: 'public',
+            buildBase: '/',
             scope: '/',
             injectRegister: 'auto',
             manifest: false, // We'll manage manifest manually if needed
             workbox: {
+                maximumFileSizeToCacheInBytes: 5000000,
                 navigateFallback: null,
                 globPatterns: ['**/*.{js,css,ico,png,svg,woff2,ttf}'],
                 runtimeCaching: [

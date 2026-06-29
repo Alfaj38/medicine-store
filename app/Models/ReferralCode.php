@@ -24,6 +24,11 @@ class ReferralCode extends Model
         return $this->hasMany(Company::class, 'referral_code_id');
     }
 
+    public function referrals()
+    {
+        return $this->hasMany(Referral::class, 'referral_code_id');
+    }
+
     public function commissions()
     {
         return $this->hasMany(Commission::class, 'referral_code_id', 'id');

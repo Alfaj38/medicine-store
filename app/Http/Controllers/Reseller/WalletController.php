@@ -18,9 +18,14 @@ class WalletController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
+        $pendingWithdrawal = $reseller->withdrawalRequests()->where('status', 'pending')->sum('amount');
+        $totalPaid = $reseller->withdrawalRequests()->where('status', 'completed')->sum('amount');
+
         return Inertia::render('Reseller/Wallet/Index', [
             'transactions' => $transactions,
-            'balance' => $reseller->wallet_balance
+            'balance' => $reseller->wallet_balance,
+            'pendingWithdrawal' => $pendingWithdrawal,
+            'totalPaid' => $totalPaid,
         ]);
     }
 }

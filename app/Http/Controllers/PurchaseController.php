@@ -200,7 +200,7 @@ class PurchaseController extends Controller
             'items.*.trade_discount_percent' => 'nullable|numeric|min:0|max:100',
             'items.*.batch_no' => 'nullable|string',
             'items.*.expiry_date' => 'nullable|date',
-            'items.*.unit_id' => 'nullable|exists:item_units,id',
+            'items.*.unit_id' => 'nullable|exists:uoms,id',
             'items.*.unit_factor' => 'nullable|integer|min:1',
         ]);
 

@@ -50,6 +50,17 @@ Route::middleware(['reseller'])->prefix('reseller')->name('reseller.')->group(fu
     Route::get('/wallet', [\App\Http\Controllers\Reseller\WalletController::class, 'index'])->name('wallet');
     Route::get('/withdrawals', [\App\Http\Controllers\Reseller\WithdrawalController::class, 'index'])->name('withdrawals.index');
     Route::post('/withdrawals', [\App\Http\Controllers\Reseller\WithdrawalController::class, 'store'])->name('withdrawals.store');
+
+    // New Missing Routes
+    Route::get('/payouts', [\App\Http\Controllers\Reseller\PayoutController::class, 'index'])->name('payouts');
+    Route::get('/reports', [\App\Http\Controllers\Reseller\ReportController::class, 'index'])->name('reports');
+    Route::get('/marketing', [\App\Http\Controllers\Reseller\MarketingController::class, 'index'])->name('marketing');
+    Route::get('/marketing/brand-kit', [\App\Http\Controllers\Reseller\MarketingController::class, 'downloadBrandKit'])->name('marketing.brand-kit');
+    Route::get('/marketing/social-pack', [\App\Http\Controllers\Reseller\MarketingController::class, 'downloadSocialPack'])->name('marketing.social-pack');
+    Route::get('/marketing/email-templates', [\App\Http\Controllers\Reseller\MarketingController::class, 'viewEmailTemplates'])->name('marketing.email-templates');
+    
+    Route::get('/settings', [\App\Http\Controllers\Reseller\SettingController::class, 'index'])->name('settings');
+    Route::post('/settings', [\App\Http\Controllers\Reseller\SettingController::class, 'update'])->name('settings.update');
 });
 
 Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group(function () {

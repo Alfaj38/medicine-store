@@ -307,7 +307,7 @@ class PosController extends Controller
             'payment_method' => 'required|string',
             'items' => 'required|array|min:1',
             'items.*.medicine_id' => 'required|exists:items,id',
-            'items.*.unit_id' => 'nullable|exists:item_units,id',
+            'items.*.unit_id' => 'nullable|exists:uoms,id',
             'items.*.unit_factor' => 'nullable|integer|min:1',
             'items.*.batch_no' => 'nullable|string',
             'items.*.quantity' => 'required|integer|min:1',

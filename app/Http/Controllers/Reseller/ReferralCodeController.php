@@ -15,8 +15,18 @@ class ReferralCodeController extends Controller
     {
         $reseller = Auth::guard('reseller')->user();
         $codes = ReferralCode::where('reseller_id', $reseller->id)
+            ->withCount('referrals')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($code) {
+                $code->total_companies = \App\Models\Referral::where('referral_code_id', $code->id)
+                    ->whereHas('company', function($q) { $q->where('registration_status', 'active'); })
+                    ->count();
+                $code->total_commission = \App\Models\Commission::whereHas('referral', function($q) use ($code) {
+                    $q->where('referral_code_id', $code->id);
+                })->sum('commission_amount');
+                return $code;
+            });
 
         return Inertia::render('Reseller/ReferralCodes/Index', [
             'codes' => $codes
