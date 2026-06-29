@@ -214,6 +214,45 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::resource('customers', \App\Http\Controllers\CustomerController::class);
         Route::post('customers/{customer}/receive-payment', [\App\Http\Controllers\CustomerController::class, 'receivePayment'])->name('customers.receivePayment');
 
+        // Prescriptions
+        Route::resource('prescriptions', \App\Http\Controllers\PrescriptionController::class)->only(['index', 'update']);
+
+        // HR & Payroll
+        Route::prefix('hr')->name('hr.')->group(function () {
+            // Employees
+            Route::get('/employees', [\App\Http\Controllers\EmployeeController::class, 'index'])->name('employees.index');
+            Route::post('/employees', [\App\Http\Controllers\EmployeeController::class, 'store'])->name('employees.store');
+            Route::put('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'update'])->name('employees.update');
+            Route::delete('/employees/{employee}', [\App\Http\Controllers\EmployeeController::class, 'destroy'])->name('employees.destroy');
+
+            // Attendance
+            Route::get('/attendance', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendance.index');
+            Route::post('/attendance', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('attendance.store');
+
+            // Payroll
+            Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index');
+            Route::post('/payroll', [\App\Http\Controllers\PayrollController::class, 'store'])->name('payroll.store');
+        });
+
+        // Accounting
+        Route::prefix('accounting')->name('accounting.')->group(function () {
+            // Chart of Accounts
+            Route::get('/accounts', [\App\Http\Controllers\Accounting\AccountController::class, 'index'])->name('accounts.index');
+            Route::post('/accounts', [\App\Http\Controllers\Accounting\AccountController::class, 'store'])->name('accounts.store');
+            Route::put('/accounts/{account}', [\App\Http\Controllers\Accounting\AccountController::class, 'update'])->name('accounts.update');
+            Route::delete('/accounts/{account}', [\App\Http\Controllers\Accounting\AccountController::class, 'destroy'])->name('accounts.destroy');
+
+            // Transactions (Income & Expenses)
+            Route::get('/transactions', [\App\Http\Controllers\Accounting\TransactionController::class, 'index'])->name('transactions.index');
+            Route::post('/transactions', [\App\Http\Controllers\Accounting\TransactionController::class, 'store'])->name('transactions.store');
+            Route::put('/transactions/{transaction}', [\App\Http\Controllers\Accounting\TransactionController::class, 'update'])->name('transactions.update');
+            Route::delete('/transactions/{transaction}', [\App\Http\Controllers\Accounting\TransactionController::class, 'destroy'])->name('transactions.destroy');
+        });
+
+        // Contact Messages
+        Route::patch('/contact-messages/{contact_message}/status', [\App\Http\Controllers\Company\ContactMessageController::class, 'updateStatus'])->name('contact-messages.status');
+        Route::resource('contact-messages', \App\Http\Controllers\Company\ContactMessageController::class)->only(['index', 'destroy']);
+
         // Reports
         Route::get('reports/expiry', [\App\Http\Controllers\ReportController::class, 'expiry'])->name('reports.expiry');
         Route::get('reports/low-stock', [\App\Http\Controllers\ReportController::class, 'lowStock'])->name('reports.lowStock');
@@ -263,17 +302,15 @@ Route::get('/pharmacy/{company:slug}/order/{trackingNumber}', [\App\Http\Control
 // Dynamic OG Image
 Route::get('/og-image/medicine/{company:slug}/{medicineSlug}', [\App\Http\Controllers\OgImageController::class, 'medicine'])->name('og.medicine');
 
-Route::get('/store/{company:slug}/prescription', function ($slug) {
-    return Inertia::render('Storefront/Placeholder', ['title' => 'Upload Prescription', 'companySlug' => $slug]);
-})->name('storefront.prescription');
+Route::get('/pharmacy/{company:slug}/prescription', [\App\Http\Controllers\StorefrontController::class, 'prescription'])->name('storefront.prescription');
+Route::post('/pharmacy/{company:slug}/prescription', [\App\Http\Controllers\StorefrontController::class, 'uploadPrescription'])->name('storefront.prescription.upload');
 
 Route::get('/store/{company:slug}/blog', function ($slug) {
     return Inertia::render('Storefront/Placeholder', ['title' => 'Health Blog & Wellness', 'companySlug' => $slug]);
 })->name('storefront.blog');
 
-Route::get('/store/{company:slug}/contact', function ($slug) {
-    return Inertia::render('Storefront/Placeholder', ['title' => 'Contact Us', 'companySlug' => $slug]);
-})->name('storefront.contact');
+Route::get('/store/{company:slug}/contact', [\App\Http\Controllers\StorefrontController::class, 'contact'])->name('storefront.contact');
+Route::post('/store/{company:slug}/contact', [\App\Http\Controllers\StorefrontController::class, 'submitContact'])->name('storefront.contact.submit');
 
 // Reseller / Affiliate Portal Routes
 Route::prefix('reseller')->name('reseller.')->group(function () {

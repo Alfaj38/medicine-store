@@ -1,80 +1,33 @@
 #!/bin/bash
+# ==========================================
+# SaaSMedi Regular Deployment Script
+# ==========================================
 
-# Exit on any error
-set -e
+echo "🚀 Starting Deployment..."
 
-# --- CONFIGURATION ---
-USER="meetvvxd"
-HOST="68.65.123.215"
-PORT="21098" # UPDATED: Standard Namecheap SSH Port
-REMOTE_PATH="/home/$USER/public_html/apps/medicine_store"
-# ---------------------
+# 1. Enter Maintenance Mode
+php artisan down || true
 
-echo "🚀 Starting Deployment to Namecheap..."
+# 2. Pull the latest code
+echo "📥 Pulling latest code..."
+git pull origin master --force
 
-# 1. Build Assets Locally
-echo " Building assets..."
-npm run build
+# 3. Install/Update Dependencies
+echo "📦 Installing dependencies..."
+composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# 2. Optimization
-echo "⚡ Preparing for deployment..."
-rm -f public/hot
+# 4. Clear and Cache Configurations
+echo "🧹 Rebuilding caches..."
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-# 4. Create Tarball (Handles long paths perfectly)
-echo " Creating deployment package (tar.gz)..."
-tar -czf deploy.tar.gz \
-    --exclude='node_modules' \
-    --exclude='vendor' \
-    --exclude='tests' \
-    --exclude='.git' \
-    --exclude='.github' \
-    --exclude='.idea' \
-    --exclude='.phpunit.result.cache' \
-    --exclude='.editorconfig' \
-    --exclude='.styleci.yml' \
-    --exclude='scratch*' \
-    --exclude='check_*.php' \
-    --exclude='deploy.tar.gz' \
-    --exclude='./deploy.tar.gz' \
-    --exclude='.env' \
-    --exclude='storage/logs/*.log' \
-    --exclude='storage/framework/cache/data/*' \
-    --exclude='storage/framework/sessions/*' \
-    --exclude='storage/framework/views/*.php' \
-    --exclude='public/hot' \
-    --exclude='public/.hot' \
-    --exclude='.hot' \
-    .
+# 5. Run Database Migrations
+echo "🗄️ Running migrations..."
+php artisan migrate --force
 
-# 5. Upload & Extract
-echo " Uploading to $HOST on port $PORT..."
-scp -P $PORT deploy.tar.gz $USER@$HOST:$REMOTE_PATH/
+# 6. Bring Application Live
+php artisan up
 
-echo " Performing fresh cleanup and extraction on server..."
-ssh -p $PORT $USER@$HOST " \
-    # 1. Clean up old core files (Preserving .env, vendor, and the fresh tarball)
-    find $REMOTE_PATH -maxdepth 1 -mindepth 1 ! -name '.env' ! -name 'vendor' ! -name 'deploy.tar.gz' -exec rm -rf {} + && \
-    cd $REMOTE_PATH && \
-    \
-    # 2. Extract new files
-    tar -xzf deploy.tar.gz && \
-    rm deploy.tar.gz && \
-    rm -f bootstrap/cache/*.php && \
-    \
-    # 3. Update Composer Dependencies (Comment this out after successful deployment if you don't need it every time)
-    composer install --no-dev --optimize-autoloader && \
-    \
-    # 4. Run Laravel Optimizations & Data Syncs
-    php artisan migrate --force && \
-    php artisan sync:medicine-pricing && \
-    php artisan db:seed --class=AdditionalCategoriesSeeder --force && \
-    php artisan optimize:clear && \
-    php artisan optimize && \
-    php artisan event:cache && \
-    php artisan view:cache"
-
-# 6. Cleanup local file
-echo "🧹 Cleaning up..."
-rm -f deploy.tar.gz
-
-echo " Deployment Successful!"
+echo "🎉 Deployment Completed Successfully!"

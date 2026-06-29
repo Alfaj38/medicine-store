@@ -6,18 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Traits\BelongsToTenant;
 
-class SalaryPayment extends Model
+class Transaction extends Model
 {
     use HasFactory, BelongsToTenant;
 
     protected $guarded = [];
 
     protected $casts = [
-        'paid_at' => 'date',
+        'date' => 'date',
+        'amount' => 'decimal:2'
     ];
 
-    public function employee()
+    public function account()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Account::class);
     }
 }

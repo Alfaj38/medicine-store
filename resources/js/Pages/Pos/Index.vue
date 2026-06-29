@@ -8,9 +8,11 @@ const props = defineProps({
     categories: Array,
     itemTypes: Array,
     recentSales: Array,
+    activePrescription: Object,
 });
 
 // ─── State ────────────────────────────────────────────────────────────────────
+const showPrescriptionModal = ref(!!props.activePrescription);
 const searchQuery       = ref('');
 const categorySearchQuery = ref('');
 const cart              = ref([]);
@@ -431,7 +433,13 @@ const filteredCategoriesByType = computed(() => {
         </header>
 
         <!-- ── MAIN BODY ── -->
-        <div class="flex flex-1 overflow-hidden">
+        <div class="flex flex-1 overflow-hidden relative">
+            
+            <!-- Floating Prescription Button -->
+            <button v-if="activePrescription" @click="showPrescriptionModal = true" class="absolute bottom-6 left-6 z-30 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl rounded-full px-4 py-3 flex items-center gap-2 font-bold transition-transform hover:scale-105">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                View Prescription
+            </button>
 
             <!-- ── LEFT SIDEBAR: Categories (Hidden on mobile) ── -->
             <aside class="hidden lg:flex w-56 bg-white border-r border-slate-200 flex-col flex-shrink-0 overflow-y-auto pt-4 px-3">
@@ -917,6 +925,27 @@ const filteredCategoriesByType = computed(() => {
                 </div>
             </div>
         </Teleport>
-
     </div>
+
+        <!-- Prescription Modal -->
+        <Teleport to="body">
+            <div v-if="showPrescriptionModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm sm:p-6" @click.self="showPrescriptionModal = false">
+                <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]">
+                    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 flex-shrink-0">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Patient Prescription</h3>
+                            <p class="text-sm text-slate-500">{{ activePrescription.patient_name }}</p>
+                        </div>
+                        <button @click="showPrescriptionModal = false" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-200 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 bg-slate-900 flex items-center justify-center overflow-auto p-4 relative group">
+                        <img v-if="activePrescription.image_url" :src="activePrescription.image_url" class="max-w-full object-contain shadow-2xl rounded-md" />
+                        <div v-else class="text-slate-400">No Image Available</div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 </template>

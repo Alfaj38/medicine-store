@@ -31,6 +31,11 @@ class Company extends Model
         return $this->hasMany(CompanyBankAccount::class);
     }
 
+    public function contactMessages()
+    {
+        return $this->hasMany(ContactMessage::class);
+    }
+
     public function documents()
     {
         return $this->hasMany(CompanyDocument::class);

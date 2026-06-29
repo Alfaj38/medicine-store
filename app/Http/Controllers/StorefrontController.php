@@ -626,4 +626,86 @@ class StorefrontController extends Controller
             'order' => $order,
         ]);
     }
+
+    public function prescription(Company $company)
+    {
+        if (!$company->isActive()) {
+            abort(404);
+        }
+
+        return Inertia::render('Storefront/Prescription', [
+            'company' => $company,
+        ]);
+    }
+
+    public function uploadPrescription(Request $request, Company $company)
+    {
+        if (!$company->isActive()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'patient_name' => 'required|string|max:255',
+            'patient_phone' => 'required|string|max:20',
+            'patient_address' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'prescription' => 'required|image|max:5120', // max 5MB
+        ]);
+
+        $prescription = \App\Models\Prescription::create([
+            'company_id' => $company->id,
+            'patient_name' => $validated['patient_name'],
+            'patient_phone' => $validated['patient_phone'],
+            'patient_address' => $validated['patient_address'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        if ($request->hasFile('prescription')) {
+            $prescription->addMediaFromRequest('prescription')
+                ->toMediaCollection('prescription');
+        }
+
+        return redirect()->back()->with('success', 'Prescription uploaded successfully. We will contact you soon!');
+    }
+
+    public function contact(Company $company)
+    {
+        if (!$company->isActive()) {
+            abort(404);
+        }
+
+        $seoService = new \App\Services\SeoService();
+        $seo = $seoService->generate([
+            'site_name' => $company->name,
+            'title' => "Contact Us - {$company->name}",
+            'description' => "Get in touch with {$company->name}. Our address: {$company->address}, Phone: {$company->phone}.",
+            'url' => route('storefront.contact', $company->slug),
+            'tracking' => $this->getTrackingData($company)
+        ]);
+
+        return Inertia::render('Storefront/Contact', [
+            'company' => $company,
+            'seo' => $seo,
+        ]);
+    }
+
+    public function submitContact(Request $request, Company $company)
+    {
+        if (!$company->isActive()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'required|string|max:20',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        $company->contactMessages()->create($validated);
+
+        return redirect()->back()->with('success', 'Message sent successfully. We will contact you soon!');
+    }
 }

@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Traits\BelongsToTenant;
 
-class SalaryPayment extends Model
+class Attendance extends Model
 {
     use HasFactory, BelongsToTenant;
 
     protected $guarded = [];
 
     protected $casts = [
-        'paid_at' => 'date',
+        'date' => 'date',
     ];
 
     public function employee()

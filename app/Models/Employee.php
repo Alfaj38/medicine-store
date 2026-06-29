@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\BelongsToTenant;
 
 class Employee extends Model
 {
-    use \App\Models\Traits\BelongsToTenant;
+    use HasFactory, BelongsToTenant;
 
     protected $guarded = [];
 
