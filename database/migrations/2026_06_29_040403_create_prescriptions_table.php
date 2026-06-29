@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('prescriptions');
+        
         Schema::create('prescriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->index();
             $table->string('patient_name');
             $table->string('patient_phone');
             $table->text('patient_address')->nullable();

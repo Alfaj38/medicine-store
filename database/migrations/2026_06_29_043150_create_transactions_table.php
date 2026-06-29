@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('transactions');
+        
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->index();
+            $table->foreignId('account_id')->index();
             $table->enum('type', ['income', 'expense']);
             $table->decimal('amount', 12, 2);
             $table->date('date');

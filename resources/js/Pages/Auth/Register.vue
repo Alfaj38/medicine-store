@@ -31,7 +31,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     // Step 4: Trial Plan
-    plan_id: props.packages?.find(p => p.slug === 'professional')?.id || props.packages?.[0]?.id || '',
+    package_id: props.packages?.find(p => p.slug === 'professional')?.id || props.packages?.[0]?.id || '',
     billing_cycle: 'monthly',
     referral_code: props.referral_code || '',
     referral_source: '',
@@ -72,8 +72,8 @@ const recommendedFeatures = computed(() => {
 
 // Computed property for the sidebar display (shows recommended package in steps 1-3, selected package in step 4)
 const displayPackage = computed(() => {
-    if (currentStep.value === 4 && form.plan_id) {
-        return props.packages.find(p => p.id === form.plan_id) || recommendedPackage.value;
+    if (currentStep.value === 4 && form.package_id) {
+        return props.packages.find(p => p.id === form.package_id) || recommendedPackage.value;
     }
     return recommendedPackage.value;
 });
@@ -138,7 +138,6 @@ watch(() => form.coupon_code, (val) => {
     invalidCouponMsg.value = '';
     validCoupon.value = false;
     couponMessage.value = '';
-    
     if (!val) return;
 
     if (val !== val.toUpperCase()) {
@@ -149,8 +148,11 @@ watch(() => form.coupon_code, (val) => {
     clearTimeout(couponTimeout);
     couponTimeout = setTimeout(async () => {
         validatingCoupon.value = true;
+        invalidCouponMsg.value = '';
+        validCoupon.value = false;
+        
         try {
-            const res = await axios.get('/api/promo-code/validate', { params: { code: val, type: 'coupon', package_id: form.plan_id } });
+            const res = await axios.get('/api/promo-code/validate', { params: { code: val, type: 'coupon', package_id: form.package_id } });
             if (res.data.valid) {
                 validCoupon.value = true;
                 couponMessage.value = res.data.message;
@@ -185,9 +187,22 @@ const submit = () => {
                 if (errors.password) {
                     form.reset('password', 'password_confirmation');
                 }
-            } else if (errors.plan_id || errors.billing_cycle || errors.referral_code || errors.coupon_code) {
+            } else if (errors.package_id || errors.billing_cycle || errors.referral_code || errors.coupon_code) {
                 currentStep.value = 4;
             }
+            
+            // Wait for Vue to render the step change, then focus the first error
+            setTimeout(() => {
+                const firstErrorElement = document.querySelector('.text-red-500');
+                if (firstErrorElement) {
+                    firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Try to focus the previous input sibling if possible
+                    const inputElement = firstErrorElement.previousElementSibling;
+                    if (inputElement && inputElement.focus) {
+                        inputElement.focus();
+                    }
+                }
+            }, 100);
         },
         onSuccess: () => {
             form.reset('password', 'password_confirmation');
@@ -210,7 +225,7 @@ const submit = () => {
             <div class="absolute bottom-40 -left-40 w-96 h-96 bg-[#00b67a] opacity-20 rounded-full blur-[100px] z-0"></div>
             
             <!-- Logo -->
-            <Link :href="route('public.home')" class="relative z-10 flex items-center gap-3 mb-10 hover:opacity-90 transition-opacity w-max">
+            <Link :href="route('home')" class="relative z-10 flex items-center gap-3 mb-10 hover:opacity-90 transition-opacity w-max">
                 <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#00b67a] font-black text-2xl shadow-lg">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </div>
@@ -538,25 +553,30 @@ const submit = () => {
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-800 mb-2">Country</label>
+                                        <label class="block text-sm font-bold text-slate-800 mb-2">Country <span class="text-red-500">*</span></label>
                                         <input v-model="form.company_country" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow">
+                                        <p v-if="form.errors.company_country" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.company_country }}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-800 mb-2">Currency</label>
+                                        <label class="block text-sm font-bold text-slate-800 mb-2">Currency <span class="text-red-500">*</span></label>
                                         <input v-model="form.company_currency" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow">
+                                        <p v-if="form.errors.company_currency" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.company_currency }}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-800 mb-2">Timezone</label>
+                                    <label class="block text-sm font-bold text-slate-800 mb-2">Timezone <span class="text-red-500">*</span></label>
                                     <input v-model="form.company_timezone" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow">
+                                    <p v-if="form.errors.company_timezone" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.company_timezone }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-800 mb-2">Business Address</label>
+                                    <label class="block text-sm font-bold text-slate-800 mb-2">Business Address <span class="text-red-500">*</span></label>
                                     <textarea v-model="form.company_address" rows="2" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow"></textarea>
+                                    <p v-if="form.errors.company_address" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.company_address }}</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-800 mb-2">Business Phone</label>
+                                    <label class="block text-sm font-bold text-slate-800 mb-2">Business Phone <span class="text-red-500">*</span></label>
                                     <input v-model="form.company_phone" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow">
+                                    <p v-if="form.errors.company_phone" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.company_phone }}</p>
                                 </div>
                             </div>
 
@@ -569,19 +589,23 @@ const submit = () => {
                                 <div>
                                     <label class="block text-sm font-bold text-slate-800 mb-2">Full Name <span class="text-red-500">*</span></label>
                                     <input v-model="form.owner_name" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow" required>
+                                    <p v-if="form.errors.owner_name" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.owner_name }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-800 mb-2">Email Address <span class="text-red-500">*</span></label>
                                     <input v-model="form.owner_email" type="email" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow" required>
+                                    <p v-if="form.errors.owner_email" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.owner_email }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-800 mb-2">Mobile Number <span class="text-red-500">*</span></label>
                                     <input v-model="form.owner_phone" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow" required>
+                                    <p v-if="form.errors.owner_phone" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.owner_phone }}</p>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-bold text-slate-800 mb-2">Password <span class="text-red-500">*</span></label>
                                         <input v-model="form.password" type="password" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-3 text-sm font-medium transition-shadow" required>
+                                        <p v-if="form.errors.password" class="text-red-500 text-xs mt-1 font-medium">{{ form.errors.password }}</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-bold text-slate-800 mb-2">Confirm Password <span class="text-red-500">*</span></label>
@@ -621,10 +645,10 @@ const submit = () => {
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <label v-for="pkg in packages" :key="pkg.id"
                                         class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
-                                        :class="form.plan_id == pkg.id
+                                        :class="form.package_id == pkg.id
                                             ? 'border-[#00b67a] bg-[#F3FBF8] shadow-sm'
                                             : 'border-slate-100 hover:border-slate-200 bg-white'">
-                                        <input type="radio" v-model="form.plan_id" :value="pkg.id" class="sr-only">
+                                        <input type="radio" v-model="form.package_id" :value="pkg.id" class="sr-only">
 
                                         <!-- Recommended Badge -->
                                         <div v-if="pkg.id === recommendedPackage?.id"
@@ -633,7 +657,7 @@ const submit = () => {
                                         </div>
 
                                         <!-- Selected check -->
-                                        <div v-if="form.plan_id == pkg.id"
+                                        <div v-if="form.package_id == pkg.id"
                                             class="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#00b67a] text-white flex items-center justify-center">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                                         </div>

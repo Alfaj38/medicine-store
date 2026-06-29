@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             $permissions = [];
             
             if ($user instanceof \App\Models\User) {
+                setPermissionsTeamId($user->company_id);
                 $user->loadMissing(['roles', 'company.subscription.plan']);
                 
                 // Phase 10: Permission Optimization - Cache DB checks for 1 hour
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 $cachedAuth = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHour(), function () use ($user) {
                     $permissions = [];
                     if (method_exists($user, 'getAllPermissions')) {
+                        setPermissionsTeamId($user->company_id);
                         $permissions = $user->getAllPermissions()->pluck('name')->toArray();
                     }
 

@@ -23,10 +23,13 @@ class UserController extends Controller
             ->paginate(15);
 
         $branches = Branch::where('company_id', $companyId)->where('is_active', true)->get(['id', 'name']);
+        
+        $roles = \Spatie\Permission\Models\Role::where('company_id', $companyId)->get(['id', 'name']);
 
         return Inertia::render('Company/Users/Index', [
             'users' => $users,
             'branches' => $branches,
+            'roles' => $roles,
             'filters' => $request->only(['search'])
         ]);
     }
@@ -39,7 +42,7 @@ class UserController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:8',
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('company_id', auth()->user()->company_id)],
-            'role' => 'required|string|in:Manager,Pharmacist,Cashier',
+            'role' => ['required', 'string', Rule::exists('roles', 'name')->where('company_id', auth()->user()->company_id)],
             'is_active' => 'boolean'
         ]);
 
@@ -77,7 +80,7 @@ class UserController extends Controller
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string|min:8',
             'branch_id' => ['nullable', Rule::exists('branches', 'id')->where('company_id', auth()->user()->company_id)],
-            'role' => 'required|string|in:Manager,Pharmacist,Cashier',
+            'role' => ['required', 'string', Rule::exists('roles', 'name')->where('company_id', auth()->user()->company_id)],
             'is_active' => 'boolean'
         ]);
 

@@ -78,7 +78,27 @@ const submitCreateRole = () => {
     createForm.post(route('company.roles.store'), {
         onSuccess: (page) => {
             closeCreateModal();
-            // Automatically select the new role if possible, or reload data handles it.
+            Swal.fire({
+                icon: 'success',
+                title: 'Role created successfully!',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        },
+        onError: (errors) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: errors.name || 'Please check your inputs.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+            });
         }
     });
 };
@@ -98,6 +118,18 @@ const saveChanges = () => {
                 timer: 3000,
                 timerProgressBar: true,
             });
+        },
+        onError: (errors) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: errors.name || 'Please check your inputs.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+            });
         }
     });
 };
@@ -112,9 +144,32 @@ const resetChanges = () => {
 
 const deleteRole = () => {
     if (!activeRole.value) return;
-    if (confirm(`Are you sure you want to delete the ${activeRole.value.name} role?`)) {
-        router.delete(route('company.roles.destroy', activeRole.value.id));
-    }
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `You want to delete the ${activeRole.value.name} role?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#f43f5e',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('company.roles.destroy', activeRole.value.id), {
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Role has been deleted.',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                    });
+                }
+            });
+        }
+    });
 };
 
 // Handlers for child components

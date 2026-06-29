@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Inertia\Inertia;
 
@@ -62,12 +63,19 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('roles', 'name')->where(function ($query) {
+                    return $query->where('company_id', auth()->user()->company_id);
+                })
+            ],
             'permissions' => 'nullable|array',
             'branches' => 'nullable|array'
         ]);
 
-        $role = Role::create([
+        $role = Role::query()->create([
             'name' => $validated['name'],
             'guard_name' => 'web',
             'company_id' => auth()->user()->company_id
@@ -95,7 +103,14 @@ class RoleController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('roles', 'name')->where(function ($query) {
+                    return $query->where('company_id', auth()->user()->company_id);
+                })->ignore($role->id)
+            ],
             'permissions' => 'nullable|array',
             'branches' => 'nullable|array'
         ]);
@@ -120,9 +135,10 @@ class RoleController extends Controller
         }
 
         // Phase 10: Permission Optimization - Clear User Cache when permissions change
-        $role->users->each(function($user) {
-            \Illuminate\Support\Facades\Cache::forget("user_{$user->id}_auth_data");
-        });
+        $userIds = \DB::table('model_has_roles')->where('role_id', $role->id)->pluck('model_id');
+        foreach ($userIds as $userId) {
+            \Illuminate\Support\Facades\Cache::forget("user_{$userId}_auth_data");
+        }
 
         return back()->with('success', 'Role updated successfully.');
     }

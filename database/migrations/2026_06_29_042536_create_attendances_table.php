@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('attendances');
+        
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->index();
+            $table->foreignId('employee_id')->index();
             $table->date('date');
             $table->time('check_in')->nullable();
             $table->time('check_out')->nullable();

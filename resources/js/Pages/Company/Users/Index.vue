@@ -7,6 +7,7 @@ import Layout from '../Settings/Layout.vue';
 const props = defineProps({
     users: Object,
     branches: Array,
+    roles: Array,
     filters: Object
 });
 
@@ -18,7 +19,7 @@ const form = useForm({
     email: '',
     phone: '',
     password: '',
-    role: 'Pharmacist',
+    role: props.roles?.length > 0 ? props.roles[0].name : '',
     branch_id: '',
     is_active: true
 });
@@ -37,7 +38,7 @@ const openEditModal = (user) => {
     form.email = user.email;
     form.phone = user.phone;
     form.password = '';
-    form.role = user.roles && user.roles.length ? user.roles[0].name : 'Pharmacist';
+    form.role = user.roles && user.roles.length ? user.roles[0].name : (props.roles?.length > 0 ? props.roles[0].name : '');
     form.branch_id = user.branch_id || '';
     form.is_active = user.is_active;
     isModalOpen.value = true;
@@ -197,9 +198,7 @@ const performSearch = debounce(() => {
                                 <div>
                                     <label class="block text-sm font-medium text-slate-700">Role</label>
                                     <select v-model="form.role" required class="mt-1 block w-full rounded-xl border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm">
-                                        <option value="Manager">Manager</option>
-                                        <option value="Pharmacist">Pharmacist</option>
-                                        <option value="Cashier">Cashier</option>
+                                        <option v-for="role in roles" :key="role.id" :value="role.name">{{ role.name }}</option>
                                     </select>
                                     <p v-if="form.errors.role" class="mt-1 text-sm text-red-500">{{ form.errors.role }}</p>
                                 </div>

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('contact_messages');
+        
         Schema::create('contact_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->index();
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('phone');

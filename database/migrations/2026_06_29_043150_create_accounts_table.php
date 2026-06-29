@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('accounts');
+        
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->index();
             $table->string('name');
             $table->enum('type', ['income', 'expense', 'asset', 'liability']);
             $table->enum('status', ['active', 'inactive'])->default('active');
