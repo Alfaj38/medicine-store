@@ -115,7 +115,7 @@ const formatCurrency = (val) => {
     <Head title="Dashboard - SaaSMedi" />
 
     <AppLayout>
-        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-slate-50 min-h-screen">
+        <main class="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-slate-50 min-h-screen">
             
             <!-- Header -->
             <div class="flex justify-between items-center mb-8">

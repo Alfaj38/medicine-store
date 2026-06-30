@@ -12,7 +12,7 @@ const props = defineProps({
 
     <AppLayout>
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main class="w-full mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden mb-8">
                 <div class="p-6 sm:p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between gap-6">
                     <div>

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\TenantMiddleware::class,
+            \App\Http\Middleware\EnsureActiveSubscription::class,
             \App\Http\Middleware\ReadOnlyScopeMiddleware::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);

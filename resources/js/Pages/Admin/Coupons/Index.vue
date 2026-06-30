@@ -2,7 +2,7 @@
     <AdminLayout>
         <template #header>Promotion & Discount Engine</template>
 
-        <div class="max-w-7xl mx-auto space-y-6">
+        <div class="w-full mx-auto space-y-6">
             
             <!-- KPI Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

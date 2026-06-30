@@ -46,6 +46,15 @@ class UserController extends Controller
             'is_active' => 'boolean'
         ]);
 
+        $company = auth()->user()->company;
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        
+        if (!$subscriptionService->canAddUser($company)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'You have reached the maximum number of users for your current plan. Please upgrade to add more.'
+            ]);
+        }
+
         $roleName = $validated['role'];
         unset($validated['role']);
 

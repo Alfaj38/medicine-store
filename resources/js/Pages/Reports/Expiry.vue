@@ -51,7 +51,7 @@ const getExpiryLabel = (dateString) => {
 
     <AppLayout>
 
-        <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <main class="w-full mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-slate-900">Batch & Expiry Management</h1>
                 <p class="mt-2 text-sm text-slate-500">Monitor medicine batches to prevent selling expired products and reduce wastage.</p>

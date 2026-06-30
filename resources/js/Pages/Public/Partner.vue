@@ -32,7 +32,7 @@ const submit = () => {
         <!-- Hero Section -->
         <section class="relative bg-slate-900 pt-32 pb-20 overflow-hidden">
             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CgkJPGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMzMzQxNTUiIGZpbGwtb3BhY2l0eT0iMC40Ii8+Cgk8L3N2Zz4=')] opacity-30"></div>
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                 <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight mb-6">
                     Earn <span class="text-emerald-400">Recurring Income</span><br />
                     By Referring Pharmacies
@@ -49,7 +49,7 @@ const submit = () => {
 
         <!-- Benefits -->
         <section class="py-20 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">

@@ -1,6 +1,7 @@
 <script setup>
 import { Link, Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import TopNavbar from '@/Components/TopNavbar.vue';
 
 defineProps({
     title: String,
@@ -19,16 +20,25 @@ const user = computed(() => page.props.auth.user);
             <div>
                 <!-- Logo -->
                 <div class="h-20 flex items-center px-6 border-b border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <span class="font-bold text-sm text-slate-900 block leading-tight">Pharma Point</span>
-                            <span class="text-[10px] text-slate-500 block leading-tight">Management System</span>
-                        </div>
+                    <div class="flex items-center gap-3 w-full overflow-hidden">
+                        <template v-if="$page.props.auth?.user?.company?.logo">
+                            <img :src="'/storage/' + $page.props.auth.user.company.logo" class="max-h-10 max-w-[48px] object-contain shrink-0" :alt="$page.props.auth.user.company.name">
+                            <div class="overflow-hidden">
+                                <span class="font-bold text-sm text-slate-900 block leading-tight truncate">{{ $page.props.auth.user.company.name }}</span>
+                                <span class="text-[10px] text-slate-500 block leading-tight truncate">Management System</span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <div class="overflow-hidden">
+                                <span class="font-bold text-sm text-slate-900 block leading-tight truncate">{{ $page.props.auth?.user?.company?.name || 'Pharma Point' }}</span>
+                                <span class="text-[10px] text-slate-500 block leading-tight truncate">Management System</span>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -83,14 +93,19 @@ const user = computed(() => page.props.auth.user);
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 min-w-0 overflow-auto">
+        <div class="flex-1 min-w-0 flex flex-col overflow-auto h-screen">
+            <!-- Top Navigation -->
+            <div class="hidden md:block">
+                <TopNavbar />
+            </div>
+
             <!-- Mobile Header -->
-            <div class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center px-4 justify-between">
+            <div class="md:hidden bg-white border-b border-slate-200 h-16 flex items-center px-4 justify-between flex-shrink-0">
                 <span class="font-bold text-lg text-slate-900">Pharma Point</span>
                 <Link :href="route('dashboard')" class="text-sm text-emerald-600 font-medium">Back to Dashboard</Link>
             </div>
             
-            <main class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <main class="flex-1 w-full py-8 px-4 sm:px-6 lg:px-8">
                 <slot />
             </main>
         </div>

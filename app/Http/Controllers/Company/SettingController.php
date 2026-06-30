@@ -30,9 +30,9 @@ class SettingController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
             'website' => 'nullable|url|max:255',
             'alternative_phone' => 'nullable|string|max:20',
             'business_type' => 'nullable|string|max:255',

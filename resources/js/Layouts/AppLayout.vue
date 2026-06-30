@@ -10,14 +10,38 @@
 
             <!-- Page Heading -->
             <header class="bg-white border-b border-slate-200" v-if="$slots.header">
-                <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <div class="w-full mx-auto py-4 px-4 sm:px-6 lg:px-8">
                     <slot name="header"></slot>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto">
-                <slot></slot>
+            <main class="flex-1 overflow-y-auto bg-slate-50 relative">
+                <!-- Subscription Expired Banner -->
+                <div v-if="subscription && !subscription.is_active" class="bg-red-50 border-b border-red-200 px-4 py-3 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between flex-wrap">
+                        <div class="flex-1 flex items-center">
+                            <span class="flex p-2 rounded-lg bg-red-100 text-red-600 mr-3">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </span>
+                            <p class="font-medium text-red-800 text-sm">
+                                <span class="md:hidden">Your subscription has expired. Account is Read-Only.</span>
+                                <span class="hidden md:inline">Your subscription has expired. Your account is currently in Read-Only mode. Please upgrade to create or edit records.</span>
+                            </p>
+                        </div>
+                        <div class="mt-2 flex-shrink-0 sm:mt-0 sm:ml-3">
+                            <Link href="/settings/billing" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                                Upgrade Now
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="py-6">
+                    <slot></slot>
+                </div>
             </main>
         </div>
     </div>
@@ -35,6 +59,7 @@ const mobileMenuOpen = ref(false);
 
 const permissions = computed(() => page.props.auth.permissions || {});
 const userScope = computed(() => page.props.auth.scope);
+const subscription = computed(() => page.props.auth.subscription || null);
 
 const navItems = computed(() => {
     const allItems = [

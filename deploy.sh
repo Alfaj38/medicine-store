@@ -52,8 +52,8 @@ scp -P $PORT deploy.tar.gz $USER@$HOST:$REMOTE_PATH/
 
 echo "📂 Performing fresh cleanup and extraction on server..."
 ssh -p $PORT $USER@$HOST "
-    # 1. Clean up old core files (Preserving .env and the fresh tarball)
-    find $REMOTE_PATH -maxdepth 1 -mindepth 1 ! -name '.env' ! -name 'deploy.tar.gz' -exec rm -rf {} + &&
+    # 1. Clean up old core files (Preserving .env, storage, vendor, and the fresh tarball)
+    find $REMOTE_PATH -maxdepth 1 -mindepth 1 ! -name '.env' ! -name 'deploy.tar.gz' ! -name 'vendor' ! -name 'storage' -exec rm -rf {} + &&
     cd $REMOTE_PATH &&
     
     # 2. Extract new files

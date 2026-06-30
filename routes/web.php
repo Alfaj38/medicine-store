@@ -120,6 +120,8 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
         Route::get('subscriptions', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::get('invoices', [\App\Http\Controllers\Admin\InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('payments', [\App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'index'])->name('payments.index');
+        Route::patch('payments/{payment}/approve', [\App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'approve'])->name('payments.approve');
+        Route::patch('payments/{payment}/reject', [\App\Http\Controllers\Admin\SubscriptionPaymentController::class, 'reject'])->name('payments.reject');
         Route::resource('coupons', \App\Http\Controllers\Admin\CouponController::class);
         
         // Users
@@ -291,7 +293,8 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
             Route::resource('documents', \App\Http\Controllers\Company\DocumentController::class)->only(['store', 'destroy']);
             
             Route::get('subscription', [\App\Http\Controllers\Company\SubscriptionController::class, 'index'])->name('subscription.index');
-            Route::post('subscription/upgrade', [\App\Http\Controllers\Company\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+            Route::get('subscription/checkout', [\App\Http\Controllers\Company\SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+            Route::post('subscription/payment', [\App\Http\Controllers\Company\SubscriptionController::class, 'submitPayment'])->name('subscription.payment');
             
             Route::get('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'index'])->name('seo-analytics.index');
             Route::post('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'update'])->name('seo-analytics.update');

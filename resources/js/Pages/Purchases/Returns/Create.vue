@@ -99,7 +99,7 @@ const submit = () => {
 
     <AppLayout>
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main class="w-full mx-auto px-4 sm:px-6 lg:px-8">
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Top Section: General Info -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">

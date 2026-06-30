@@ -62,7 +62,7 @@ const features = [
 
         <!-- Feature Tour -->
         <div class="py-16 bg-slate-50 border-t border-slate-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16">
                     <h2 class="text-3xl font-black text-slate-900">Feature Highlights</h2>
                     <p class="text-slate-500 mt-2">A closer look at the tools that power your pharmacy.</p>

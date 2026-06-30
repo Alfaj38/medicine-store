@@ -33,6 +33,15 @@ class BranchController extends Controller
             'is_active' => 'boolean'
         ]);
 
+        $company = auth()->user()->company;
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        
+        if (!$subscriptionService->canAddBranch($company)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => 'You have reached the maximum number of branches for your current plan. Please upgrade to add more.'
+            ]);
+        }
+
         $validated['company_id'] = auth()->user()->company_id;
         $validated['approval_status'] = 'approved'; // Self-managed
 

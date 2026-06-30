@@ -11,15 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('purchase_items', function (Blueprint $table) {
-            $table->dropForeign(['unit_id']);
-            $table->foreign('unit_id')->references('id')->on('uoms')->nullOnDelete();
-        });
+        // purchase_items
+        try {
+            Schema::table('purchase_items', function (Blueprint $table) {
+                $table->dropForeign(['unit_id']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('sale_items', function (Blueprint $table) {
-            $table->dropForeign(['unit_id']);
-            $table->foreign('unit_id')->references('id')->on('uoms')->nullOnDelete();
-        });
+        try {
+            Schema::table('purchase_items', function (Blueprint $table) {
+                $table->foreign('unit_id')->references('id')->on('uoms')->nullOnDelete();
+            });
+        } catch (\Exception $e) {}
+
+        // sale_items
+        try {
+            Schema::table('sale_items', function (Blueprint $table) {
+                $table->dropForeign(['unit_id']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('sale_items', function (Blueprint $table) {
+                $table->foreign('unit_id')->references('id')->on('uoms')->nullOnDelete();
+            });
+        } catch (\Exception $e) {}
     }
 
     /**
@@ -27,14 +43,26 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('purchase_items', function (Blueprint $table) {
-            $table->dropForeign(['unit_id']);
-            $table->foreign('unit_id')->references('id')->on('item_units')->nullOnDelete();
-        });
+        try {
+            Schema::table('purchase_items', function (Blueprint $table) {
+                $table->dropForeign(['unit_id']);
+            });
+        } catch (\Exception $e) {}
+        try {
+            Schema::table('purchase_items', function (Blueprint $table) {
+                $table->foreign('unit_id')->references('id')->on('item_units')->nullOnDelete();
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('sale_items', function (Blueprint $table) {
-            $table->dropForeign(['unit_id']);
-            $table->foreign('unit_id')->references('id')->on('item_units')->nullOnDelete();
-        });
+        try {
+            Schema::table('sale_items', function (Blueprint $table) {
+                $table->dropForeign(['unit_id']);
+            });
+        } catch (\Exception $e) {}
+        try {
+            Schema::table('sale_items', function (Blueprint $table) {
+                $table->foreign('unit_id')->references('id')->on('item_units')->nullOnDelete();
+            });
+        } catch (\Exception $e) {}
     }
 };

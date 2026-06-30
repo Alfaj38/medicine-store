@@ -36,13 +36,19 @@ const navItems = computed(() => {
 <template>
     <div class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-screen overflow-y-auto z-20">
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-6 h-16 flex-shrink-0 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-emerald-600 shadow-sm flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                </svg>
-            </div>
-            <span class="font-bold text-xl tracking-tight text-slate-800">SaaSMedi</span>
+        <div class="flex items-center gap-3 px-6 h-16 flex-shrink-0 border-b border-slate-100 overflow-hidden">
+            <template v-if="$page.props.auth?.user?.company?.logo">
+                <img :src="'/storage/' + $page.props.auth.user.company.logo" class="max-h-8 max-w-[48px] object-contain shrink-0" :alt="$page.props.auth.user.company.name">
+                <span class="font-bold text-lg tracking-tight text-slate-800 truncate">{{ $page.props.auth.user.company.name }}</span>
+            </template>
+            <template v-else>
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-emerald-600 shadow-sm flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                    </svg>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-slate-800 truncate">{{ $page.props.auth?.user?.company?.name || 'SaaSMedi' }}</span>
+            </template>
         </div>
 
         <!-- Menu -->
@@ -87,9 +93,9 @@ const navItems = computed(() => {
                     </svg>
                     <h4 class="font-bold text-slate-800 text-sm mb-1">Upgrade to Premium</h4>
                     <p class="text-xs text-slate-600 mb-4 leading-relaxed">Unlock advanced reports, insights and more features.</p>
-                    <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition-all shadow-emerald-500/20 active:scale-[0.98]">
+                    <Link :href="route('company.subscription.index')" class="w-full inline-block text-center bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition-all shadow-emerald-500/20 active:scale-[0.98]">
                         Upgrade Now
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

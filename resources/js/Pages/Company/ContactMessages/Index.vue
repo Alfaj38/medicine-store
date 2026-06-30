@@ -113,7 +113,7 @@ const formatTime = (dateStr) => {
             </div>
         </template>
 
-        <div class="py-12 max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-12 w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-slate-200">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">

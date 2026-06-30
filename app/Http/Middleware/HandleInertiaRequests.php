@@ -54,10 +54,26 @@ class HandleInertiaRequests extends Middleware
                         $permissions = $user->getAllPermissions()->pluck('name')->toArray();
                     }
 
+                    $subscriptionData = [
+                        'is_active' => true,
+                        'can_add_user' => true,
+                        'can_add_branch' => true,
+                    ];
+
+                    if ($user->company) {
+                        $subscriptionService = app(\App\Services\SubscriptionService::class);
+                        $subscriptionData = [
+                            'is_active' => $subscriptionService->isSubscriptionActive($user->company),
+                            'can_add_user' => $subscriptionService->canAddUser($user->company),
+                            'can_add_branch' => $subscriptionService->canAddBranch($user->company),
+                        ];
+                    }
+
                     return [
                         'permissions' => $permissions,
                         'branches' => $user->getAllowedBranchIds(),
                         'scope' => $user->data_scope,
+                        'subscription' => $subscriptionData,
                     ];
                 });
 
@@ -66,6 +82,7 @@ class HandleInertiaRequests extends Middleware
                     'scope' => $cachedAuth['scope'],
                     'permissions' => $cachedAuth['permissions'],
                     'branches' => $cachedAuth['branches'],
+                    'subscription' => $cachedAuth['subscription'],
                 ];
             } else {
                 // For Resellers or other models

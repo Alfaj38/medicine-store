@@ -11,6 +11,36 @@ const emit = defineEmits(['update:activeModule', 'togglePermission', 'toggleModu
 
 const modulesList = computed(() => Object.keys(props.permissionsByModule));
 
+const moduleGroups = computed(() => {
+    const groups = {
+        'DASHBOARD': ['Dashboard'],
+        'MASTER DATA': ['Medicine Management', 'Inventory'],
+        'PROCUREMENT': ['Purchase Management', 'Suppliers', 'Requisitions', 'Purchase Orders', 'Purchases Grn'],
+        'SALES & CRM': ['Sales Management', 'Sales Invoices', 'Online Orders', 'Prescriptions', 'Customers', 'Storefront Messages'],
+        'HR & PAYROLL': ['Hr Payroll', 'Employees', 'Attendance', 'Payroll Processing'],
+        'ACCOUNTING': ['Accounting', 'Income Expenses', 'Chart Of Accounts', 'Expenses'],
+        'OTHER': ['Reports Analytics', 'Settings', 'System', 'Point Of Sale']
+    };
+
+    const filteredGroups = {};
+    for (const [groupName, modules] of Object.entries(groups)) {
+        const availableModules = modules.filter(m => props.permissionsByModule[m]);
+        if (availableModules.length > 0) {
+            filteredGroups[groupName] = availableModules;
+        }
+    }
+    
+    // Catch any undefined modules and put them in OTHER
+    const knownModules = Object.values(groups).flat();
+    const unknownModules = Object.keys(props.permissionsByModule).filter(m => !knownModules.includes(m));
+    if (unknownModules.length > 0) {
+        if (!filteredGroups['OTHER']) filteredGroups['OTHER'] = [];
+        filteredGroups['OTHER'].push(...unknownModules);
+    }
+
+    return filteredGroups;
+});
+
 const hasPermission = (permName) => {
     return props.formPermissions.includes(permName);
 };
@@ -44,23 +74,28 @@ const toggleModule = (moduleName) => {
             </div>
             <p class="text-xs text-slate-500 mb-4">Control access to system modules and features.</p>
             
-            <div class="space-y-1 bg-white border border-slate-200 rounded-xl overflow-hidden p-2">
-                <button 
-                    v-for="moduleName in modulesList" :key="moduleName"
-                    @click="$emit('update:activeModule', moduleName)"
-                    class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between group"
-                    :class="activeModule === moduleName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'"
-                >
-                    <div class="flex items-center gap-3">
-                        <svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-500" :class="{'text-emerald-500': activeModule === moduleName}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {{ moduleName }}
+            <div class="space-y-4 bg-white border border-slate-200 rounded-xl overflow-hidden p-2">
+                <div v-for="(modules, groupName) in moduleGroups" :key="groupName" class="space-y-1">
+                    <div class="px-3 py-1 mt-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        {{ groupName }}
                     </div>
-                    <svg class="w-4 h-4 text-slate-400" :class="{'rotate-90': activeModule === moduleName}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+                    <button 
+                        v-for="moduleName in modules" :key="moduleName"
+                        @click="$emit('update:activeModule', moduleName)"
+                        class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between group"
+                        :class="activeModule === moduleName ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50'"
+                    >
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-500" :class="{'text-emerald-500': activeModule === moduleName}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ moduleName }}
+                        </div>
+                        <svg class="w-4 h-4 text-slate-400" :class="{'rotate-90': activeModule === moduleName}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 

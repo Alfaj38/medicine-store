@@ -237,7 +237,7 @@ const scrollRight = () => {
             </div>
         </div>
 
-        <div class="p-4 lg:p-8 max-w-7xl mx-auto">
+        <div class="p-4 lg:p-8 w-full mx-auto">
             
             <!-- Hero Section -->
             <div class="bg-white rounded-3xl p-6 lg:p-12 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] mb-8 flex flex-col lg:flex-row items-center justify-between gap-8 relative overflow-hidden">
@@ -583,7 +583,7 @@ const scrollRight = () => {
 
         <!-- Problems We Solve Section -->
         <div class="py-20 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-2xl mx-auto mb-16">
                     <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3">Problems We Solve</h2>
                     <p class="text-sm text-slate-500 font-medium">We understand the daily challenges of running a pharmacy</p>
@@ -643,7 +643,7 @@ const scrollRight = () => {
 
         <!-- Why Choose SaaSMedi Section -->
         <div class="py-20 bg-slate-50/50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-2xl mx-auto mb-16">
                     <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3">Why Choose SaaSMedi?</h2>
                     <p class="text-sm text-slate-500 font-medium">Powerful features to simplify your pharmacy operations</p>
@@ -691,7 +691,7 @@ const scrollRight = () => {
 
         <!-- CTA Section -->
         <div class="py-16 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-gradient-to-r from-teal-700 to-emerald-500 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col md:flex-row items-center">
                     
                     <div class="flex-1 p-10 md:p-14 z-10 relative">

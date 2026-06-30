@@ -83,7 +83,7 @@ const inventory = [
         </div>
 
         <!-- Main Features Split Layout -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 pb-12">
             <div class="lg:grid lg:grid-cols-12 lg:gap-12 items-start">
                 
                 <!-- Feature List (Left) -->
@@ -229,7 +229,7 @@ const inventory = [
         </div>
 
         <!-- Infrastructure bottom bar -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 mt-8">
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 pb-24 mt-8">
             <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-xl shadow-slate-200/40">
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="flex items-start gap-4 p-2">

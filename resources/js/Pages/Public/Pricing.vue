@@ -16,7 +16,7 @@ const billingCycle = ref('monthly');
     <PublicLayout>
         <!-- Header -->
         <div class="bg-slate-50 pt-20 pb-24 border-b border-slate-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-6">Simple, Transparent Pricing</h1>
                 <p class="text-lg text-slate-600 max-w-2xl mx-auto">Choose the perfect plan for your pharmacy. Upgrade, downgrade, or cancel at any time.</p>
                 
@@ -31,7 +31,7 @@ const billingCycle = ref('monthly');
         </div>
 
         <!-- Pricing Cards -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 mb-24 relative z-10">
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-12 mb-24 relative z-10">
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
                 
                 <div v-for="plan in plans" :key="plan.id" 

@@ -78,7 +78,7 @@ const deleteEmployee = (id) => {
     <Head title="Employees - SaaSMedi" />
 
     <AppLayout>
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Employees</h1>

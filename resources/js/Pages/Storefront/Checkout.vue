@@ -83,7 +83,7 @@ const submitOrder = () => {
     <Head :title="`Checkout - ${company.name}`" />
 
     <StorefrontLayout :company="company" hide-cart>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             
             <div class="mb-8 flex items-center justify-between">
                 <div>

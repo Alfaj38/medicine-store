@@ -268,19 +268,21 @@ const formatDate = (dateString) => {
                         <h3 class="text-sm font-bold text-slate-800 mb-5">Basic Information</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Left Side Inputs -->
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Company Name <span class="text-red-500">*</span></label>
-                                    <input v-model="form.name" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10">
+                                    <input v-model="form.name" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.name}">
+                                    <p v-if="form.errors.name" class="mt-1 text-xs text-red-500">{{ form.errors.name }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address <span class="text-red-500">*</span></label>
-                                    <input v-model="form.email" type="email" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10">
+                                    <input v-model="form.email" type="email" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.email}">
+                                    <p v-if="form.errors.email" class="mt-1 text-xs text-red-500">{{ form.errors.email }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Website</label>
-                                    <input v-model="form.website" type="text" placeholder="https://www.example.com" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10">
+                                    <input v-model="form.website" type="text" placeholder="https://www.example.com" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.website}">
+                                    <p v-if="form.errors.website" class="mt-1 text-xs text-red-500">{{ form.errors.website }}</p>
                                 </div>
                             </div>
 
@@ -289,34 +291,38 @@ const formatDate = (dateString) => {
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Company Logo</label>
                                     <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0" :class="{'border-red-500': form.errors.logo}">
                                             <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-contain">
                                             <div v-else class="text-emerald-600 font-bold text-xl">{{ form.name ? form.name.charAt(0) : 'C' }}</div>
                                         </div>
                                         <div class="flex-1">
-                                            <label class="cursor-pointer border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center py-3 hover:bg-slate-50 transition-colors">
-                                                <svg class="w-5 h-5 text-slate-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                                <span class="text-xs font-medium text-slate-600">Upload Logo</span>
-                                                <span class="text-[10px] text-slate-400">PNG, JPG (Max 2MB)</span>
+                                            <label class="cursor-pointer border border-dashed rounded-lg flex flex-col items-center justify-center py-3 hover:bg-slate-50 transition-colors" :class="form.errors.logo ? 'border-red-500 bg-red-50 hover:bg-red-100' : 'border-slate-300'">
+                                                <svg class="w-5 h-5 text-slate-400 mb-1" :class="{'text-red-400': form.errors.logo}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                                <span class="text-xs font-medium text-slate-600" :class="{'text-red-600': form.errors.logo}">Upload Logo</span>
+                                                <span class="text-[10px] text-slate-400" :class="{'text-red-400': form.errors.logo}">PNG, JPG (Max 2MB)</span>
                                                 <input type="file" class="hidden" @change="handleLogoUpload" accept="image/*">
                                             </label>
                                         </div>
                                     </div>
+                                    <p v-if="form.errors.logo" class="mt-1 text-xs text-red-500">{{ form.errors.logo }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
-                                    <input v-model="form.phone" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10">
+                                    <input v-model="form.phone" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.phone}">
+                                    <p v-if="form.errors.phone" class="mt-1 text-xs text-red-500">{{ form.errors.phone }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">Alternative Phone</label>
-                                    <input v-model="form.alternative_phone" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10">
+                                    <input v-model="form.alternative_phone" type="text" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm h-10" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.alternative_phone}">
+                                    <p v-if="form.errors.alternative_phone" class="mt-1 text-xs text-red-500">{{ form.errors.alternative_phone }}</p>
                                 </div>
                             </div>
 
                             <!-- Full Width Address -->
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Physical Address <span class="text-red-500">*</span></label>
-                                <textarea v-model="form.address" rows="2" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"></textarea>
+                                <textarea v-model="form.address" rows="2" class="w-full rounded-lg border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm" :class="{'border-red-500 focus:border-red-500 focus:ring-red-500': form.errors.address}"></textarea>
+                                <p v-if="form.errors.address" class="mt-1 text-xs text-red-500">{{ form.errors.address }}</p>
                             </div>
                         </div>
                     </div>

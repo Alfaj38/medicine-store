@@ -85,7 +85,7 @@ const changeMonth = (delta) => {
     <Head title="Income & Expenses - SaaSMedi" />
 
     <AppLayout>
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">Income & Expenses</h1>

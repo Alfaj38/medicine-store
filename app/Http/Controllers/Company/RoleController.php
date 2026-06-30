@@ -27,29 +27,25 @@ class RoleController extends Controller
             $role->branch_ids = $branchRoles->where('role_id', $role->id)->pluck('branch_id')->toArray();
         }
 
-        // Phase 10: Permission Optimization - Cache Role/Permission list for 1 hour
-        $permissionsByModule = \Illuminate\Support\Facades\Cache::remember('permissions_by_module', now()->addHour(), function () {
-            $allPermissions = \Spatie\Permission\Models\Permission::all();
-            $permissionsByModule = [];
-            foreach ($allPermissions as $perm) {
-                $parts = explode('.', $perm->name);
-                $module = $parts[0];
-                $action = $parts[1] ?? 'other';
-                
-                // Format module name for display
-                $moduleName = ucwords(str_replace('-', ' ', $module));
-                
-                if (!isset($permissionsByModule[$moduleName])) {
-                    $permissionsByModule[$moduleName] = [];
-                }
-                $permissionsByModule[$moduleName][] = [
-                    'id' => $perm->id,
-                    'name' => $perm->name,
-                    'action' => $action
-                ];
+        $allPermissions = \Spatie\Permission\Models\Permission::all();
+        $permissionsByModule = [];
+        foreach ($allPermissions as $perm) {
+            $parts = explode('.', $perm->name);
+            $module = $parts[0];
+            $action = $parts[1] ?? 'other';
+            
+            // Format module name for display
+            $moduleName = ucwords(str_replace('-', ' ', $module));
+            
+            if (!isset($permissionsByModule[$moduleName])) {
+                $permissionsByModule[$moduleName] = [];
             }
-            return $permissionsByModule;
-        });
+            $permissionsByModule[$moduleName][] = [
+                'id' => $perm->id,
+                'name' => $perm->name,
+                'action' => $action
+            ];
+        }
         
         // Get branches for this company
         $branches = \App\Models\Branch::where('company_id', $companyId)->get(['id', 'name', 'area_id']);

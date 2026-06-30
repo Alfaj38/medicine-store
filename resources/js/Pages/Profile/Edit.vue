@@ -54,7 +54,7 @@ const updatePassword = () => {
 
         <!-- Page Heading -->
         <header class="bg-white shadow border-b border-slate-200">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 <h2 class="font-semibold text-xl text-slate-800 leading-tight">
                     My Profile
                 </h2>
@@ -62,7 +62,7 @@ const updatePassword = () => {
         </header>
 
         <main class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="w-full mx-auto sm:px-6 lg:px-8 space-y-6">
                 
                 <!-- Success Message -->
                 <div v-if="$page.props.flash?.success" class="bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-md shadow-sm">
