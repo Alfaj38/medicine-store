@@ -32,7 +32,7 @@
                             </p>
                         </div>
                         <div class="mt-2 flex-shrink-0 sm:mt-0 sm:ml-3">
-                            <Link href="/settings/billing" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                            <Link :href="route('company.subscription.index')" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
                                 Upgrade Now
                             </Link>
                         </div>

@@ -11,10 +11,11 @@ class SubscriptionService
      */
     public function isSubscriptionActive(Company $company): bool
     {
-        if (!$company->subscription_expires_at) {
+        $subscription = $company->subscription;
+        if (!$subscription || !$subscription->expires_at) {
             return false;
         }
-        return $company->subscription_expires_at->isFuture();
+        return $subscription->expires_at->isFuture();
     }
 
     /**

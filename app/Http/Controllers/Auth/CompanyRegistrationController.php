@@ -54,9 +54,15 @@ class CompanyRegistrationController extends Controller
             'referral_code' => 'nullable|string',
             'referral_source' => 'nullable|string',
             'coupon_code' => 'nullable|string',
+            'payment_intent' => 'required|in:trial,pay',
+            'payment_method' => 'required_if:payment_intent,pay|in:bkash,nagad,bank',
+            'sender_account_no' => 'required_if:payment_intent,pay|string',
+            'transaction_id' => 'required_if:payment_intent,pay|string',
+            'payment_date' => 'required_if:payment_intent,pay|date',
+            'payment_proof' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
-        $user = DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated, $request) {
             $package = Package::findOrFail($validated['package_id']);
 
             $referralCode = null;
@@ -133,19 +139,43 @@ class CompanyRegistrationController extends Controller
             ]);
 
             $totalTrialDays = $package->trial_days + $extraTrialDays;
+            $isPaid = $validated['payment_intent'] === 'pay';
+            
+            $planPrice = $validated['billing_cycle'] == 'yearly' ? $package->yearly_price : $package->monthly_price;
 
             $subscription = Subscription::create([
                 'company_id' => $company->id,
                 'package_id' => $package->id,
                 'billing_cycle' => $validated['billing_cycle'],
                 'cycle_years' => 1,
-                'amount_paid' => 0, // Free Trial
+                'amount_paid' => $isPaid ? $planPrice : 0, 
                 'starts_at' => now(),
-                'expires_at' => now()->addDays($totalTrialDays),
-                'trial_ends_at' => now()->addDays($totalTrialDays),
+                'expires_at' => $isPaid ? ($validated['billing_cycle'] == 'yearly' ? now()->addYear() : now()->addMonth()) : now()->addDays($totalTrialDays),
+                'trial_ends_at' => $isPaid ? null : now()->addDays($totalTrialDays),
                 'grace_period_days' => 5,
-                'status' => 'trial',
+                'status' => $isPaid ? 'active' : 'trial',
             ]);
+
+            if ($isPaid) {
+                $proofPath = null;
+                if ($request->hasFile('payment_proof')) {
+                    $proofPath = $request->file('payment_proof')->store('payments', 'public');
+                }
+                
+                \App\Models\SubscriptionPayment::create([
+                    'company_id' => $company->id,
+                    'subscription_id' => $subscription->id,
+                    'amount' => $planPrice,
+                    'net_amount' => $planPrice,
+                    'gateway' => $validated['payment_method'],
+                    'type' => 'manual',
+                    'status' => 'pending',
+                    'sender_account_no' => $validated['sender_account_no'],
+                    'transaction_id' => $validated['transaction_id'],
+                    'payment_proof_path' => $proofPath,
+                    'period_starts_at' => now(),
+                ]);
+            }
 
             if ($referralCode) {
                 Referral::create([

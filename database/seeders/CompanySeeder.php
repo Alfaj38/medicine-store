@@ -28,8 +28,8 @@ class CompanySeeder extends Seeder
         $priceMonthly = \App\Models\SubscriptionPlanPrice::create([
             'plan_id' => $plan->id,
             'billing_cycle' => 'monthly',
-            'price_per_month' => 1000,
-            'total_price' => 1000,
+            'price_per_month' => 999,
+            'total_price' => 999,
         ]);
 
         $priceYearly = \App\Models\SubscriptionPlanPrice::create([
@@ -83,7 +83,7 @@ class CompanySeeder extends Seeder
             'plan_id' => $plan->id,
             'plan_price_id' => $priceMonthly->id,
             'billing_cycle' => 'monthly',
-            'amount_paid' => 1000,
+            'amount_paid' => 999,
             'starts_at' => now(),
             'expires_at' => now()->addMonth(),
             'status' => 'active',

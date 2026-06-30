@@ -11,8 +11,6 @@ const props = defineProps({
 const currentStep = ref(1);
 const showMobileForm = ref(false);
 
-const totalSteps = 4;
-
 const form = useForm({
     // Step 1: Business Profile
     company_name: '',
@@ -36,7 +34,18 @@ const form = useForm({
     referral_code: props.referral_code || '',
     referral_source: '',
     coupon_code: '',
+    payment_intent: 'trial', // trial or pay
+    // Step 5: Payment
+    payment_method: 'bkash',
+    sender_account_no: '',
+    transaction_id: '',
+    payment_date: new Date().toISOString().slice(0, 16),
+    payment_proof: null,
 });
+
+const totalSteps = computed(() => form.payment_intent === 'pay' ? 5 : 4);
+
+
 
 // Computed property for smart package recommendation
 const recommendedPackage = computed(() => {
@@ -167,7 +176,7 @@ watch(() => form.coupon_code, (val) => {
 });
 
 const nextStep = () => {
-    if (currentStep.value < totalSteps) currentStep.value++;
+    if (currentStep.value < totalSteps.value) currentStep.value++;
 };
 
 const prevStep = () => {
@@ -189,6 +198,8 @@ const submit = () => {
                 }
             } else if (errors.package_id || errors.billing_cycle || errors.referral_code || errors.coupon_code) {
                 currentStep.value = 4;
+            } else if (errors.sender_account_no || errors.transaction_id || errors.payment_date || errors.payment_proof) {
+                currentStep.value = 5;
             }
             
             // Wait for Vue to render the step change, then focus the first error
@@ -384,10 +395,10 @@ const submit = () => {
                     <div class="absolute left-0 right-0 top-6 h-1 bg-slate-100 rounded-full z-0" style="left:calc(12.5%); right:calc(12.5%)"></div>
                     <!-- Animated progress line -->
                     <div class="absolute top-6 h-1 bg-gradient-to-r from-[#00b67a] to-[#009e6a] rounded-full z-0 transition-all duration-700 ease-out"
-                        :style="`left:calc(12.5%); width: calc(${(currentStep-1)/3 * 75}%)`"></div>
+                        :style="`left:calc(12.5%); width: calc(${(currentStep-1)/(totalSteps-1) * 75}%)`"></div>
 
                     <!-- Each Step -->
-                    <div v-for="step in 4" :key="step"
+                    <div v-for="step in totalSteps" :key="step"
                         class="relative z-10 flex flex-col items-center gap-1.5 cursor-pointer w-1/4"
                         @click="currentStep = step">
 
@@ -405,6 +416,7 @@ const submit = () => {
                                 <span v-if="step === 1" class="text-sm">🏪</span>
                                 <span v-else-if="step === 2" class="text-sm">⚙️</span>
                                 <span v-else-if="step === 3" class="text-sm">👤</span>
+                                <span v-else-if="step === 4" class="text-sm">📦</span>
                                 <span v-else class="text-sm">💳</span>
                             </template>
                         </div>
@@ -413,10 +425,10 @@ const submit = () => {
                         <div class="text-center">
                             <div class="text-[11px] font-black tracking-wide transition-colors duration-300"
                                 :class="step <= currentStep ? 'text-[#024329]' : 'text-slate-400'">
-                                {{ step === 1 ? 'Business' : step === 2 ? 'Setup' : step === 3 ? 'Admin' : 'Plan' }}
+                                {{ step === 1 ? 'Business' : step === 2 ? 'Setup' : step === 3 ? 'Admin' : (step === 4 ? 'Plan' : 'Payment') }}
                             </div>
                             <div class="text-[9px] font-medium text-slate-400 hidden sm:block leading-tight">
-                                {{ step === 1 ? 'Profile' : step === 2 ? 'Location' : step === 3 ? 'Account' : 'Choose' }}
+                                {{ step === 1 ? 'Profile' : step === 2 ? 'Location' : step === 3 ? 'Account' : (step === 4 ? 'Choose' : 'Verify') }}
                             </div>
                         </div>
                     </div>
@@ -734,10 +746,120 @@ const submit = () => {
                                     </div>
                                 </div>
 
-                                <!-- Trial note -->
-                                <div class="p-4 bg-[#F3FBF8] border border-[#00b67a]/30 rounded-xl flex items-center gap-3">
-                                    <svg class="w-5 h-5 text-[#00b67a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <p class="text-xs font-medium text-slate-600">Your <span class="font-bold text-[#00b67a]">14-day free trial</span> starts immediately. No credit card required. Cancel anytime.</p>
+                                <!-- Payment Intent Selection -->
+                                <div class="mt-6">
+                                    <label class="block text-sm font-bold text-slate-800 mb-3">How would you like to start?</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
+                                            :class="form.payment_intent === 'trial' ? 'border-[#00b67a] bg-[#F3FBF8] shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'">
+                                            <input type="radio" v-model="form.payment_intent" value="trial" class="sr-only">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-xl">⏳</div>
+                                                <div v-if="form.payment_intent === 'trial'" class="w-5 h-5 rounded-full bg-[#00b67a] text-white flex items-center justify-center shadow-sm">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                </div>
+                                            </div>
+                                            <div class="font-bold text-sm text-slate-800">Start 14-Day Free Trial</div>
+                                            <div class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">No credit card required. Cancel anytime.</div>
+                                        </label>
+
+                                        <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200"
+                                            :class="form.payment_intent === 'pay' ? 'border-[#00b67a] bg-[#F3FBF8] shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'">
+                                            <input type="radio" v-model="form.payment_intent" value="pay" class="sr-only">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-xl">💳</div>
+                                                <div v-if="form.payment_intent === 'pay'" class="w-5 h-5 rounded-full bg-[#00b67a] text-white flex items-center justify-center shadow-sm">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                </div>
+                                            </div>
+                                            <div class="font-bold text-sm text-slate-800">Pay Now & Subscribe</div>
+                                            <div class="text-[11px] font-medium text-slate-500 mt-1 leading-relaxed">Get started immediately with full access.</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END STEP 4 -->
+
+                            <!-- STEP 5: Payment Details -->
+                            <div v-else-if="currentStep === 5" class="space-y-6 animate-fade-in">
+                                <div>
+                                    <h2 class="text-2xl font-black text-slate-800">Submit Payment Details</h2>
+                                    <p class="text-sm font-medium text-slate-500 mt-1">Please pay using the instructions below and submit your details.</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Payment Instructions -->
+                                    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-5">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs">৳</div>
+                                            <h3 class="font-bold text-slate-800">Payment Instructions</h3>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-4 border border-rose-100/50 shadow-sm flex flex-col items-center">
+                                            <div class="w-full mb-4">
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">bKash Personal Account</div>
+                                                <div class="text-xl font-black text-slate-800 flex items-center gap-2">
+                                                    01812345678
+                                                    <span class="text-xs font-bold text-[#00b67a] cursor-pointer hover:underline">Copy</span>
+                                                </div>
+                                            </div>
+                                            <div class="w-full mb-4">
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Account Name</div>
+                                                <div class="text-sm font-bold text-slate-800">SaaSMedi Software</div>
+                                            </div>
+                                            <div class="w-full mb-4">
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payable Amount</div>
+                                                <div class="text-lg font-black text-rose-500">
+                                                    <template v-if="displayPackage">
+                                                        ৳{{ form.billing_cycle === 'yearly' ? Number(parseFloat(displayPackage.yearly_price)).toLocaleString() : Number(parseFloat(displayPackage.monthly_price)).toLocaleString() }}
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            <div class="w-full">
+                                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payment Purpose</div>
+                                                <div class="text-sm font-bold text-slate-800">{{ displayPackageName }} ({{ form.billing_cycle }})</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 flex gap-2 items-start bg-blue-50 text-blue-700 text-xs font-medium p-3 rounded-xl border border-blue-100">
+                                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <p><strong>Important:</strong> Please send the exact amount and keep the transaction reference number (TrxID) handy.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Form Fields -->
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-800 mb-2">Payment Method</label>
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <button type="button" @click="form.payment_method = 'bkash'" class="py-2 border-2 rounded-xl text-xs font-bold transition-all" :class="form.payment_method === 'bkash' ? 'border-pink-500 text-pink-600 bg-pink-50' : 'border-slate-200 text-slate-500'">bKash</button>
+                                                <button type="button" @click="form.payment_method = 'nagad'" class="py-2 border-2 rounded-xl text-xs font-bold transition-all" :class="form.payment_method === 'nagad' ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-slate-200 text-slate-500'">Nagad</button>
+                                                <button type="button" @click="form.payment_method = 'bank'" class="py-2 border-2 rounded-xl text-xs font-bold transition-all" :class="form.payment_method === 'bank' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-slate-200 text-slate-500'">Bank</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-800 mb-2">Sender Account Number <span class="text-red-500">*</span></label>
+                                            <input v-model="form.sender_account_no" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-2.5 text-sm font-medium" placeholder="e.g. 017XXXXXXXX" required>
+                                            <p v-if="form.errors.sender_account_no" class="text-red-500 text-[10px] mt-1">{{ form.errors.sender_account_no }}</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-800 mb-2">Transaction Reference No. (TrxID) <span class="text-red-500">*</span></label>
+                                            <input v-model="form.transaction_id" type="text" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-2.5 text-sm font-bold uppercase" placeholder="e.g. 9F3X7D2L8N" required>
+                                            <p v-if="form.errors.transaction_id" class="text-red-500 text-[10px] mt-1">{{ form.errors.transaction_id }}</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-800 mb-2">Payment Date & Time <span class="text-red-500">*</span></label>
+                                            <input v-model="form.payment_date" type="datetime-local" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-2.5 text-sm font-medium" required>
+                                            <p v-if="form.errors.payment_date" class="text-red-500 text-[10px] mt-1">{{ form.errors.payment_date }}</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-800 mb-2">Upload Payment Screenshot (Optional)</label>
+                                            <input @change="e => form.payment_proof = e.target.files[0]" type="file" accept="image/*" class="w-full rounded-xl border-slate-200 shadow-sm focus:border-[#00b67a] focus:ring-[#00b67a]/20 py-2 text-sm font-medium file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#00b67a]/10 file:text-[#00b67a] hover:file:bg-[#00b67a]/20">
+                                            <p v-if="form.errors.payment_proof" class="text-red-500 text-[10px] mt-1">{{ form.errors.payment_proof }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
