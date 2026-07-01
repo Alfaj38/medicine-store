@@ -25,7 +25,7 @@
                                 {{ subscription.company?.name }}
                             </td>
                             <td class="p-4">
-                                <span class="capitalize text-sm">{{ subscription.plan?.name || subscription.plan_id }}</span>
+                                <span class="capitalize text-sm">{{ subscription.package?.name || subscription.package_id }}</span>
                             </td>
                             <td class="p-4 text-sm capitalize">{{ subscription.billing_cycle }}</td>
                             <td class="p-4">

@@ -19,7 +19,7 @@ class CompanyController extends Controller
             // ->when($request->plan, fn ($q, $plan) => $q->where('subscription_plan', $plan)) // subscription is now relation
             ->withCount(['branches', 'users'])
             ->with(['subscription' => function ($q) {
-                $q->with('plan');
+                $q->with('package');
             }])
             ->latest()
             ->paginate(15);
@@ -32,7 +32,7 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company->load(['branches', 'users', 'subscription.plan']);
+        $company->load(['branches', 'users', 'subscription.package']);
 
         $totalRevenue = DB::table('subscription_payments')
             ->where('company_id', $company->id)

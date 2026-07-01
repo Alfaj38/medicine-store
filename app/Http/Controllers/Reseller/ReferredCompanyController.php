@@ -14,7 +14,7 @@ class ReferredCompanyController extends Controller
     {
         $reseller = Auth::guard('reseller')->user();
         
-        $companies = Referral::with(['company.subscription.plan', 'referralCode'])
+        $companies = Referral::with(['company.subscription.package', 'referralCode'])
             ->where('reseller_id', $reseller->id)
             ->orderBy('registered_at', 'desc')
             ->paginate(15);

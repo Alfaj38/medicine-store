@@ -90,7 +90,7 @@
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                                 <div>
                                     <p class="text-xs text-slate-500 font-medium mb-1">Current Plan</p>
-                                    <p class="font-bold text-slate-800 capitalize">{{ company.subscription?.plan?.name || company.subscription_plan || 'Free / Trial' }}</p>
+                                    <p class="font-bold text-slate-800 capitalize">{{ company.subscription?.package?.name || company.subscription_plan || 'Free / Trial' }}</p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-slate-500 font-medium mb-1">Billing Cycle</p>

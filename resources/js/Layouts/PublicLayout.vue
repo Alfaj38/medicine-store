@@ -56,7 +56,7 @@ const mobileMenuOpen = ref(false);
                         <div v-if="$page.props.auth.user.company?.subscription" class="mb-4 p-2 bg-slate-50 rounded-lg border border-slate-100">
                             <p class="text-xs text-slate-500 mb-0.5">Current Plan</p>
                             <p class="text-sm font-bold text-emerald-600">
-                                {{ $page.props.auth.user.company.subscription.plan?.name || 'Trial' }}
+                                {{ $page.props.auth.user.company.subscription.package?.name || 'Trial' }}
                             </p>
                             <p v-if="$page.props.auth.user.company.subscription.status === 'trial'" class="text-[10px] text-orange-500 font-bold mt-1 uppercase tracking-wider">Trial Version</p>
                         </div>
@@ -170,7 +170,7 @@ const mobileMenuOpen = ref(false);
                     <div class="bg-white border border-slate-200 rounded-xl p-3 text-center mb-2 shadow-sm">
                         <p class="text-xs text-slate-500">Signed in as <span class="font-bold text-slate-800">{{ $page.props.auth.user.name }}</span></p>
                         <div v-if="$page.props.auth.user.company?.subscription" class="mt-1 flex flex-col items-center justify-center gap-1">
-                            <span class="text-xs font-bold text-emerald-600">{{ $page.props.auth.user.company.subscription.plan?.name || 'Trial' }} Plan</span>
+                            <span class="text-xs font-bold text-emerald-600">{{ $page.props.auth.user.company.subscription.package?.name || 'Trial' }} Plan</span>
                             <span v-if="$page.props.auth.user.company.subscription.status === 'trial'" class="px-1.5 py-0.5 bg-orange-100 text-orange-600 text-[9px] font-bold rounded uppercase">Trial</span>
                         </div>
                     </div>
