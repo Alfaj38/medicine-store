@@ -10,3 +10,5 @@ Artisan::command('inspire', function () {
 Artisan::command('fetch:bangladesh-pharma', function () {
     (new \App\Console\Commands\FetchBangladeshPharma)->handle();
 })->purpose('Fetch Bangladeshi pharma companies and map to item types & categories');
+
+\Illuminate\Support\Facades\Schedule::command('subscription:process-downgrades')->daily();

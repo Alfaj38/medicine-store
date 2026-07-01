@@ -1,21 +1,24 @@
 <script setup>
 import { Head, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { ref } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const props = defineProps({
-    plan: Object,
-    price: Object,
-    paymentRequests: Array
+    package: Object,
+    billing_cycle: String,
+    paymentRequests: Array,
+    currentSubscription: Object
 });
 
 const form = useForm({
-    plan_id: props.plan.id,
-    price_id: props.price.id,
+    package_id: props.package.id,
+    billing_cycle: props.billing_cycle,
     gateway: 'bkash',
     sender_account_no: '',
     transaction_id: '',
+    billing_cycles: 1,
     payment_date: new Date().toISOString().slice(0, 16),
     payment_proof: null
 });
@@ -58,6 +61,82 @@ const clearFile = () => {
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT' }).format(amount);
 };
+
+const calculateProjectedExpiry = computed(() => {
+    let baseDate = new Date();
+    
+    // If there is an active current subscription, use its expiry date as the base
+    if (props.currentSubscription && props.currentSubscription.expires_at) {
+        const currentExpiry = new Date(props.currentSubscription.expires_at);
+        if (currentExpiry > baseDate) {
+            baseDate = currentExpiry;
+        }
+    }
+    
+    const cycles = form.billing_cycles;
+    
+    if (props.billing_cycle === 'yearly') {
+        baseDate.setFullYear(baseDate.getFullYear() + cycles);
+    } else {
+        baseDate.setMonth(baseDate.getMonth() + cycles);
+    }
+    
+    return baseDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+});
+
+const currentExpiryFormatted = computed(() => {
+    if (props.currentSubscription && props.currentSubscription.expires_at) {
+        return new Date(props.currentSubscription.expires_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    return 'None';
+});
+
+const pricePerCycle = computed(() => props.billing_cycle === 'yearly' ? props.package.yearly_price : props.package.monthly_price);
+
+const simulation = ref({
+    type: 'renew',
+    remaining_days: 0,
+    unused_credit: 0,
+    new_cost: pricePerCycle.value,
+    payable_amount: pricePerCycle.value,
+    effective_date: new Date().toISOString()
+});
+
+const isSimulating = ref(false);
+
+const fetchSimulation = async () => {
+    isSimulating.value = true;
+    try {
+        const response = await axios.post(route('company.subscription.proration'), {
+            package_id: props.package.id,
+            billing_cycle: props.billing_cycle,
+            billing_cycles: form.billing_cycles
+        });
+        simulation.value = response.data;
+    } catch (error) {
+        console.error('Error fetching simulation', error);
+    } finally {
+        isSimulating.value = false;
+    }
+};
+
+onMounted(() => {
+    if (props.currentSubscription) {
+        fetchSimulation();
+    } else {
+        simulation.value.payable_amount = pricePerCycle.value * form.billing_cycles;
+        simulation.value.new_cost = pricePerCycle.value * form.billing_cycles;
+    }
+});
+
+watch(() => form.billing_cycles, () => {
+    if (props.currentSubscription) {
+        fetchSimulation();
+    } else {
+        simulation.value.payable_amount = pricePerCycle.value * form.billing_cycles;
+        simulation.value.new_cost = pricePerCycle.value * form.billing_cycles;
+    }
+});
 </script>
 
 <template>
@@ -70,7 +149,7 @@ const formatCurrency = (amount) => {
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </Link>
                 <h2 class="font-semibold text-xl text-slate-800 leading-tight">
-                    {{ plan.name }} Plan Payment
+                    {{ package.name }} Plan Payment
                 </h2>
             </div>
         </template>
@@ -125,11 +204,14 @@ const formatCurrency = (amount) => {
                                     </div>
                                     <div>
                                         <p class="text-xs font-semibold text-slate-500 uppercase">Payable Amount</p>
-                                        <p class="text-xl font-bold text-pink-600">{{ formatCurrency(price.total_price) }}</p>
+                                        <p class="text-xl font-bold text-pink-600">
+                                            <span v-if="isSimulating" class="animate-pulse bg-pink-200 h-6 w-24 rounded inline-block"></span>
+                                            <span v-else>{{ formatCurrency(simulation.payable_amount) }}</span>
+                                        </p>
                                     </div>
                                     <div>
                                         <p class="text-xs font-semibold text-slate-500 uppercase">Payment Purpose</p>
-                                        <p class="text-base font-bold text-slate-800">{{ plan.name }} Subscription ({{ price.billing_cycle }})</p>
+                                        <p class="text-base font-bold text-slate-800 capitalize">{{ simulation.type }} {{ package.name }} Subscription ({{ billing_cycle }}) x {{ form.billing_cycles }}</p>
                                     </div>
                                 </div>
                                 <div class="mt-6 sm:mt-0 bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center shrink-0">
@@ -158,6 +240,93 @@ const formatCurrency = (amount) => {
                         <p class="text-sm text-slate-500 mb-6">After payment, please submit your payment details below.</p>
                         
                         <form @submit.prevent="submitPayment" class="space-y-5">
+                            
+                            <!-- Billing Cycles Selection -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Advance Payment (Cycles)</label>
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden">
+                                        <button type="button" @click="form.billing_cycles > 1 ? form.billing_cycles-- : null" 
+                                                class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold transition-colors border-r border-slate-300">
+                                            -
+                                        </button>
+                                        <input type="number" v-model.number="form.billing_cycles" min="1" max="60" 
+                                               class="w-16 text-center border-none focus:ring-0 sm:text-sm font-bold text-slate-800 py-2">
+                                        <button type="button" @click="form.billing_cycles < 60 ? form.billing_cycles++ : null" 
+                                                class="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold transition-colors border-l border-slate-300">
+                                            +
+                                        </button>
+                                    </div>
+                                    <span class="text-sm text-slate-500 font-medium">
+                                        {{ billing_cycle === 'yearly' ? 'Year(s)' : 'Month(s)' }}
+                                    </span>
+                                </div>
+                                
+                                <div class="mt-3 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                                    <div class="flex justify-between items-center text-sm mb-1">
+                                        <span class="text-emerald-700 font-medium">Current Expiry:</span>
+                                        <span class="text-emerald-900 font-bold">{{ currentExpiryFormatted }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-emerald-700 font-medium">Projected Expiry:</span>
+                                        <span class="text-emerald-900 font-bold">{{ calculateProjectedExpiry }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Simulation Summary Box -->
+                                <div v-if="simulation.type !== 'renew'" class="mt-4 border rounded-xl overflow-hidden shadow-sm" :class="simulation.type === 'upgrade' ? 'border-indigo-200' : 'border-amber-200'">
+                                    <div class="px-4 py-2 flex items-center font-bold text-sm" :class="simulation.type === 'upgrade' ? 'bg-indigo-50 text-indigo-800' : 'bg-amber-50 text-amber-800'">
+                                        <svg v-if="simulation.type === 'upgrade'" class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                        <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
+                                        Plan {{ simulation.type === 'upgrade' ? 'Upgrade' : 'Downgrade' }} Summary
+                                    </div>
+                                    <div class="p-4 bg-white text-sm space-y-2 relative">
+                                        <div v-if="isSimulating" class="absolute inset-0 bg-white/50 flex items-center justify-center backdrop-blur-[1px] z-10">
+                                            <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        </div>
+                                        
+                                        <template v-if="simulation.type === 'upgrade'">
+                                            <div class="flex justify-between text-slate-600">
+                                                <span>Remaining Days (Old Plan):</span>
+                                                <span class="font-bold text-slate-800">{{ simulation.remaining_days }} days</span>
+                                            </div>
+                                            <div class="flex justify-between text-emerald-600">
+                                                <span>Unused Value (Credit):</span>
+                                                <span class="font-bold">- {{ formatCurrency(simulation.unused_credit) }}</span>
+                                            </div>
+                                            <div class="flex justify-between text-slate-600">
+                                                <span>New Plan Cost:</span>
+                                                <span class="font-bold text-slate-800">+ {{ formatCurrency(simulation.new_cost) }}</span>
+                                            </div>
+                                            <div class="pt-2 mt-2 border-t border-slate-100 flex justify-between text-indigo-700">
+                                                <span class="font-bold">Total Payable Now:</span>
+                                                <span class="font-black text-lg">{{ formatCurrency(simulation.payable_amount) }}</span>
+                                            </div>
+                                            <div class="mt-2 text-xs text-slate-500 flex items-start">
+                                                <svg class="w-4 h-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                <span>Your upgrade will take effect immediately upon admin approval.</span>
+                                            </div>
+                                        </template>
+
+                                        <template v-if="simulation.type === 'downgrade'">
+                                            <div class="flex justify-between text-slate-600">
+                                                <span>New Plan Cost:</span>
+                                                <span class="font-bold text-slate-800">{{ formatCurrency(simulation.new_cost) }}</span>
+                                            </div>
+                                            <div class="pt-2 mt-2 border-t border-slate-100 flex justify-between text-amber-700">
+                                                <span class="font-bold">Total Payable Now:</span>
+                                                <span class="font-black text-lg">{{ formatCurrency(simulation.payable_amount) }}</span>
+                                            </div>
+                                            <div class="mt-2 text-xs text-slate-500 flex items-start bg-amber-50 p-2 rounded text-amber-800 border border-amber-100">
+                                                <svg class="w-4 h-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                                <span>Downgrade is scheduled for <strong>{{ new Date(simulation.effective_date).toLocaleDateString() }}</strong>. Your current plan remains active until then.</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-red-500 mt-1" v-if="form.errors.billing_cycles">{{ form.errors.billing_cycles }}</p>
+                            </div>
+
                             <!-- Payment Method Selection -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Payment Method</label>

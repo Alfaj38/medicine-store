@@ -19,14 +19,9 @@ class Subscription extends Model
         'auto_renew' => 'boolean',
     ];
 
-    public function plan()
+    public function package()
     {
-        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
-    }
-
-    public function planPrice()
-    {
-        return $this->belongsTo(SubscriptionPlanPrice::class, 'plan_price_id');
+        return $this->belongsTo(Package::class, 'package_id');
     }
 
     public function payments()

@@ -84,20 +84,21 @@ class DashboardController extends Controller
 
             // 5. LOW STOCK ALERTS
             // Optimized to not load huge relationships if there are 50k inventories
-            $inventories = Inventory::where('company_id', $companyId)->get();
+            $inventories = DB::table('inventories')
+                ->where('company_id', $companyId)
+                ->select('medicine_id', DB::raw('SUM(quantity) as stock'))
+                ->groupBy('medicine_id')
+                ->get();
                 
             $groupedStock = [];
             foreach ($inventories as $inv) {
                 $medId = $inv->medicine_id;
-                if (!isset($groupedStock[$medId])) {
-                    $groupedStock[$medId] = [
-                        'id' => $medId,
-                        'name' => 'Medicine #' . $medId, // Ideally loaded in bulk later, but keeping simple for now
-                        'stock' => 0,
-                        'reorder_level' => 10
-                    ];
-                }
-                $groupedStock[$medId]['stock'] += $inv->quantity;
+                $groupedStock[$medId] = [
+                    'id' => $medId,
+                    'name' => 'Medicine #' . $medId,
+                    'stock' => $inv->stock,
+                    'reorder_level' => 10
+                ];
             }
 
             $lowStockItems = [];

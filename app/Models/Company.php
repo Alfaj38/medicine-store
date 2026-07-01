@@ -56,6 +56,26 @@ class Company extends Model
         return $this->hasOne(Subscription::class)->latestOfMany();
     }
 
+    public function wallet()
+    {
+        return $this->hasOne(CompanyWallet::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(CompanyWalletTransaction::class);
+    }
+
+    public function scheduledPlanChanges()
+    {
+        return $this->hasMany(ScheduledPlanChange::class);
+    }
+
+    public function subscriptionHistories()
+    {
+        return $this->hasMany(SubscriptionHistory::class);
+    }
+
     public function isActive(): bool
     {
         return $this->is_active && $this->registration_status === 'active';

@@ -12,10 +12,15 @@ class SubscriptionPayment extends Model
 
     protected $casts = [
         'period_starts_at' => 'datetime',
-        'period_ends_at' => 'datetime',
-        'paid_at' => 'datetime',
+        'period_ends_at'   => 'datetime',
+        'paid_at'          => 'datetime',
         'gateway_response' => 'array',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     public function subscription()
     {
@@ -25,5 +30,10 @@ class SubscriptionPayment extends Model
     public function commission()
     {
         return $this->hasOne(Commission::class, 'subscription_payment_id');
+    }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class, 'package_id');
     }
 }

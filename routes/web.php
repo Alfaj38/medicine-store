@@ -294,7 +294,9 @@ Route::middleware(['auth', \App\Http\Middleware\TenantMiddleware::class])->group
             
             Route::get('subscription', [\App\Http\Controllers\Company\SubscriptionController::class, 'index'])->name('subscription.index');
             Route::get('subscription/checkout', [\App\Http\Controllers\Company\SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+            Route::post('subscription/proration', [\App\Http\Controllers\Company\SubscriptionController::class, 'calculateProration'])->name('subscription.proration');
             Route::post('subscription/payment', [\App\Http\Controllers\Company\SubscriptionController::class, 'submitPayment'])->name('subscription.payment');
+            Route::get('subscription/invoice/{payment}', [\App\Http\Controllers\Company\SubscriptionController::class, 'downloadInvoice'])->name('subscription.invoice');
             
             Route::get('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'index'])->name('seo-analytics.index');
             Route::post('seo-analytics', [\App\Http\Controllers\Company\SeoAnalyticsController::class, 'update'])->name('seo-analytics.update');

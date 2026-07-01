@@ -17,23 +17,57 @@
 
             <!-- Page Content -->
             <main class="flex-1 overflow-y-auto bg-slate-50 relative">
-                <!-- Subscription Expired Banner -->
-                <div v-if="subscription && !subscription.is_active" class="bg-red-50 border-b border-red-200 px-4 py-3 sm:px-6 lg:px-8">
+                <!-- Subscription Lifecycle Banners -->
+                <div v-if="subscription && subscription.state !== 'active'" class="border-b px-4 py-3 sm:px-6 lg:px-8" :class="{
+                    'bg-yellow-50 border-yellow-200': subscription.state === 'renewal_window',
+                    'bg-orange-50 border-orange-200': subscription.state === 'grace_period',
+                    'bg-blue-50 border-blue-200': subscription.state === 'payment_pending',
+                    'bg-red-50 border-red-200': ['restricted', 'suspended'].includes(subscription.state)
+                }">
                     <div class="flex items-center justify-between flex-wrap">
                         <div class="flex-1 flex items-center">
-                            <span class="flex p-2 rounded-lg bg-red-100 text-red-600 mr-3">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <span class="flex p-2 rounded-lg mr-3" :class="{
+                                'bg-yellow-100 text-yellow-600': subscription.state === 'renewal_window',
+                                'bg-orange-100 text-orange-600': subscription.state === 'grace_period',
+                                'bg-blue-100 text-blue-600': subscription.state === 'payment_pending',
+                                'bg-red-100 text-red-600': ['restricted', 'suspended'].includes(subscription.state)
+                            }">
+                                <!-- Info Icon -->
+                                <svg v-if="['renewal_window', 'payment_pending'].includes(subscription.state)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <!-- Warning Icon -->
+                                <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </span>
-                            <p class="font-medium text-red-800 text-sm">
-                                <span class="md:hidden">Your subscription has expired. Account is Read-Only.</span>
-                                <span class="hidden md:inline">Your subscription has expired. Your account is currently in Read-Only mode. Please upgrade to create or edit records.</span>
+                            <p class="font-medium text-sm" :class="{
+                                'text-yellow-800': subscription.state === 'renewal_window',
+                                'text-orange-800': subscription.state === 'grace_period',
+                                'text-blue-800': subscription.state === 'payment_pending',
+                                'text-red-800': ['restricted', 'suspended'].includes(subscription.state)
+                            }">
+                                <template v-if="subscription.state === 'renewal_window'">
+                                    Your subscription expires in {{ subscription.days_to_expiry }} days. Renew now to avoid interruption.
+                                </template>
+                                <template v-else-if="subscription.state === 'grace_period'">
+                                    <span class="font-bold">⚠ Your subscription has expired.</span> Grace Period Remaining: {{ subscription.grace_days_remaining }} Days.
+                                </template>
+                                <template v-else-if="subscription.state === 'payment_pending'">
+                                    Payment Pending Verification. Your account remains active while we verify your transaction.
+                                </template>
+                                <template v-else>
+                                    Subscription Expired. Your account is in Restricted Mode. Renew to continue business operations.
+                                </template>
                             </p>
                         </div>
-                        <div class="mt-2 flex-shrink-0 sm:mt-0 sm:ml-3">
-                            <Link :href="route('company.subscription.index')" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
-                                Upgrade Now
+                        <div class="mt-2 flex-shrink-0 sm:mt-0 sm:ml-3" v-if="subscription.state !== 'payment_pending'">
+                            <Link :href="route('company.subscription.index')" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors" :class="{
+                                'bg-yellow-600 hover:bg-yellow-700': subscription.state === 'renewal_window',
+                                'bg-orange-600 hover:bg-orange-700': subscription.state === 'grace_period',
+                                'bg-red-600 hover:bg-red-700': ['restricted', 'suspended'].includes(subscription.state)
+                            }">
+                                {{ subscription.state === 'renewal_window' ? 'Renew Now' : 'Upgrade Now' }}
                             </Link>
                         </div>
                     </div>

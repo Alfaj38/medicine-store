@@ -35,11 +35,13 @@ class EnsureActiveSubscription
                     return $next($request);
                 }
 
-                // Check if subscription is active
-                if (!$this->subscriptionService->isSubscriptionActive($tenant)) {
+                // Check if subscription is restricted or suspended
+                $state = $this->subscriptionService->getSubscriptionState($tenant);
+                
+                if (in_array($state, ['restricted', 'suspended'])) {
                     // For Inertia or AJAX requests, return a specific response or throw a 403
                     if ($request->wantsJson() || $request->header('X-Inertia')) {
-                        abort(403, 'Your subscription has expired. Your account is in Read-Only mode. Please upgrade to create or edit records.');
+                        abort(403, 'Your subscription has expired. Your account is in Read-Only mode. Please renew to create or edit records.');
                     }
                     
                     abort(403, 'Your subscription has expired. Your account is in Read-Only mode.');

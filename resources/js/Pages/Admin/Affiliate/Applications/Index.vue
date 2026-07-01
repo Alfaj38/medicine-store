@@ -1,106 +1,126 @@
 <template>
+    <Head title="Affiliate Applications" />
+
     <AdminLayout>
-        <template #header>Affiliate Applications</template>
+        <template #header>
+            <h2 class="font-semibold text-xl text-slate-800 leading-tight">
+                Pending Affiliate Applications
+            </h2>
+        </template>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="p-6 border-b">
-                <h3 class="text-lg font-medium text-gray-900">Pending Applications</h3>
-            </div>
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                
+                <div class="bg-white overflow-hidden shadow-sm rounded-xl">
+                    <div class="px-6 py-5 border-b border-slate-200">
+                        <h3 class="text-lg leading-6 font-medium text-slate-900">Review Applications</h3>
+                        <p class="mt-1 max-w-2xl text-sm text-slate-500">Approve or reject new reseller applications.</p>
+                    </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 border-b">
-                            <th class="p-4 font-medium text-sm text-gray-600">Applicant</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Business / ID</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Contact</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Bank Info</th>
-                            <th class="p-4 font-medium text-sm text-gray-600">Date Applied</th>
-                            <th class="p-4 font-medium text-sm text-gray-600 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="app in applications.data" :key="app.id" class="border-b hover:bg-gray-50">
-                            <td class="p-4">
-                                <div class="font-medium text-gray-900">{{ app.name }}</div>
-                            </td>
-                            <td class="p-4">
-                                <div class="font-medium text-sm">{{ app.business_name || '-' }}</div>
-                                <div class="text-xs text-gray-500">ID: {{ app.nid_or_business_id }}</div>
-                            </td>
-                            <td class="p-4 text-sm">
-                                <div>{{ app.email }}</div>
-                                <div>{{ app.phone }}</div>
-                            </td>
-                            <td class="p-4 text-sm capitalize">
-                                {{ app.bank_info?.method }}
-                            </td>
-                            <td class="p-4 text-sm text-gray-500">
-                                {{ new Date(app.created_at).toLocaleDateString() }}
-                            </td>
-                            <td class="p-4 text-right space-x-3">
-                                <button @click="approve(app.id)" class="text-emerald-600 hover:text-emerald-900 text-sm font-medium">Approve</button>
-                                <button @click="reject(app.id)" class="text-red-600 hover:text-red-900 text-sm font-medium">Reject</button>
-                            </td>
-                        </tr>
-                        <tr v-if="applications.data.length === 0">
-                            <td colspan="6" class="p-6 text-center text-gray-500">No pending applications.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applicant</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contact</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applied Date</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr v-for="application in applications.data" :key="application.id" class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-bold text-slate-900">{{ application.name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-slate-900">{{ application.email }}</div>
+                                        <div class="text-xs text-slate-500">{{ application.phone || 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-slate-900">{{ new Date(application.created_at).toLocaleDateString() }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 uppercase tracking-wider">
+                                            {{ application.status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex justify-end space-x-2">
+                                            <button @click="approveApplication(application)" class="text-emerald-600 hover:text-emerald-900 font-bold bg-emerald-50 px-3 py-1 rounded">Approve</button>
+                                            <button @click="rejectApplication(application)" class="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded">Reject</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="applications.data.length === 0">
+                                    <td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">
+                                        No pending applications found.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <div class="p-6 border-t bg-gray-50 flex justify-between items-center" v-if="applications.data.length > 0">
-                <Pagination :links="applications.links" />
             </div>
         </div>
     </AdminLayout>
 </template>
 
 <script setup>
-import { router } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../Layout.vue';
-import Pagination from '@/Components/Pagination.vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
-    applications: Object,
+    applications: Object
 });
 
-const approve = (id) => {
-    window.Swal.fire({
+const approveApplication = (application) => {
+    Swal.fire({
         title: 'Approve Application?',
-        text: 'Are you sure you want to approve this affiliate application?',
-        icon: 'warning',
+        text: `Are you sure you want to approve ${application.name} as a reseller?`,
+        icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Yes, approve it!'
+        confirmButtonText: 'Yes, approve'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.patch(route('admin.affiliate.approve', id), {}, { preserveScroll: true });
+            const form = useForm({});
+            form.patch(route('admin.affiliates.approve', application.id), {
+                preserveScroll: true
+            });
         }
     });
 };
 
-const reject = (id) => {
-    window.Swal.fire({
+const rejectApplication = (application) => {
+    Swal.fire({
         title: 'Reject Application',
-        text: 'Enter reason for rejection:',
         input: 'textarea',
-        inputPlaceholder: 'Reason for rejection...',
-        icon: 'warning',
+        inputLabel: 'Reason for rejection (sent to applicant)',
+        inputPlaceholder: 'Enter your reason here...',
+        inputAttributes: {
+            'aria-label': 'Reason for rejection'
+        },
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Yes, reject it!',
+        confirmButtonText: 'Reject',
         inputValidator: (value) => {
             if (!value) {
-                return 'You need to write a reason!'
+                return 'You need to write something!';
             }
         }
     }).then((result) => {
-        if (result.isConfirmed && result.value) {
-            router.patch(route('admin.affiliate.reject', id), { reason: result.value }, { preserveScroll: true });
+        if (result.isConfirmed) {
+            const form = useForm({
+                reason: result.value
+            });
+            form.patch(route('admin.affiliates.reject', application.id), {
+                preserveScroll: true
+            });
         }
     });
 };

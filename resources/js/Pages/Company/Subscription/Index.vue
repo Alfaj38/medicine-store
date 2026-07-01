@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Swal from 'sweetalert2';
@@ -12,18 +12,20 @@ const props = defineProps({
     paymentHistory: Array,
 });
 
+const page = usePage();
+
 const form = useForm({
-    plan_id: null,
-    price_id: null,
+    package_id: null,
+    billing_cycle: null,
 });
 
 const hasPendingPayment = computed(() => {
     return props.paymentHistory && props.paymentHistory.some(p => p.status === 'pending');
 });
 
-const upgrade = (plan, price) => {
-    form.plan_id = plan.id;
-    form.price_id = price.id;
+const upgrade = (plan, billing_cycle) => {
+    form.package_id = plan.id;
+    form.billing_cycle = billing_cycle;
     
     // Redirect to checkout page using Inertia GET
     form.get(route('company.subscription.checkout'), {
@@ -33,6 +35,31 @@ const upgrade = (plan, price) => {
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-BD', { style: 'currency', currency: 'BDT' }).format(amount);
+};
+
+const formatFeature = (feature) => {
+    if (typeof feature === 'string') return feature;
+    if (!feature || !feature.feature_code) return null;
+
+    // Convert snake_case code to Title Case label
+    const label = feature.feature_code
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+    if (feature.limit !== null && feature.limit !== undefined) {
+        return `${feature.limit} ${label}`;
+    }
+    return label;
+};
+
+const visibleFeatures = (features) => {
+    if (!features || features.length === 0) {
+        return ['Unlimited Sales', 'Inventory Tracking', 'Daily Reports', 'Basic Support'];
+    }
+    return features
+        .filter(f => f.is_enabled || (f.limit !== null && f.limit !== undefined))
+        .map(formatFeature)
+        .filter(Boolean);
 };
 </script>
 
@@ -64,7 +91,7 @@ const formatCurrency = (amount) => {
                     <div class="mt-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <p class="text-sm font-medium text-slate-500 mb-1">Active Plan</p>
-                            <p class="font-bold text-slate-900">{{ currentSubscription?.plan?.name || 'N/A' }}</p>
+                            <p class="font-bold text-slate-900">{{ currentSubscription?.package?.name || 'N/A' }}</p>
                         </div>
                         <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <p class="text-sm font-medium text-slate-500 mb-1">Billing Cycle</p>
@@ -116,15 +143,21 @@ const formatCurrency = (amount) => {
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
                                               :class="{
-                                                  'bg-green-100 text-green-800': payment.status === 'completed',
-                                                  'bg-yellow-100 text-yellow-800': payment.status === 'pending',
+                                                  'bg-emerald-100 text-emerald-800': payment.status === 'success' || payment.status === 'completed',
+                                                  'bg-amber-100 text-amber-800': payment.status === 'pending',
                                                   'bg-red-100 text-red-800': payment.status === 'failed'
                                               }">
                                             {{ payment.status }}
                                         </span>
+                                        <div v-if="payment.status === 'failed' && payment.rejection_reason" class="text-xs text-red-600 mt-1 font-semibold max-w-[200px] truncate" :title="payment.rejection_reason">
+                                            Reason: {{ payment.rejection_reason }}
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900 cursor-pointer">
-                                        Download Invoice
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
+                                        <a :href="route('company.subscription.invoice', payment.id)" class="font-medium flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            Download Invoice
+                                        </a>
                                     </td>
                                 </tr>
                                 <tr v-if="!paymentHistory || paymentHistory.length === 0">
@@ -139,42 +172,109 @@ const formatCurrency = (amount) => {
 
                 <!-- Available Plans -->
                 <div class="mb-8">
-                    <h3 class="text-2xl font-black text-slate-900 text-center mb-2">Upgrade Your Pharmacy</h3>
+                    <h3 class="text-2xl font-black text-slate-900 text-center mb-2">
+                        {{ currentSubscription?.package_id ? 'Upgrade Your Pharmacy' : 'Choose a Plan' }}
+                    </h3>
                     <p class="text-slate-500 text-center mb-8">Choose the plan that fits your business needs.</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div v-for="plan in plans" :key="plan.id" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative transition-all hover:shadow-lg hover:border-emerald-200">
-                            <!-- Popular Badge -->
-                            <div v-if="plan.name.toLowerCase().includes('pro')" class="absolute top-0 inset-x-0">
-                                <div class="bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider text-center py-1">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:px-4">
+                        <div v-for="plan in plans" :key="plan.id"
+                             class="rounded-3xl overflow-hidden flex flex-col relative transition-all duration-300"
+                             :class="currentSubscription?.package_id === plan.id
+                                 ? 'bg-gradient-to-b from-emerald-50 to-white ring-4 ring-emerald-500 shadow-2xl shadow-emerald-200/50 md:scale-[1.03] z-10'
+                                 : 'bg-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-200'">
+
+                            <!-- Current Plan Banner -->
+                            <div v-if="currentSubscription?.package_id === plan.id" class="absolute top-0 inset-x-0">
+                                <div class="bg-emerald-500 text-white text-sm font-black uppercase tracking-widest text-center py-2 flex items-center justify-center gap-2 shadow-sm">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    YOUR CURRENT PLAN
+                                </div>
+                            </div>
+
+                            <!-- Most Popular Badge (only for non-current plan) -->
+                            <div v-else-if="plan.name.toLowerCase().includes('pro')" class="absolute top-0 inset-x-0">
+                                <div class="bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider text-center py-1">
                                     Most Popular
                                 </div>
                             </div>
 
-                            <div class="p-8 flex-1">
-                                <h4 class="text-xl font-bold text-slate-900 mb-2 mt-4">{{ plan.name }}</h4>
+                            <div class="p-8 flex-1" :class="currentSubscription?.package_id === plan.id ? 'mt-4' : ''">
+                                <div class="flex items-center justify-between mt-4 mb-2">
+                                    <h4 class="text-xl font-bold" :class="currentSubscription?.package_id === plan.id ? 'text-emerald-700 text-2xl' : 'text-slate-900'">
+                                        {{ plan.name }}
+                                    </h4>
+                                    <span v-if="currentSubscription?.package_id === plan.id"
+                                          class="inline-flex items-center gap-1 text-sm font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 capitalize shadow-sm">
+                                        {{ currentSubscription.billing_cycle }} Cycle
+                                    </span>
+                                </div>
                                 <p class="text-sm text-slate-500 mb-6 min-h-[40px]">{{ plan.description }}</p>
                                 
                                 <div class="space-y-4 mb-8">
-                                    <div v-for="price in plan.prices" :key="price.id" class="p-4 rounded-xl border-2 transition-colors" 
-                                         :class="form.price_id === price.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 hover:border-slate-200'">
+                                    <!-- Monthly -->
+                                    <div class="p-4 rounded-xl border-2 transition-colors" 
+                                         :class="currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'monthly'
+                                             ? 'border-emerald-400 bg-emerald-50'
+                                             : form.package_id === plan.id && form.billing_cycle === 'monthly'
+                                                 ? 'border-emerald-500 bg-emerald-50'
+                                                 : 'border-slate-100 hover:border-slate-200'">
                                         <div class="flex justify-between items-center mb-2">
-                                            <span class="font-bold text-slate-900 capitalize">{{ price.billing_cycle }}</span>
-                                            <span class="text-xs font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded-md" v-if="price.billing_cycle === 'yearly'">Save 20%</span>
+                                            <span class="font-bold text-slate-900 capitalize">Monthly</span>
+                                            <span v-if="currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'monthly'"
+                                                  class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
                                         </div>
                                         <div class="flex items-baseline">
-                                            <span class="text-2xl font-black text-slate-900">৳{{ price.total_price }}</span>
-                                            <span class="text-slate-500 text-sm ml-1">/{{ price.billing_cycle === 'yearly' ? 'yr' : 'mo' }}</span>
+                                            <span class="text-2xl font-black text-slate-900">৳{{ plan.monthly_price }}</span>
+                                            <span class="text-slate-500 text-sm ml-1">/mo</span>
                                         </div>
-                                        <button @click="upgrade(plan, price)" 
+                                        <button @click="upgrade(plan, 'monthly')" 
                                                 class="mt-4 w-full py-2 px-4 rounded-lg font-bold text-sm transition-colors flex items-center justify-center"
-                                                :disabled="hasPendingPayment || (currentSubscription?.plan_id === plan.id && currentSubscription?.plan_price_id === price.id && new Date(currentSubscription?.expires_at) > new Date())"
-                                                :class="(hasPendingPayment || (currentSubscription?.plan_id === plan.id && currentSubscription?.plan_price_id === price.id && new Date(currentSubscription?.expires_at) > new Date())) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white'">
-                                            <template v-if="hasPendingPayment">
-                                                Pending Bill
+                                                :disabled="hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending'"
+                                                :class="(hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending')
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'monthly'
+                                                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                                        : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white'">
+                                            <template v-if="hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending'">
+                                                Pending Verification
                                             </template>
                                             <template v-else>
-                                                {{ (currentSubscription?.plan_id === plan.id && currentSubscription?.plan_price_id === price.id && new Date(currentSubscription?.expires_at) > new Date()) ? 'Current Plan' : (currentSubscription?.plan_id === plan.id && currentSubscription?.plan_price_id === price.id ? 'Renew Plan' : 'Select & Pay') }}
+                                                {{ (currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'monthly') ? '🔄 Renew Plan' : 'Select & Pay' }}
+                                            </template>
+                                        </button>
+                                    </div>
+
+                                    <!-- Yearly -->
+                                    <div class="p-4 rounded-xl border-2 transition-colors" 
+                                         :class="currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'yearly'
+                                             ? 'border-emerald-400 bg-emerald-50'
+                                             : form.package_id === plan.id && form.billing_cycle === 'yearly'
+                                                 ? 'border-emerald-500 bg-emerald-50'
+                                                 : 'border-slate-100 hover:border-slate-200'">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-bold text-slate-900 capitalize">Yearly</span>
+                                            <span v-if="currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'yearly'"
+                                                  class="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+                                            <span v-else class="text-xs font-bold px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">Save ~17%</span>
+                                        </div>
+                                        <div class="flex items-baseline">
+                                            <span class="text-2xl font-black text-slate-900">৳{{ plan.yearly_price }}</span>
+                                            <span class="text-slate-500 text-sm ml-1">/yr</span>
+                                        </div>
+                                        <button @click="upgrade(plan, 'yearly')" 
+                                                class="mt-4 w-full py-2 px-4 rounded-lg font-bold text-sm transition-colors flex items-center justify-center"
+                                                :disabled="hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending'"
+                                                :class="(hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending')
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'yearly'
+                                                        ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                                        : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white'">
+                                            <template v-if="hasPendingPayment || page.props.auth.subscription?.state === 'payment_pending'">
+                                                Pending Verification
+                                            </template>
+                                            <template v-else>
+                                                {{ (currentSubscription?.package_id === plan.id && currentSubscription?.billing_cycle === 'yearly') ? '🔄 Renew Plan' : 'Select & Pay' }}
                                             </template>
                                         </button>
                                     </div>
@@ -182,9 +282,9 @@ const formatCurrency = (amount) => {
                                 
                                 <div class="space-y-3">
                                     <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Features included:</h5>
-                                    <div class="flex items-start" v-for="feature in (plan.features || ['Unlimited Sales', 'Inventory Tracking', 'Daily Reports', 'Basic Support'])" :key="feature">
+                                    <div class="flex items-start" v-for="feat in visibleFeatures(plan.features)" :key="feat">
                                         <svg class="w-5 h-5 text-emerald-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        <span class="text-sm text-slate-600">{{ feature }}</span>
+                                        <span class="text-sm text-slate-600">{{ feat }}</span>
                                     </div>
                                 </div>
                             </div>

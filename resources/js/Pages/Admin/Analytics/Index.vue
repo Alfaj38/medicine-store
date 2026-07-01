@@ -34,13 +34,34 @@
                 <apexchart type="bar" height="350" :options="growthOptions" :series="growthData.series"></apexchart>
             </div>
 
-            <!-- Coming Soon Panel -->
-            <div class="bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-8 lg:col-span-2 text-center text-white">
-                <div class="text-4xl mb-4">🔮</div>
-                <h3 class="text-xl font-bold mb-2">More Analytics Modules Incoming</h3>
-                <p class="text-sm font-medium text-slate-400 max-w-2xl mx-auto">
-                    We're currently gathering baseline metric data. Feature Usage, Feature Adoption Rates, and Churn Probability models will be unlocked once statistical significance is reached.
-                </p>
+            <!-- Feature Adoption Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Feature Adoption</h3>
+                        <p class="text-xs font-medium text-slate-500 mt-1">Usage of core modules across all tenants</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl">
+                        🎯
+                    </div>
+                </div>
+                
+                <apexchart type="radar" height="350" :options="adoptionOptions" :series="adoptionData.series"></apexchart>
+            </div>
+
+            <!-- Churn Risk Chart -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Tenant Churn Risk</h3>
+                        <p class="text-xs font-medium text-slate-500 mt-1">Predicted probability of churn within 30 days</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xl">
+                        🚨
+                    </div>
+                </div>
+                
+                <apexchart type="donut" height="350" :options="churnOptions" :series="churnData.series"></apexchart>
             </div>
 
         </div>
@@ -111,5 +132,32 @@ const growthOptions = computed(() => ({
         axisTicks: { show: false },
     },
     grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+}));
+
+const adoptionData = {
+    series: [{
+        name: 'Adoption Rate',
+        data: [80, 50, 30, 40, 100, 20],
+    }]
+};
+
+const adoptionOptions = computed(() => ({
+    chart: { type: 'radar', toolbar: { show: false }, fontFamily: 'Instrument Sans, sans-serif' },
+    labels: ['Sales', 'Purchases', 'Returns', 'Reports', 'Inventory', 'Coupons'],
+    colors: ['#8b5cf6'],
+    yaxis: { show: false },
+}));
+
+const churnData = {
+    series: [85, 10, 5]
+};
+
+const churnOptions = computed(() => ({
+    chart: { type: 'donut', fontFamily: 'Instrument Sans, sans-serif' },
+    labels: ['Safe', 'At Risk', 'High Risk'],
+    colors: ['#10b981', '#f59e0b', '#ef4444'],
+    plotOptions: { donut: { size: '70%' } },
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom' }
 }));
 </script>

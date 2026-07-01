@@ -11,7 +11,7 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $subscriptions = Subscription::with(['company', 'plan'])
+        $subscriptions = Subscription::with(['company', 'package'])
             ->latest()
             ->paginate(15);
 

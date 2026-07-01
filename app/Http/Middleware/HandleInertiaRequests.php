@@ -43,7 +43,7 @@ class HandleInertiaRequests extends Middleware
             
             if ($user instanceof \App\Models\User) {
                 setPermissionsTeamId($user->company_id);
-                $user->loadMissing(['roles', 'company.subscription.plan']);
+                $user->loadMissing(['roles', 'company.subscription.package']);
                 
                 // Phase 10: Permission Optimization - Cache DB checks for 1 hour
                 $cacheKey = "user_{$user->id}_auth_data";
@@ -54,35 +54,40 @@ class HandleInertiaRequests extends Middleware
                         $permissions = $user->getAllPermissions()->pluck('name')->toArray();
                     }
 
-                    $subscriptionData = [
-                        'is_active' => true,
-                        'can_add_user' => true,
-                        'can_add_branch' => true,
-                    ];
-
-                    if ($user->company) {
-                        $subscriptionService = app(\App\Services\SubscriptionService::class);
-                        $subscriptionData = [
-                            'is_active' => $subscriptionService->isSubscriptionActive($user->company),
-                            'can_add_user' => $subscriptionService->canAddUser($user->company),
-                            'can_add_branch' => $subscriptionService->canAddBranch($user->company),
-                        ];
-                    }
-
                     return [
                         'permissions' => $permissions,
                         'branches' => $user->getAllowedBranchIds(),
                         'scope' => $user->data_scope,
-                        'subscription' => $subscriptionData,
                     ];
                 });
+
+                $subscriptionData = [
+                    'is_active' => true,
+                    'can_add_user' => true,
+                    'can_add_branch' => true,
+                    'state' => 'active',
+                    'days_to_expiry' => 0,
+                    'grace_days_remaining' => 0,
+                ];
+
+                if ($user->company) {
+                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                    $subscriptionData = [
+                        'is_active' => $subscriptionService->isSubscriptionActive($user->company),
+                        'can_add_user' => $subscriptionService->canAddUser($user->company),
+                        'can_add_branch' => $subscriptionService->canAddBranch($user->company),
+                        'state' => $subscriptionService->getSubscriptionState($user->company),
+                        'days_to_expiry' => $subscriptionService->getDaysToExpiry($user->company),
+                        'grace_days_remaining' => $subscriptionService->getGraceDaysRemaining($user->company),
+                    ];
+                }
 
                 $authData = [
                     'user' => collect($user)->except(['password', 'remember_token']),
                     'scope' => $cachedAuth['scope'],
                     'permissions' => $cachedAuth['permissions'],
                     'branches' => $cachedAuth['branches'],
-                    'subscription' => $cachedAuth['subscription'],
+                    'subscription' => $subscriptionData,
                 ];
             } else {
                 // For Resellers or other models
